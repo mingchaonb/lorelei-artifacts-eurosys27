@@ -21,7 +21,9 @@ while (($#)); do
 done
 [[ ${#positional[@]} == 1 ]] || { echo "Expected one devkit path" >&2; exit 2; }
 devkit=$(realpath "${positional[0]}")
-qemu=$(realpath -m "${QEMU:-$devkit/bin/qemu-x86_64}")
+default_qemu=$devkit/bin/qemu-x86_64
+[[ -x $default_qemu || ! -x $devkit/../../../qemu-ae/build/qemu-x86_64 ]] || default_qemu=$devkit/../../../qemu-ae/build/qemu-x86_64
+qemu=$(realpath -m "${QEMU:-$default_qemu}")
 vcpkg=$repo_root/vcpkg/vcpkg
 nm_tool=$(command -v llvm-nm-20 || command -v llvm-nm || command -v nm)
 work=$repo_root/.work/evaluations/md4c
@@ -75,6 +77,13 @@ mkdir -p "$work/tests/native" "$work/tests/guest"
 run_logged "$run_dir/logs/preparation/test-native.log" cc -I"$native_prefix/include" "$recipe_dir/tests/workload.c" -L"$native_prefix/lib" -Wl,-rpath,"$native_prefix/lib" -lmd4c-html -o "$work/tests/native/workload"
 run_logged "$run_dir/logs/preparation/test-guest.log" "$devkit/bin/x86_64-linux-gnu-clang" --sysroot="$devkit/x86_64/sysroot" -I"$guest_prefix/include" "$recipe_dir/tests/workload.c" -L"$guest_prefix/lib" -Wl,-rpath,"$guest_prefix/lib" -lmd4c-html -o "$work/tests/guest/workload"
 "$nm_tool" -D --undefined-only --just-symbol-name "$work/tests/guest/workload" | sed 's/@.*//' | sort -u >"$run_dir/generated/guest-undefined.txt"
+suite_native=$native_prefix/tools/md4c/upstream-tests
+suite_guest=$guest_prefix/tools/md4c/upstream-tests
+for test_binary in "$suite_native/bin/md2html" "$suite_guest/bin/md2html"; do
+  [[ -x $test_binary ]] || { echo "Installed md2html test program not found: $test_binary" >&2; exit 1; }
+done
+"$nm_tool" -D --undefined-only --just-symbol-name "$suite_guest/bin/md2html" | sed 's/@.*//' >>"$run_dir/generated/guest-undefined.txt"
+sort -u -o "$run_dir/generated/guest-undefined.txt" "$run_dir/generated/guest-undefined.txt"
 thunk_host=()
 thunk_guest=()
 index=0
@@ -121,7 +130,40 @@ pathlib.Path(out).write_text(json.dumps(data, indent=2, sort_keys=True) + "\n")
 raise SystemExit(0 if ok else 1)
 PY
 echo "Evidence: $run_dir"
-upstream_args=()
-$reference && upstream_args+=(--reference)
-$verbose && upstream_args+=(--verbose)
-"$recipe_dir/run-upstream.sh" "${upstream_args[@]}" "$devkit"
+run_md4c_suite() {
+  local lane=$1 suite=$2 program=$3
+  local output=$run_dir/logs/$lane/upstream.log
+  : >"$output"
+  (
+    cd "$suite"
+    for spec in spec.txt regressions.txt spec-*.txt; do
+      echo "SPEC=$spec"
+      python3 run-testsuite.py -p "$program" -s "$spec"
+    done
+  ) >>"$output" 2>&1
+  (cd "$suite" && python3 pathological-tests.py -p "$program") >"$run_dir/logs/$lane/upstream-pathological.log" 2>&1
+  sed -E 's#^/.*/pathological-tests.py:#<SUITE>/pathological-tests.py:#; s/\[PASSED\] [0-9]+\.[0-9]+ secs/[PASSED] <TIME> secs/' "$run_dir/logs/$lane/upstream-pathological.log" >"$run_dir/logs/$lane/upstream-pathological-normalized.log"
+}
+native_runner=$work/tests/native/md2html-runner
+hecate_runner=$work/tests/guest/md2html-runner
+printf '%s\n' '#!/usr/bin/env bash' 'exec env LD_LIBRARY_PATH="$MD4C_NATIVE_LIB" "$MD4C_NATIVE_BIN" "$@"' >"$native_runner"
+printf '%s\n' '#!/usr/bin/env bash' 'exec env LD_LIBRARY_PATH="$MD4C_HOST_ENV" "$MD4C_QEMU" -L "$MD4C_SYSROOT" -E LD_BIND_NOW=1 -E "LD_LIBRARY_PATH=$MD4C_GUEST_ENV" "$MD4C_GUEST_BIN" "$@"' >"$hecate_runner"
+chmod +x "$native_runner" "$hecate_runner"
+export MD4C_NATIVE_LIB=$native_prefix/lib MD4C_NATIVE_BIN=$suite_native/bin/md2html
+export MD4C_HOST_ENV=$devkit/lib:$hecate_prefix/lib:$host_path MD4C_QEMU=$qemu MD4C_SYSROOT=$devkit/x86_64/sysroot MD4C_GUEST_ENV=$devkit/x86_64/lib:$guest_path MD4C_GUEST_BIN=$suite_guest/bin/md2html
+run_md4c_suite native "$suite_native" "$native_runner"
+run_md4c_suite hecate "$suite_guest" "$hecate_runner"
+for lane in native hecate; do
+  sed -E 's#^/.*/normalize.py:#<SUITE>/normalize.py:#' "$run_dir/logs/$lane/upstream.log" >"$run_dir/logs/$lane/upstream-normalized.log"
+done
+cmp "$run_dir/logs/native/upstream-normalized.log" "$run_dir/logs/hecate/upstream-normalized.log"
+cmp "$run_dir/logs/native/upstream-pathological-normalized.log" "$run_dir/logs/hecate/upstream-pathological-normalized.log"
+[[ $(grep -c ' passed, 0 failed, 0 errored, 0 skipped$' "$run_dir/logs/hecate/upstream.log") == 10 ]]
+grep -q '^29 passed, 0 failed, 0 errored$' "$run_dir/logs/hecate/upstream-pathological.log"
+python3 - "$run_dir/summary.json" <<'PY'
+import json, pathlib, sys
+path = pathlib.Path(sys.argv[1])
+data = json.loads(path.read_text())
+data["upstream"] = {"tests": 818, "native_exit_status": 0, "hecate_exit_status": 0, "output_match": True, "installed_by_vcpkg": True}
+path.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n")
+PY

@@ -21,7 +21,9 @@ while (($#)); do
 done
 [[ ${#positional[@]} == 1 ]] || { echo "Expected one devkit path" >&2; exit 2; }
 devkit=$(realpath "${positional[0]}")
-qemu=$(realpath -m "${QEMU:-$devkit/bin/qemu-x86_64}")
+default_qemu=$devkit/bin/qemu-x86_64
+[[ -x $default_qemu || ! -x $devkit/../../../qemu-ae/build/qemu-x86_64 ]] || default_qemu=$devkit/../../../qemu-ae/build/qemu-x86_64
+qemu=$(realpath -m "${QEMU:-$default_qemu}")
 vcpkg=$repo_root/vcpkg/vcpkg
 nm_tool=$(command -v llvm-nm-20 || command -v llvm-nm || command -v nm)
 work=$repo_root/.work/evaluations/libcsv
@@ -75,6 +77,11 @@ mkdir -p "$work/tests/native" "$work/tests/guest"
 run_logged "$run_dir/logs/preparation/test-native.log" cc -I"$native_prefix/include" "$recipe_dir/tests/workload.c" -L"$native_prefix/lib" -Wl,-rpath,"$native_prefix/lib" -lcsv -o "$work/tests/native/workload"
 run_logged "$run_dir/logs/preparation/test-guest.log" "$devkit/bin/x86_64-linux-gnu-clang" --sysroot="$devkit/x86_64/sysroot" -I"$guest_prefix/include" "$recipe_dir/tests/workload.c" -L"$guest_prefix/lib" -Wl,-rpath,"$guest_prefix/lib" -lcsv -o "$work/tests/guest/workload"
 "$nm_tool" -D --undefined-only --just-symbol-name "$work/tests/guest/workload" | sed 's/@.*//' | sort -u >"$run_dir/generated/guest-undefined.txt"
+suite_native=$native_prefix/tools/libcsv/upstream-tests
+suite_guest=$guest_prefix/tools/libcsv/upstream-tests
+for test_binary in "$suite_native/check_csv" "$suite_guest/check_csv"; do [[ -x $test_binary ]] || { echo "Installed check_csv not found" >&2; exit 1; }; done
+"$nm_tool" -D --undefined-only --just-symbol-name "$suite_guest/check_csv" | sed 's/@.*//' >>"$run_dir/generated/guest-undefined.txt"
+sort -u -o "$run_dir/generated/guest-undefined.txt" "$run_dir/generated/guest-undefined.txt"
 thunk_host=()
 thunk_guest=()
 index=0
@@ -122,7 +129,13 @@ pathlib.Path(out).write_text(json.dumps(data, indent=2, sort_keys=True) + "\n")
 raise SystemExit(0 if ok else 1)
 PY
 echo "Evidence: $run_dir"
-upstream_args=()
-$reference && upstream_args+=(--reference)
-$verbose && upstream_args+=(--verbose)
-"$recipe_dir/run-upstream.sh" "${upstream_args[@]}" "$devkit"
+LD_LIBRARY_PATH="$native_prefix/lib" "$suite_native/check_csv" >"$run_dir/logs/native/upstream.log" 2>&1
+env LD_LIBRARY_PATH="$devkit/lib:$hecate_prefix/lib:$host_path" "$qemu" -L "$devkit/x86_64/sysroot" -E LD_BIND_NOW=1 -E "LD_LIBRARY_PATH=$devkit/x86_64/lib:$guest_path" "$suite_guest/check_csv" >"$run_dir/logs/hecate/upstream.log" 2>&1
+cmp "$run_dir/logs/native/upstream.log" "$run_dir/logs/hecate/upstream.log"
+python3 - "$run_dir/summary.json" <<'PY'
+import json, pathlib, sys
+path = pathlib.Path(sys.argv[1])
+data = json.loads(path.read_text())
+data["upstream"] = {"tests": 1, "native_exit_status": 0, "hecate_exit_status": 0, "output_match": True, "installed_by_vcpkg": True}
+path.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n")
+PY

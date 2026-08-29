@@ -8,11 +8,10 @@ This recipe fetches the official libconfig 1.8.2 release through the pinned vcpk
 ./evaluations/1-libs/libconfig/run.sh /path/to/lorelei-devkit
 ./evaluations/1-libs/libconfig/run.sh --reference --verbose /path/to/lorelei-devkit
 ./evaluations/1-libs/libconfig/run.sh --install-only /path/to/lorelei-devkit
-./evaluations/1-libs/libconfig/run-upstream.sh --reference /path/to/lorelei-devkit
 ```
 
 ## Workload and scope
 
 The workload covers C API parsing of scalar, group and array settings, typed and indexed lookup, string access, and malformed-input rejection from memory. Success requires exit status zero and byte-identical output in native and Hecate lanes.
 
-Only the C API is claimed. The default runner continues with the upstream C test executable, which reports 16 of 16 tests passed. The standalone `run-upstream.sh` runs only that phase. The C++ DSO and examples remain excluded.
+Only the C API is claimed. The vcpkg port installs the upstream C test executable and data under `tools/libconfig/upstream-tests`. The self-contained `run.sh` executes all 16 C tests in symmetric native and Hecate lanes without a source-tree rebuild or pure-QEMU lane. The low-priority C++ API and examples remain excluded.

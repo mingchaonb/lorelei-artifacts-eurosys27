@@ -21,7 +21,9 @@ while (($#)); do
 done
 [[ ${#positional[@]} == 1 ]] || { echo "Expected one devkit path" >&2; exit 2; }
 devkit=$(realpath "${positional[0]}")
-qemu=$(realpath -m "${QEMU:-$devkit/bin/qemu-x86_64}")
+default_qemu=$devkit/bin/qemu-x86_64
+[[ -x $default_qemu || ! -x $devkit/../../../qemu-ae/build/qemu-x86_64 ]] || default_qemu=$devkit/../../../qemu-ae/build/qemu-x86_64
+qemu=$(realpath -m "${QEMU:-$default_qemu}")
 vcpkg=$repo_root/vcpkg/vcpkg
 nm_tool=$(command -v llvm-nm-20 || command -v llvm-nm || command -v nm)
 work=$repo_root/.work/evaluations/json-c
@@ -75,6 +77,14 @@ mkdir -p "$work/tests/native" "$work/tests/guest"
 run_logged "$run_dir/logs/preparation/test-native.log" cc -I"$native_prefix/include" "$recipe_dir/tests/workload.c" -L"$native_prefix/lib" -Wl,-rpath,"$native_prefix/lib" -ljson-c -o "$work/tests/native/workload"
 run_logged "$run_dir/logs/preparation/test-guest.log" "$devkit/bin/x86_64-linux-gnu-clang" --sysroot="$devkit/x86_64/sysroot" -I"$guest_prefix/include" "$recipe_dir/tests/workload.c" -L"$guest_prefix/lib" -Wl,-rpath,"$guest_prefix/lib" -ljson-c -o "$work/tests/guest/workload"
 "$nm_tool" -D --undefined-only --just-symbol-name "$work/tests/guest/workload" | sed 's/@.*//' | sort -u >"$run_dir/generated/guest-undefined.txt"
+suite_native=$native_prefix/tools/json-c/upstream-tests/tests
+suite_guest=$guest_prefix/tools/json-c/upstream-tests/tests
+mapfile -t installed_guest_tests < <(find "$suite_guest" "$guest_prefix/tools/json-c/upstream-tests/apps" -maxdepth 1 -type f -perm -111 | sort)
+[[ ${#installed_guest_tests[@]} -ge 30 ]] || { echo "Installed json-c test programs are incomplete" >&2; exit 1; }
+for test_binary in "${installed_guest_tests[@]}"; do
+  "$nm_tool" -D --undefined-only --just-symbol-name "$test_binary" | sed 's/@.*//' >>"$run_dir/generated/guest-undefined.txt"
+done
+sort -u -o "$run_dir/generated/guest-undefined.txt" "$run_dir/generated/guest-undefined.txt"
 thunk_host=()
 thunk_guest=()
 index=0
@@ -95,7 +105,7 @@ for pattern in "${patterns[@]}"; do
   thunk="$work/thunks/$lib_name"
   version_script=$overlay_dir/ports/json-c/lorelei/json-c.sym
   cp "$version_script" "$audit/json-c.sym"
-  run_logged "$run_dir/logs/preparation/thunk-$lib_name.log" "$devkit/bin/LoreMakeThunk.py" --name "$lib_name" --out "$thunk" --lib "$host_lib" --symbols "$audit/Symbols.conf" --desc "$overlay_dir/ports/json-c/lorelei/Desc.h" --gtl-alias "$(basename "$host_lib")" --gtl-arg=-Wl,--undefined-version --gtl-arg="-Wl,--version-script=$version_script" --devkit "$devkit" --keep-intermediates -- -I"$hecate_prefix/include" -I"$hecate_prefix/include/json-c"
+  run_logged "$run_dir/logs/preparation/thunk-$lib_name.log" "$devkit/bin/LoreMakeThunk.py" --name "$lib_name" --out "$thunk" --lib "$host_lib" --symbols "$audit/Symbols.conf" --desc "$overlay_dir/ports/json-c/lorelei/Desc.h" --gtl-alias "$(basename "$host_lib")" --htl-arg=-DLORE_THUNK_CALLBACK_REPLACE --gtl-arg=-DLORE_THUNK_CALLBACK_REPLACE --gtl-arg=-Wl,--undefined-version --gtl-arg="-Wl,--version-script=$version_script" --devkit "$devkit" --keep-intermediates -- -I"$hecate_prefix/include" -I"$hecate_prefix/include/json-c"
   cp "$thunk/.gen/$lib_name/ThunkStat.json" "$audit/ThunkStat.json"
   thunk_host+=("$thunk")
   thunk_guest+=("$thunk/x86_64")
@@ -103,6 +113,9 @@ for pattern in "${patterns[@]}"; do
 done
 host_path=$(IFS=:; echo "${thunk_host[*]}")
 guest_path=$(IFS=:; echo "${thunk_guest[*]}")
+host_libc=$(/usr/bin/cc -print-file-name=libc.so.6)
+run_logged "$run_dir/logs/preparation/thunk-errno-shim.log" "$devkit/bin/LoreMakeThunk.py" --name errno-shim --out "$work/thunk-errno-shim" --lib "$host_libc" --soname errno-shim.so --symbols "$recipe_dir/upstream/ErrnoSymbols.conf" --desc "$recipe_dir/upstream/ErrnoDesc.h" --devkit "$devkit" --keep-intermediates -- -D_GNU_SOURCE
+ln -sf "$host_libc" "$work/thunk-errno-shim/liberrno-shim.so"
 set +e
 LD_LIBRARY_PATH="$native_prefix/lib" "$work/tests/native/workload" 2>&1 | tee "$run_dir/logs/native/workload.log"
 native_status=${PIPESTATUS[0]}
@@ -123,7 +136,32 @@ pathlib.Path(out).write_text(json.dumps(data, indent=2, sort_keys=True) + "\n")
 raise SystemExit(0 if ok else 1)
 PY
 echo "Evidence: $run_dir"
-upstream_args=()
-$reference && upstream_args+=(--reference)
-$verbose && upstream_args+=(--verbose)
-"$recipe_dir/run-upstream.sh" "${upstream_args[@]}" "$devkit"
+jsonc_tests=(test_json_parse_cli test1 test2 test4 testReplaceExisting test_cast test_charcase test_compare test_deep_copy test_deep_nesting test_double_serializer test_float test_int_add test_int_get test_locale test_null test_parse test_parse_int64 test_printbuf test_set_serializer test_set_value test_strerror test_util_file test_visit test_object_iterator test_json_pointer test_safe_json_pointer_set test_json_patch)
+jsonc_runner=$work/tests/guest/json-c-runner
+printf '%s\n' '#!/usr/bin/env bash' 'exec env LD_LIBRARY_PATH="$JSONC_HOST_ENV" "$JSONC_QEMU" -L "$JSONC_SYSROOT" -E LD_BIND_NOW=1 -E "LD_PRELOAD=$JSONC_ERRNO_PRELOAD" -E "LD_LIBRARY_PATH=$JSONC_GUEST_ENV" "$@"' >"$jsonc_runner"
+chmod +x "$jsonc_runner"
+export JSONC_HOST_ENV=$devkit/lib:$hecate_prefix/lib:$host_path:$work/thunk-errno-shim JSONC_QEMU=$qemu JSONC_SYSROOT=$devkit/x86_64/sysroot JSONC_ERRNO_PRELOAD=$work/thunk-errno-shim/x86_64/liberrno-shim.so JSONC_GUEST_ENV=$devkit/x86_64/lib:$guest_path:$work/thunk-errno-shim/x86_64
+for lane in native hecate; do
+  output=$run_dir/logs/$lane/upstream.log
+  lane_suite=$suite_native
+  lane_root=$native_prefix/tools/json-c/upstream-tests
+  lane_runner=
+  lane_lib=$native_prefix/lib
+  if [[ $lane == hecate ]]; then lane_suite=$suite_guest; lane_root=$guest_prefix/tools/json-c/upstream-tests; lane_runner=$jsonc_runner; lane_lib=$guest_prefix/lib; fi
+  mkdir -p "$work/upstream/$lane"
+  : >"$output"
+  for test_name in "${jsonc_tests[@]}"; do
+    echo "RUN $test_name" >>"$output"
+    (cd "$work/upstream/$lane" && env LD_LIBRARY_PATH="$lane_lib" USE_VALGRIND=0 VERBOSE=0 srcdir="$lane_suite" top_builddir="$lane_root" JSONC_TEST_RUNNER="$lane_runner" /bin/sh "$lane_suite/$test_name.test") >>"$output" 2>&1
+    echo "PASS $test_name" >>"$output"
+  done
+done
+for lane in native hecate; do grep -E '^(RUN|PASS) ' "$run_dir/logs/$lane/upstream.log" >"$run_dir/logs/$lane/upstream-normalized.log"; done
+cmp "$run_dir/logs/native/upstream-normalized.log" "$run_dir/logs/hecate/upstream-normalized.log"
+python3 - "$run_dir/summary.json" <<'PY'
+import json, pathlib, sys
+path = pathlib.Path(sys.argv[1])
+data = json.loads(path.read_text())
+data["upstream"] = {"tests": 28, "native_exit_status": 0, "hecate_exit_status": 0, "output_match": True, "installed_by_vcpkg": True}
+path.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n")
+PY

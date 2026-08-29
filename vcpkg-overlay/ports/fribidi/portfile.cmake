@@ -1,12 +1,20 @@
 vcpkg_download_distfile(ARCHIVE URLS "https://github.com/fribidi/fribidi/releases/download/v${VERSION}/fribidi-${VERSION}.tar.xz" FILENAME "fribidi-${VERSION}.tar.xz" SHA512 e3a56f36155f6813e3609473639fc533de742309f561c463012dc90b412a1ac7694b765d92669b2cbfaee973ca0e92fa5e926e68a1a078921f26ef17d82ab651)
-vcpkg_extract_source_archive(SOURCE_PATH ARCHIVE "${ARCHIVE}" PATCHES meson-crosscompile.patch)
+vcpkg_extract_source_archive(SOURCE_PATH ARCHIVE "${ARCHIVE}" PATCHES patches/meson-crosscompile.patch)
 set(options)
 if(VCPKG_CROSSCOMPILING)
     cmake_path(NATIVE_PATH CURRENT_HOST_INSTALLED_DIR host_prefix)
     list(APPEND options "-Dpregenerated_tab=${host_prefix}/share/fribidi/gen.tab")
 endif()
-vcpkg_configure_meson(SOURCE_PATH "${SOURCE_PATH}" OPTIONS ${options} -Ddocs=false -Dbin=false -Dtests=false)
+vcpkg_configure_meson(SOURCE_PATH "${SOURCE_PATH}" OPTIONS ${options} -Ddocs=false -Dbin=true -Dtests=true)
 vcpkg_install_meson()
+set(test_build "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel")
+set(test_dest "${CURRENT_PACKAGES_DIR}/tools/fribidi/upstream-tests")
+file(INSTALL "${test_build}/bin/fribidi" DESTINATION "${test_dest}/bin" TYPE PROGRAM)
+file(INSTALL
+    "${test_build}/test/unicode-conformance/BidiTest"
+    "${test_build}/test/unicode-conformance/BidiCharacterTest"
+    DESTINATION "${test_dest}/bin" TYPE PROGRAM)
+file(COPY "${SOURCE_PATH}/test/" DESTINATION "${test_dest}/data")
 vcpkg_fixup_pkgconfig()
 if(VCPKG_CROSSCOMPILING)
     file(COPY "${CURRENT_HOST_INSTALLED_DIR}/share/fribidi/gen.tab/fribidi-unicode-version.h" DESTINATION "${CURRENT_PACKAGES_DIR}/include/fribidi")

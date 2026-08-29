@@ -8,11 +8,10 @@ This recipe fetches the official libcsv 3.0.3 release through the pinned vcpkg o
 ./evaluations/1-libs/libcsv/run.sh /path/to/lorelei-devkit
 ./evaluations/1-libs/libcsv/run.sh --reference --verbose /path/to/lorelei-devkit
 ./evaluations/1-libs/libcsv/run.sh --install-only /path/to/lorelei-devkit
-./evaluations/1-libs/libcsv/run-upstream.sh --reference /path/to/lorelei-devkit
 ```
 
 ## Workload and scope
 
 The workload covers strict incremental CSV parsing, quoted fields, LF and CRLF rows, repeated synchronous field and row callbacks, and allocator callbacks stored in the parser and invoked by later calls. Success requires exit status zero and byte-identical output in native and Hecate lanes.
 
-The default runner continues with the complete upstream `check_csv` executable. The standalone `run-upstream.sh` runs only that phase.
+The vcpkg port installs the complete upstream `check_csv` executable under `tools/libcsv/upstream-tests`. The self-contained `run.sh` executes it in symmetric native and Hecate lanes without a source-tree rebuild or pure-QEMU lane.

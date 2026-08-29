@@ -4,6 +4,7 @@ project(libdatrie LANGUAGES C)
 option(SKIP_HEADERS "Skip headers" OFF)
 option(SKIP_TOOL "Skip tool" OFF)
 option(BUILD_SHARED_LIBS "Build shared libs" OFF)
+option(BUILD_TESTS "Build upstream tests" OFF)
 
 set(LIB_SRCS
     datrie/alpha-map.c
@@ -70,6 +71,26 @@ if (NOT SKIP_TOOL)
         TARGETS trietool
         RUNTIME DESTINATION bin
     )
+endif()
+
+if(BUILD_TESTS)
+    set(UPSTREAM_TESTS
+        test_walk
+        test_iterator
+        test_store-retrieve
+        test_file
+        test_serialization
+        test_nonalpha
+        test_null_trie
+        test_term_state
+        test_byte_alpha
+        test_byte_list
+    )
+    foreach(test_name IN LISTS UPSTREAM_TESTS)
+        add_executable(${test_name} "tests/${test_name}.c" "tests/utils.c")
+        target_link_libraries(${test_name} PRIVATE libdatrie)
+        install(TARGETS ${test_name} RUNTIME DESTINATION tools/libdatrie/upstream-tests)
+    endforeach()
 endif()
 
 install(

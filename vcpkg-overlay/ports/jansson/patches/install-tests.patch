@@ -1,0 +1,18 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index d74b171..9ee1415 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -577,6 +577,13 @@ if (NOT JANSSON_WITHOUT_TESTS)
+        endforeach ()
+    endforeach ()
+ 
++   install(TARGETS json_process ${api_tests}
++       RUNTIME DESTINATION tools/jansson/upstream-tests/bin
++   )
++   install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test/suites/
++       DESTINATION tools/jansson/upstream-tests/suites
++   )
++
+    if (JANSSON_COVERAGE)
+       SETUP_TARGET_FOR_COVERAGE(coverage coverage ctest)
+    endif ()

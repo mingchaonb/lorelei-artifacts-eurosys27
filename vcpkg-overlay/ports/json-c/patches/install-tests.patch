@@ -1,0 +1,46 @@
+diff --git a/apps/CMakeLists.txt b/apps/CMakeLists.txt
+index d334c1d..904519f 100644
+--- a/apps/CMakeLists.txt
++++ b/apps/CMakeLists.txt
+@@ -118,6 +118,9 @@ include_directories(${PROJECT_BINARY_DIR})
+ 
+ add_executable(json_parse json_parse.c)
+ target_link_libraries(json_parse PRIVATE ${APPS_LINK_LIBS})
++install(TARGETS json_parse
++    RUNTIME DESTINATION tools/json-c/upstream-tests/apps
++)
+ 
+ # Note: it is intentional that there are no install instructions here yet.
+ # When/if the interface of the app(s) listed here settles down enough to
+diff --git a/tests/CMakeLists.txt b/tests/CMakeLists.txt
+index 584ad50..77066db 100644
+--- a/tests/CMakeLists.txt
++++ b/tests/CMakeLists.txt
+@@ -73,2 +73,13 @@ target_link_libraries(
+ 
+ endforeach(TESTNAME)
++install(TARGETS test1Formatted test2Formatted ${ALL_TEST_NAMES}
++    RUNTIME DESTINATION tools/json-c/upstream-tests/tests
++)
++install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
++    DESTINATION tools/json-c/upstream-tests/tests
++    FILES_MATCHING
++        PATTERN "*.test"
++        PATTERN "*.expected"
++        PATTERN "*.json"
++        PATTERN "*.sh"
++)
+diff --git a/tests/test-defs.sh b/tests/test-defs.sh
+index 087a3ae..2f588bc 100644
+--- a/tests/test-defs.sh
++++ b/tests/test-defs.sh
+@@ -115,7 +115,8 @@ run_output_test()
+ 		exitval=$?
+ 
+ 	else
+-		eval "\"${top_builddir}/${TEST_COMMAND}"\" \"\$@\" ${REDIR_OUTPUT}
++		if [ -n "${JSONC_TEST_RUNNER:-}" ]; then TEST_PREFIX="\"${JSONC_TEST_RUNNER}\" "; else TEST_PREFIX=""; fi
++		eval "${TEST_PREFIX}\"${top_builddir}/${TEST_COMMAND}\"" \"\$@\" ${REDIR_OUTPUT}
+ 		exitval=$?
+ 	fi
+ 

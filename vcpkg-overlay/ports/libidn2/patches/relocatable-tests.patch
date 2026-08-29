@@ -1,0 +1,22 @@
+diff --git a/tests/Makefile.in b/tests/Makefile.in
+--- a/tests/Makefile.in
++++ b/tests/Makefile.in
+@@ -1984,6 +1984,6 @@ unistringtests_WITNESS = @unistringtests_WITNESS@
+ AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/lib \
+ 	-I$(top_builddir)/lib -I$(srcdir) -I$(top_builddir) \
+-	-I$(top_builddir)/gl -I$(top_srcdir)/gl -DSRCDIR=\"$(srcdir)\" \
++	-I$(top_builddir)/gl -I$(top_srcdir)/gl -DSRCDIR=\".\" \
+ 	-I$(top_srcdir)/unistring/ -I$(top_builddir)/unistring/
+ AM_CFLAGS = $(WERROR_CFLAGS) $(WERROR_TESTS_CFLAGS) $(WARN_CFLAGS)
+ AM_LDFLAGS = -no-install
+diff --git a/fuzz/Makefile.in b/fuzz/Makefile.in
+--- a/fuzz/Makefile.in
++++ b/fuzz/Makefile.in
+@@ -1930,6 +1930,6 @@ unistringtests_LTLIBOBJS = @unistringtests_LTLIBOBJS@
+ unistringtests_WITNESS = @unistringtests_WITNESS@
+ AM_CFLAGS = $(WARN_CFLAGS)
+-AM_CPPFLAGS = -I$(top_srcdir)/lib -I../lib -I$(top_srcdir)/gl -I../gl -DSRCDIR=\"$(abs_srcdir)\" -DTEST_RUN
++AM_CPPFLAGS = -I$(top_srcdir)/lib -I../lib -I$(top_srcdir)/gl -I../gl -DSRCDIR=\".\" -DTEST_RUN
+ AM_LDFLAGS = -no-install
+ LDADD = ../lib/libidn2.la ../gl/libgnu.la $(LTLIBUNISTRING)
+ IDN_TESTS = \

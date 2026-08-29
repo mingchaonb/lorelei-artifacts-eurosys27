@@ -1,0 +1,15 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 2a24d0c..2bfe09b 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -57,4 +57,10 @@ include(GNUInstallDirs)
+ add_subdirectory(src)
+ if (BUILD_MD2HTML_EXECUTABLE)
+     add_subdirectory(md2html)
++    install(TARGETS md2html
++        RUNTIME DESTINATION tools/md4c/upstream-tests/bin
++    )
++    install(DIRECTORY ${PROJECT_SOURCE_DIR}/test/
++        DESTINATION tools/md4c/upstream-tests
++    )
+ endif ()

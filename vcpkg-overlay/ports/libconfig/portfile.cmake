@@ -1,5 +1,5 @@
-vcpkg_from_github(OUT_SOURCE_PATH SOURCE_PATH REPO hyperrealm/libconfig REF "v${VERSION}" SHA512 c3ed6c8f500b449c4d94976745a3acba1c7176f87497d5cb0deb05e62f2ff009ca0636c7c9848601f6d92dd113d82983cbd1132735f0f2d4e40b32d257f4aaa7 HEAD_REF master)
-vcpkg_cmake_configure(SOURCE_PATH "${SOURCE_PATH}" OPTIONS -DBUILD_SHARED_LIBS=ON -DBUILD_CXX=OFF -DBUILD_EXAMPLES=OFF -DBUILD_TESTS=OFF)
+vcpkg_from_github(OUT_SOURCE_PATH SOURCE_PATH REPO hyperrealm/libconfig REF "v${VERSION}" SHA512 c3ed6c8f500b449c4d94976745a3acba1c7176f87497d5cb0deb05e62f2ff009ca0636c7c9848601f6d92dd113d82983cbd1132735f0f2d4e40b32d257f4aaa7 HEAD_REF master PATCHES patches/install-tests.patch)
+vcpkg_cmake_configure(SOURCE_PATH "${SOURCE_PATH}" OPTIONS -DBUILD_SHARED_LIBS=ON -DBUILD_CXX=OFF -DBUILD_EXAMPLES=OFF -DBUILD_TESTS=ON)
 vcpkg_cmake_install()
 vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/libconfig)
 vcpkg_fixup_pkgconfig()

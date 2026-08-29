@@ -1,0 +1,9 @@
+diff --git a/fuzz/Makefile.in b/fuzz/Makefile.in
+--- a/fuzz/Makefile.in
++++ b/fuzz/Makefile.in
+@@ -711,4 +711,4 @@
+ AM_CFLAGS = $(WERROR_CFLAGS) $(WARN_CFLAGS)
+ AM_CPPFLAGS = -I$(top_srcdir)/include -I$(srcdir) \
+-	-DSRCDIR=\"$(abs_srcdir)\" $(am__append_2)
++	-DSRCDIR=\".\" $(am__append_2)
+ #AM_LDFLAGS = -static

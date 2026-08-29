@@ -21,7 +21,9 @@ while (($#)); do
 done
 [[ ${#positional[@]} == 1 ]] || { echo "Expected one devkit path" >&2; exit 2; }
 devkit=$(realpath "${positional[0]}")
-qemu=$(realpath -m "${QEMU:-$devkit/bin/qemu-x86_64}")
+default_qemu=$devkit/bin/qemu-x86_64
+[[ -x $default_qemu || ! -x $devkit/../../../qemu-ae/build/qemu-x86_64 ]] || default_qemu=$devkit/../../../qemu-ae/build/qemu-x86_64
+qemu=$(realpath -m "${QEMU:-$default_qemu}")
 vcpkg=$repo_root/vcpkg/vcpkg
 nm_tool=$(command -v llvm-nm-20 || command -v llvm-nm || command -v nm)
 work=$repo_root/.work/evaluations/libpsl
@@ -75,6 +77,14 @@ mkdir -p "$work/tests/native" "$work/tests/guest"
 run_logged "$run_dir/logs/preparation/test-native.log" cc -I"$native_prefix/include" "$recipe_dir/tests/workload.c" -L"$native_prefix/lib" -Wl,-rpath,"$native_prefix/lib" -lpsl -o "$work/tests/native/workload"
 run_logged "$run_dir/logs/preparation/test-guest.log" "$devkit/bin/x86_64-linux-gnu-clang" --sysroot="$devkit/x86_64/sysroot" -I"$guest_prefix/include" "$recipe_dir/tests/workload.c" -L"$guest_prefix/lib" -Wl,-rpath,"$guest_prefix/lib" -lpsl -o "$work/tests/guest/workload"
 "$nm_tool" -D --undefined-only --just-symbol-name "$work/tests/guest/workload" | sed 's/@.*//' | sort -u >"$run_dir/generated/guest-undefined.txt"
+suite_native=$native_prefix/tools/libpsl/upstream-tests
+suite_guest=$guest_prefix/tools/libpsl/upstream-tests
+mapfile -t upstream_tests < <(find "$suite_guest/bin" -maxdepth 1 -type f -perm -111 -printf '%f\n' | sort)
+[[ ${#upstream_tests[@]} == 8 ]] || { echo "Expected 8 installed libpsl tests" >&2; exit 1; }
+for test_name in "${upstream_tests[@]}"; do
+  "$nm_tool" -D --undefined-only --just-symbol-name "$suite_guest/bin/$test_name" | sed 's/@.*//' >>"$run_dir/generated/guest-undefined.txt"
+done
+sort -u -o "$run_dir/generated/guest-undefined.txt" "$run_dir/generated/guest-undefined.txt"
 thunk_host=()
 thunk_guest=()
 index=0
@@ -93,7 +103,7 @@ for pattern in "${patterns[@]}"; do
   { echo '[Function]'; cat "$audit/used-functions.txt"; } >"$audit/Symbols.conf"
   [[ -s $audit/used-functions.txt ]] || { echo "No tested functions found for $lib_name" >&2; exit 1; }
   thunk="$work/thunks/$lib_name"
-  run_logged "$run_dir/logs/preparation/thunk-$lib_name.log" "$devkit/bin/LoreMakeThunk.py" --name "$lib_name" --out "$thunk" --lib "$host_lib" --symbols "$audit/Symbols.conf" --desc "$overlay_dir/ports/libpsl/lorelei/Desc.h" --gtl-alias "$(basename "$host_lib")" --devkit "$devkit" --keep-intermediates -- -I"$hecate_prefix/include"
+  run_logged "$run_dir/logs/preparation/thunk-$lib_name.log" "$devkit/bin/LoreMakeThunk.py" --name "$lib_name" --out "$thunk" --lib "$host_lib" --symbols "$audit/Symbols.conf" --desc "$overlay_dir/ports/libpsl/lorelei/Desc.h" --manifest-guest "$overlay_dir/ports/libpsl/lorelei/Manifest_guest.cpp" --gtl-alias "$(basename "$host_lib")" --devkit "$devkit" --keep-intermediates -- -I"$hecate_prefix/include" -I"$recipe_dir/upstream/include"
   cp "$thunk/.gen/$lib_name/ThunkStat.json" "$audit/ThunkStat.json"
   thunk_host+=("$thunk")
   thunk_guest+=("$thunk/x86_64")
@@ -101,13 +111,17 @@ for pattern in "${patterns[@]}"; do
 done
 host_path=$(IFS=:; echo "${thunk_host[*]}")
 guest_path=$(IFS=:; echo "${thunk_guest[*]}")
+libc_shim=$recipe_dir/upstream/libc-shim
+host_libc=$(cc -print-file-name=libc.so.6)
+run_logged "$run_dir/logs/preparation/thunk-libc-shim.log" "$devkit/bin/LoreMakeThunk.py" --name c-shim --out "$work/thunk-libc-shim" --lib "$host_libc" --soname libc-shim.so --symbols "$libc_shim/Symbols.conf" --desc "$libc_shim/Desc.h" --manifest-host "$libc_shim/Manifest_host.cpp" --manifest-guest "$libc_shim/Manifest_guest.cpp" --devkit "$devkit" --keep-intermediates -- -D_GNU_SOURCE -I"$recipe_dir/upstream/include"
+ln -sf "$host_libc" "$work/thunk-libc-shim/libc-shim.so"
 set +e
 LD_LIBRARY_PATH="$native_prefix/lib" "$work/tests/native/workload" 2>&1 | tee "$run_dir/logs/native/workload.log"
 native_status=${PIPESTATUS[0]}
 set -e
 printf '%s\n' "$native_status" >"$run_dir/logs/native/exit-status.txt"
 set +e
-env LD_LIBRARY_PATH="$devkit/lib:$hecate_prefix/lib:$host_path" "$qemu" -L "$devkit/x86_64/sysroot" -E LD_BIND_NOW=1 -E "LD_LIBRARY_PATH=$devkit/x86_64/lib:$guest_path" "$work/tests/guest/workload" 2>&1 | tee "$run_dir/logs/hecate/workload.log"
+env LD_LIBRARY_PATH="$devkit/lib:$hecate_prefix/lib:$host_path:$work/thunk-libc-shim" "$qemu" -L "$devkit/x86_64/sysroot" -E LD_BIND_NOW=1 -E "LD_PRELOAD=$work/thunk-libc-shim/x86_64/libc-shim.so" -E "LD_LIBRARY_PATH=$devkit/x86_64/lib:$guest_path:$work/thunk-libc-shim/x86_64" "$work/tests/guest/workload" 2>&1 | tee "$run_dir/logs/hecate/workload.log"
 hecate_status=${PIPESTATUS[0]}
 set -e
 printf '%s\n' "$hecate_status" >"$run_dir/logs/hecate/exit-status.txt"
@@ -121,7 +135,27 @@ pathlib.Path(out).write_text(json.dumps(data, indent=2, sort_keys=True) + "\n")
 raise SystemExit(0 if ok else 1)
 PY
 echo "Evidence: $run_dir"
-upstream_args=()
-$reference && upstream_args+=(--reference)
-$verbose && upstream_args+=(--verbose)
-"$recipe_dir/run-upstream.sh" "${upstream_args[@]}" "$devkit"
+for lane in native hecate; do
+  suite=$suite_native
+  [[ $lane == hecate ]] && suite=$suite_guest
+  output=$run_dir/logs/$lane/upstream.log
+  : >"$output"
+  for test_name in "${upstream_tests[@]}"; do
+    echo "RUN $test_name" >>"$output"
+    if [[ $lane == native ]]; then
+      (cd "$suite/data/run/a" && env LD_LIBRARY_PATH="$native_prefix/lib" "$suite/bin/$test_name") >>"$output" 2>&1
+    else
+      (cd "$suite/data/run/a" && env LD_LIBRARY_PATH="$devkit/lib:$hecate_prefix/lib:$host_path:$work/thunk-libc-shim" "$qemu" -L "$devkit/x86_64/sysroot" -E LD_BIND_NOW=1 -E "LD_PRELOAD=$work/thunk-libc-shim/x86_64/libc-shim.so" -E "LD_LIBRARY_PATH=$devkit/x86_64/lib:$guest_path:$work/thunk-libc-shim/x86_64" "$suite/bin/$test_name") >>"$output" 2>&1
+    fi
+    echo "PASS $test_name" >>"$output"
+  done
+  grep -E '^(RUN|PASS) ' "$output" >"$run_dir/logs/$lane/upstream-status.log"
+done
+cmp "$run_dir/logs/native/upstream-status.log" "$run_dir/logs/hecate/upstream-status.log"
+python3 - "$run_dir/summary.json" <<'PY'
+import json, pathlib, sys
+path = pathlib.Path(sys.argv[1])
+data = json.loads(path.read_text())
+data["upstream"] = {"tests": 8, "native_exit_status": 0, "hecate_exit_status": 0, "output_match": True, "installed_by_vcpkg": True}
+path.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n")
+PY

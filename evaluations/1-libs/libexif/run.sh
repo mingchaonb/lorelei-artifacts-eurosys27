@@ -21,7 +21,9 @@ while (($#)); do
 done
 [[ ${#positional[@]} == 1 ]] || { echo "Expected one devkit path" >&2; exit 2; }
 devkit=$(realpath "${positional[0]}")
-qemu=$(realpath -m "${QEMU:-$devkit/bin/qemu-x86_64}")
+default_qemu=$devkit/bin/qemu-x86_64
+[[ -x $default_qemu || ! -x $devkit/../../../qemu-ae/build/qemu-x86_64 ]] || default_qemu=$devkit/../../../qemu-ae/build/qemu-x86_64
+qemu=$(realpath -m "${QEMU:-$default_qemu}")
 vcpkg=$repo_root/vcpkg/vcpkg
 nm_tool=$(command -v llvm-nm-20 || command -v llvm-nm || command -v nm)
 work=$repo_root/.work/evaluations/libexif
@@ -75,6 +77,12 @@ mkdir -p "$work/tests/native" "$work/tests/guest"
 run_logged "$run_dir/logs/preparation/test-native.log" cc -I"$native_prefix/include" "$recipe_dir/tests/workload.c" -L"$native_prefix/lib" -Wl,-rpath,"$native_prefix/lib" -lexif -o "$work/tests/native/workload"
 run_logged "$run_dir/logs/preparation/test-guest.log" "$devkit/bin/x86_64-linux-gnu-clang" --sysroot="$devkit/x86_64/sysroot" -I"$guest_prefix/include" "$recipe_dir/tests/workload.c" -L"$guest_prefix/lib" -Wl,-rpath,"$guest_prefix/lib" -lexif -o "$work/tests/guest/workload"
 "$nm_tool" -D --undefined-only --just-symbol-name "$work/tests/guest/workload" | sed 's/@.*//' | sort -u >"$run_dir/generated/guest-undefined.txt"
+suite_native=$native_prefix/tools/libexif/upstream-tests
+suite_guest=$guest_prefix/tools/libexif/upstream-tests
+mapfile -t upstream_bins < <(find "$suite_guest/bin" -maxdepth 1 -type f -perm -111 -printf '%f\n' | sort)
+[[ ${#upstream_bins[@]} == 12 ]] || { echo "Expected 12 installed libexif test binaries" >&2; exit 1; }
+for test_name in "${upstream_bins[@]}"; do "$nm_tool" -D --undefined-only --just-symbol-name "$suite_guest/bin/$test_name" | sed 's/@.*//' >>"$run_dir/generated/guest-undefined.txt"; done
+sort -u -o "$run_dir/generated/guest-undefined.txt" "$run_dir/generated/guest-undefined.txt"
 thunk_host=()
 thunk_guest=()
 index=0
@@ -93,7 +101,7 @@ for pattern in "${patterns[@]}"; do
   { echo '[Function]'; cat "$audit/used-functions.txt"; } >"$audit/Symbols.conf"
   [[ -s $audit/used-functions.txt ]] || { echo "No tested functions found for $lib_name" >&2; exit 1; }
   thunk="$work/thunks/$lib_name"
-  run_logged "$run_dir/logs/preparation/thunk-$lib_name.log" "$devkit/bin/LoreMakeThunk.py" --name "$lib_name" --out "$thunk" --lib "$host_lib" --symbols "$audit/Symbols.conf" --desc "$overlay_dir/ports/libexif/lorelei/Desc.h" --gtl-alias "$(basename "$host_lib")" --devkit "$devkit" --keep-intermediates -- -I"$hecate_prefix/include"
+  run_logged "$run_dir/logs/preparation/thunk-$lib_name.log" "$devkit/bin/LoreMakeThunk.py" --name "$lib_name" --out "$thunk" --lib "$host_lib" --symbols "$audit/Symbols.conf" --desc "$overlay_dir/ports/libexif/lorelei/Desc.h" --gtl-alias "$(basename "$host_lib")" --devkit "$devkit" --keep-intermediates -- -I"$hecate_prefix/include" -I"$recipe_dir/upstream/include"
   cp "$thunk/.gen/$lib_name/ThunkStat.json" "$audit/ThunkStat.json"
   thunk_host+=("$thunk")
   thunk_guest+=("$thunk/x86_64")
@@ -101,6 +109,10 @@ for pattern in "${patterns[@]}"; do
 done
 host_path=$(IFS=:; echo "${thunk_host[*]}")
 guest_path=$(IFS=:; echo "${thunk_guest[*]}")
+libc_shim=$recipe_dir/upstream/libc-shim
+host_libc=$(cc -print-file-name=libc.so.6)
+run_logged "$run_dir/logs/preparation/thunk-libc-shim.log" "$devkit/bin/LoreMakeThunk.py" --name c-shim --out "$work/thunk-libc-shim" --lib "$host_libc" --soname libc-shim.so --symbols "$libc_shim/Symbols.conf" --desc "$libc_shim/Desc.h" --manifest-host "$libc_shim/Manifest_host.cpp" --manifest-guest "$libc_shim/Manifest_guest.cpp" --devkit "$devkit" --keep-intermediates -- -D_GNU_SOURCE -I"$recipe_dir/upstream/include"
+ln -sf "$host_libc" "$work/thunk-libc-shim/libc-shim.so"
 set +e
 LD_LIBRARY_PATH="$native_prefix/lib" "$work/tests/native/workload" 2>&1 | tee "$run_dir/logs/native/workload.log"
 native_status=${PIPESTATUS[0]}
@@ -121,7 +133,41 @@ pathlib.Path(out).write_text(json.dumps(data, indent=2, sort_keys=True) + "\n")
 raise SystemExit(0 if ok else 1)
 PY
 echo "Evidence: $run_dir"
-upstream_args=()
-$reference && upstream_args+=(--reference)
-$verbose && upstream_args+=(--verbose)
-"$recipe_dir/run-upstream.sh" "${upstream_args[@]}" "$devkit"
+direct_tests=(test-mem test-value test-integers test-parse test-parse-from-data test-tagtable test-sorted test-fuzzer test-null test-gps)
+script_tests=(parse-regression.sh swap-byte-order.sh extract-parse.sh check-mnote.sh)
+for lane in native hecate; do
+  suite=$suite_native
+  [[ $lane == hecate ]] && suite=$suite_guest
+  runtime=$work/upstream/$lane
+  mkdir -p "$runtime"
+  for test_name in "${upstream_bins[@]}"; do
+    if [[ $lane == native ]]; then
+      ln -sf "$suite/bin/$test_name" "$runtime/$test_name"
+    else
+      printf '%s\n' '#!/usr/bin/env bash' 'name=$(basename "$0")' 'exec env LD_LIBRARY_PATH="$LORE_HOST_PATH" "$LORE_QEMU" -L "$LORE_SYSROOT" -E LD_BIND_NOW=1 -E "LD_PRELOAD=$LORE_GUEST_PRELOAD" -E "LD_LIBRARY_PATH=$LORE_GUEST_PATH" "$LORE_BIN_DIR/$name" "$@"' >"$runtime/$test_name"
+      chmod +x "$runtime/$test_name"
+    fi
+  done
+  output=$run_dir/logs/$lane/upstream.log
+  : >"$output"
+  for test_name in "${direct_tests[@]}"; do
+    echo "RUN $test_name" >>"$output"
+    (cd "$runtime" && env LC_ALL=C LD_LIBRARY_PATH="$native_prefix/lib" LORE_HOST_PATH="$devkit/lib:$hecate_prefix/lib:$host_path:$work/thunk-libc-shim" LORE_QEMU="$qemu" LORE_SYSROOT="$devkit/x86_64/sysroot" LORE_GUEST_PRELOAD="$work/thunk-libc-shim/x86_64/libc-shim.so" LORE_GUEST_PATH="$devkit/x86_64/lib:$guest_path:$work/thunk-libc-shim/x86_64" LORE_BIN_DIR="$suite/bin" "./$test_name") >>"$output" 2>&1
+    echo "PASS $test_name" >>"$output"
+  done
+  for test_name in "${script_tests[@]}"; do
+    echo "RUN $test_name" >>"$output"
+    (cd "$runtime" && env LC_ALL=C srcdir="$suite/data" LD_LIBRARY_PATH="$native_prefix/lib" LORE_HOST_PATH="$devkit/lib:$hecate_prefix/lib:$host_path:$work/thunk-libc-shim" LORE_QEMU="$qemu" LORE_SYSROOT="$devkit/x86_64/sysroot" LORE_GUEST_PRELOAD="$work/thunk-libc-shim/x86_64/libc-shim.so" LORE_GUEST_PATH="$devkit/x86_64/lib:$guest_path:$work/thunk-libc-shim/x86_64" LORE_BIN_DIR="$suite/bin" sh "$suite/data/$test_name") >>"$output" 2>&1
+    echo "PASS $test_name" >>"$output"
+  done
+  echo "SKIP check-failmalloc.sh optional libfailmalloc unavailable" >>"$output"
+  grep -E '^(RUN|PASS|SKIP) ' "$output" >"$run_dir/logs/$lane/upstream-status.log"
+done
+cmp "$run_dir/logs/native/upstream-status.log" "$run_dir/logs/hecate/upstream-status.log"
+python3 - "$run_dir/summary.json" <<'PY'
+import json, pathlib, sys
+path = pathlib.Path(sys.argv[1])
+data = json.loads(path.read_text())
+data["upstream"] = {"tests": 15, "passed": 14, "skipped": 1, "native_exit_status": 0, "hecate_exit_status": 0, "output_match": True, "installed_by_vcpkg": True, "skip_reason": "optional libfailmalloc unavailable"}
+path.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n")
+PY

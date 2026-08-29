@@ -1,0 +1,16 @@
+diff --git a/tests/CMakeLists.txt b/tests/CMakeLists.txt
+index 8dd0a31..9f5fb4b 100644
+--- a/tests/CMakeLists.txt
++++ b/tests/CMakeLists.txt
+@@ -18,3 +18,11 @@ add_test(
+     COMMAND libconfig_tests
+     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/tests
+ )
++
++install(TARGETS libconfig_tests
++    RUNTIME DESTINATION tools/libconfig/upstream-tests
++)
++install(DIRECTORY ${PROJECT_SOURCE_DIR}/tests/testdata
++    DESTINATION tools/libconfig/upstream-tests/data
++    FILES_MATCHING PATTERN "*.cfg"
++)

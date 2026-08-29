@@ -21,7 +21,9 @@ while (($#)); do
 done
 [[ ${#positional[@]} == 1 ]] || { echo "Expected one devkit path" >&2; exit 2; }
 devkit=$(realpath "${positional[0]}")
-qemu=$(realpath -m "${QEMU:-$devkit/bin/qemu-x86_64}")
+default_qemu=$devkit/bin/qemu-x86_64
+[[ -x $default_qemu || ! -x $devkit/../../../qemu-ae/build/qemu-x86_64 ]] || default_qemu=$devkit/../../../qemu-ae/build/qemu-x86_64
+qemu=$(realpath -m "${QEMU:-$default_qemu}")
 vcpkg=$repo_root/vcpkg/vcpkg
 nm_tool=$(command -v llvm-nm-20 || command -v llvm-nm || command -v nm)
 work=$repo_root/.work/evaluations/jansson
@@ -75,6 +77,14 @@ mkdir -p "$work/tests/native" "$work/tests/guest"
 run_logged "$run_dir/logs/preparation/test-native.log" cc -I"$native_prefix/include" "$recipe_dir/tests/workload.c" -L"$native_prefix/lib" -Wl,-rpath,"$native_prefix/lib" -ljansson -o "$work/tests/native/workload"
 run_logged "$run_dir/logs/preparation/test-guest.log" "$devkit/bin/x86_64-linux-gnu-clang" --sysroot="$devkit/x86_64/sysroot" -I"$guest_prefix/include" "$recipe_dir/tests/workload.c" -L"$guest_prefix/lib" -Wl,-rpath,"$guest_prefix/lib" -ljansson -o "$work/tests/guest/workload"
 "$nm_tool" -D --undefined-only --just-symbol-name "$work/tests/guest/workload" | sed 's/@.*//' | sort -u >"$run_dir/generated/guest-undefined.txt"
+suite_native=$native_prefix/tools/jansson/upstream-tests
+suite_guest=$guest_prefix/tools/jansson/upstream-tests
+mapfile -t installed_guest_tests < <(find "$suite_guest/bin" -maxdepth 1 -type f -perm -111 | sort)
+[[ ${#installed_guest_tests[@]} == 20 ]] || { echo "Expected 20 installed Jansson test programs" >&2; exit 1; }
+for test_binary in "${installed_guest_tests[@]}"; do
+  "$nm_tool" -D --undefined-only --just-symbol-name "$test_binary" | sed 's/@.*//' >>"$run_dir/generated/guest-undefined.txt"
+done
+sort -u -o "$run_dir/generated/guest-undefined.txt" "$run_dir/generated/guest-undefined.txt"
 thunk_host=()
 thunk_guest=()
 index=0
@@ -95,7 +105,7 @@ for pattern in "${patterns[@]}"; do
   thunk="$work/thunks/$lib_name"
   version_script=$overlay_dir/ports/jansson/lorelei/jansson.sym
   cp "$version_script" "$audit/jansson.sym"
-  run_logged "$run_dir/logs/preparation/thunk-$lib_name.log" "$devkit/bin/LoreMakeThunk.py" --name "$lib_name" --out "$thunk" --lib "$host_lib" --symbols "$audit/Symbols.conf" --desc "$overlay_dir/ports/jansson/lorelei/Desc.h" --gtl-alias "$(basename "$host_lib")" --gtl-arg=-Wl,--undefined-version --gtl-arg="-Wl,--version-script=$version_script" --devkit "$devkit" --keep-intermediates -- -I"$hecate_prefix/include"
+  run_logged "$run_dir/logs/preparation/thunk-$lib_name.log" "$devkit/bin/LoreMakeThunk.py" --name "$lib_name" --out "$thunk" --lib "$host_lib" --symbols "$audit/Symbols.conf" --desc "$overlay_dir/ports/jansson/lorelei/Desc.h" --manifest-guest "$overlay_dir/ports/jansson/lorelei/Manifest_guest.cpp" --gtl-alias "$(basename "$host_lib")" --gtl-arg=-Wl,--undefined-version --gtl-arg="-Wl,--version-script=$version_script" --devkit "$devkit" --keep-intermediates -- -I"$hecate_prefix/include" -I"$recipe_dir/upstream/include"
   cp "$thunk/.gen/$lib_name/ThunkStat.json" "$audit/ThunkStat.json"
   thunk_host+=("$thunk")
   thunk_guest+=("$thunk/x86_64")
@@ -103,6 +113,10 @@ for pattern in "${patterns[@]}"; do
 done
 host_path=$(IFS=:; echo "${thunk_host[*]}")
 guest_path=$(IFS=:; echo "${thunk_guest[*]}")
+libc_shim=$recipe_dir/upstream/libc-shim
+host_libc=$(/usr/bin/cc -print-file-name=libc.so.6)
+run_logged "$run_dir/logs/preparation/thunk-libc-shim.log" "$devkit/bin/LoreMakeThunk.py" --name c-shim --out "$work/thunk-libc-shim" --lib "$host_libc" --soname libc-shim.so --symbols "$libc_shim/Symbols.conf" --desc "$libc_shim/Desc.h" --manifest-host "$libc_shim/Manifest_host.cpp" --manifest-guest "$libc_shim/Manifest_guest.cpp" --devkit "$devkit" --keep-intermediates -- -D_GNU_SOURCE -I"$recipe_dir/upstream/include"
+ln -sf "$host_libc" "$work/thunk-libc-shim/libc-shim.so"
 set +e
 LD_LIBRARY_PATH="$native_prefix/lib" "$work/tests/native/workload" 2>&1 | tee "$run_dir/logs/native/workload.log"
 native_status=${PIPESTATUS[0]}
@@ -123,7 +137,53 @@ pathlib.Path(out).write_text(json.dumps(data, indent=2, sort_keys=True) + "\n")
 raise SystemExit(0 if ok else 1)
 PY
 echo "Evidence: $run_dir"
-upstream_args=()
-$reference && upstream_args+=(--reference)
-$verbose && upstream_args+=(--verbose)
-"$recipe_dir/run-upstream.sh" "${upstream_args[@]}" "$devkit"
+run_jansson_test() {
+  local lane=$1 binary=$2
+  shift 2
+  if [[ $lane == native ]]; then
+    env LD_LIBRARY_PATH="$native_prefix/lib" "$binary" "$@"
+  else
+    env LD_LIBRARY_PATH="$devkit/lib:$hecate_prefix/lib:$host_path:$work/thunk-libc-shim" "$qemu" -L "$devkit/x86_64/sysroot" -E LD_BIND_NOW=1 -E "LD_PRELOAD=$work/thunk-libc-shim/x86_64/libc-shim.so" -E "LD_LIBRARY_PATH=$devkit/x86_64/lib:$guest_path:$work/thunk-libc-shim/x86_64" "$binary" "$@"
+  fi
+}
+api_tests=(test_array test_chaos test_chaos_realloc test_copy test_dump test_dump_callback test_equal test_fixed_size test_load test_load_callback test_loadb test_number test_object test_pack test_simple test_sprintf test_unpack test_memory_funcs test_memory_funcs_realloc)
+for lane in native hecate; do
+  lane_suite=$suite_native
+  [[ $lane == hecate ]] && lane_suite=$suite_guest
+  output=$run_dir/logs/$lane/upstream.log
+  mkdir -p "$work/upstream/$lane"
+  : >"$output"
+  count=0
+  for test_name in "${api_tests[@]}"; do
+    echo "RUN $test_name" >>"$output"
+    (cd "$work/upstream/$lane" && run_jansson_test "$lane" "$lane_suite/bin/$test_name") >>"$output" 2>&1
+    echo "PASS $test_name" >>"$output"
+    count=$((count + 1))
+  done
+  for suite_name in encoding-flags valid invalid invalid-unicode; do
+    for test_dir in "$lane_suite/suites/$suite_name"/*; do
+      [[ -d $test_dir ]] || continue
+      [[ -e $test_dir/skip_if_dtoa ]] && continue
+      test_name=${suite_name}__$(basename "$test_dir")
+      echo "RUN $test_name" >>"$output"
+      run_jansson_test "$lane" "$lane_suite/bin/json_process" "$test_dir" >>"$output" 2>&1
+      echo "PASS $test_name" >>"$output"
+      count=$((count + 1))
+      if [[ $suite_name == valid || $suite_name == invalid ]] && [[ ! -e $test_dir/nostrip ]]; then
+        echo "RUN ${test_name}__strip" >>"$output"
+        run_jansson_test "$lane" "$lane_suite/bin/json_process" --strip "$test_dir" >>"$output" 2>&1
+        echo "PASS ${test_name}__strip" >>"$output"
+        count=$((count + 1))
+      fi
+    done
+  done
+  [[ $count == 215 ]] || { echo "Expected 215 Jansson tests, ran $count" >&2; exit 1; }
+done
+cmp "$run_dir/logs/native/upstream.log" "$run_dir/logs/hecate/upstream.log"
+python3 - "$run_dir/summary.json" <<'PY'
+import json, pathlib, sys
+path = pathlib.Path(sys.argv[1])
+data = json.loads(path.read_text())
+data["upstream"] = {"tests": 215, "native_exit_status": 0, "hecate_exit_status": 0, "output_match": True, "installed_by_vcpkg": True}
+path.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n")
+PY
