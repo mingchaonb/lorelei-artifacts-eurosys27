@@ -124,24 +124,25 @@ printf '%s\n' "$hecate_status" >"$run_dir/logs/hecate/exit-status.txt"
 sed '/no version information available/d' "$run_dir/logs/native/workload.log" >"$run_dir/logs/native/workload.normalized"
 sed '/no version information available/d' "$run_dir/logs/hecate/workload.log" >"$run_dir/logs/hecate/workload.normalized"
 cmp "$run_dir/logs/native/workload.normalized" "$run_dir/logs/hecate/workload.normalized"
-upstream_failures=0
 native_suite=$work/zstd-play-native
 hecate_suite=$work/zstd-play-hecate
-mkdir -p "$native_suite/tests" "$hecate_suite/tests"
-cp -R "$native_upstream/tests/." "$native_suite/tests/"
-cp -R "$guest_upstream/tests/." "$hecate_suite/tests/"
-cp -R "$native_upstream/programs" "$native_suite/programs"
-cp -R "$guest_upstream/programs" "$hecate_suite/programs"
-# These four invocations are upstream's alias checks. Prefix them just like the
-# other guest-architecture invocations so they cross QEMU and the TLC thunk.
-sed -i -E 's#^([[:space:]]*)\./(xz|unxz|lzma|unlzma)([[:space:]])#\1$EXE_PREFIX ./\2\3#' "$hecate_suite/tests/playTests.sh"
-set +e
-(cd "$native_suite" && EXE_PREFIX= ZSTD_BIN="$native_cli" DATAGEN_BIN="$work/tests/native/datagen" LD_LIBRARY_PATH="$native_prefix/lib" sh ./tests/playTests.sh) >"$run_dir/logs/native/upstream-playTests.log" 2>&1
-native_suite_status=$?
-(cd "$hecate_suite" && QEMU="$qemu" DEVKIT="$devkit" GUEST_LIB_DIR="$guest_prefix/lib" LORE_AE_HECATE=1 HOST_LIB_DIR="$hecate_prefix/lib" THUNK_DIR="$work/thunks/zstd" EXE_PREFIX="$recipe_dir/tests/QEMUWrapper.sh" ZSTD_BIN="$guest_cli" QEMU_WRAPPER="$recipe_dir/tests/QEMUWrapper.sh" GUEST_DATAGEN="$work/tests/guest/datagen" DATAGEN_BIN="$recipe_dir/tests/QEMUDataGenWrapper.sh" sh ./tests/playTests.sh) >"$run_dir/logs/hecate/upstream-playTests.log" 2>&1
-hecate_suite_status=$?
-set -e
-if [[ $native_suite_status != 0 || $hecate_suite_status != 0 ]]; then upstream_failures=1; fi
+chmod +x "$recipe_dir/tests/ctest-play.sh"
+cmake -S "$repo_root/evaluations/1-libs/ctest-driver" -B "$work/ctest" \
+  -DTEST_MANIFEST="$recipe_dir/tests/CTestManifest.cmake" \
+  -DPLAY_DRIVER="$recipe_dir/tests/ctest-play.sh" \
+  -DTEST_native_SUITE="$native_suite" -DTEST_hecate_SUITE="$hecate_suite" \
+  -DTEST_native_UPSTREAM="$native_upstream" -DTEST_hecate_UPSTREAM="$guest_upstream" \
+  -DTEST_native_CLI="$native_cli" -DTEST_hecate_CLI="$guest_cli" \
+  -DTEST_native_DATAGEN="$work/tests/native/datagen" -DTEST_hecate_DATAGEN="$work/tests/guest/datagen" \
+  -DTEST_NATIVE_PREFIX="$native_prefix" -DTEST_GUEST_PREFIX="$guest_prefix" \
+  -DTEST_HECATE_PREFIX="$hecate_prefix" -DTEST_THUNK_DIR="$work/thunks/zstd" \
+  -DTEST_RECIPE_DIR="$recipe_dir/tests" -DTEST_QEMU="$qemu" -DTEST_DEVKIT="$devkit" \
+  >"$run_dir/logs/preparation/ctest-configure.log" 2>&1
+ctest --test-dir "$work/ctest" -N >"$run_dir/logs/preparation/ctest-discovery.log" 2>&1
+ctest --test-dir "$work/ctest" --output-on-failure -R '^native\.' >"$run_dir/logs/native/ctest.log" 2>&1
+ctest --test-dir "$work/ctest" --output-on-failure -R '^hecate\.' >"$run_dir/logs/hecate/ctest.log" 2>&1
+native_suite_status=0
+hecate_suite_status=0
 python3 - "$run_dir/summary.json" "$native_status" "$hecate_status" "$index" "$native_suite_status" "$hecate_suite_status" <<'PY'
 import json, pathlib, sys
 out, native, hecate, libraries, native_suite, hecate_suite = sys.argv[1:]

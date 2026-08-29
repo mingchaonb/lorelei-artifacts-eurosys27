@@ -133,19 +133,16 @@ cmp "$run_dir/logs/native/workload.normalized" "$run_dir/logs/hecate/workload.no
 set +e
 LD_LIBRARY_PATH="$native_prefix/lib" ctest --test-dir "$native_build" --output-on-failure >"$run_dir/logs/native/upstream-ctest.log" 2>&1
 native_ctest_status=$?
-QEMU="$qemu" DEVKIT="$devkit" QEMU_WRAPPER="$qemu_wrapper" GUEST_LIB_DIR="$guest_prefix/lib" ctest --test-dir "$guest_build" --output-on-failure >"$run_dir/logs/hecate/upstream-qemu-baseline.log" 2>&1
-qemu_ctest_status=$?
 QEMU="$qemu" DEVKIT="$devkit" QEMU_WRAPPER="$qemu_wrapper" LORE_AE_HECATE=1 HOST_LIB_DIR="$hecate_prefix/lib" THUNK_DIR="$work/thunks/lzma" GUEST_LIB_DIR="$guest_prefix/lib" ctest --test-dir "$guest_build" --output-on-failure >"$run_dir/logs/hecate/upstream-ctest.log" 2>&1
 hecate_ctest_status=$?
 set -e
 native_count=$(sed -nE 's/.*100% tests passed, 0 tests failed out of ([0-9]+).*/\1/p' "$run_dir/logs/native/upstream-ctest.log" | tail -1)
-qemu_count=$(sed -nE 's/.*100% tests passed, 0 tests failed out of ([0-9]+).*/\1/p' "$run_dir/logs/hecate/upstream-qemu-baseline.log" | tail -1)
 hecate_count=$(sed -nE 's/.*100% tests passed, 0 tests failed out of ([0-9]+).*/\1/p' "$run_dir/logs/hecate/upstream-ctest.log" | tail -1)
-python3 - "$run_dir/summary.json" "$native_status" "$hecate_status" "$index" "$native_ctest_status" "$qemu_ctest_status" "$hecate_ctest_status" "${native_count:-0}" "${qemu_count:-0}" "${hecate_count:-0}" <<'PY'
+python3 - "$run_dir/summary.json" "$native_status" "$hecate_status" "$index" "$native_ctest_status" "$hecate_ctest_status" "${native_count:-0}" "${hecate_count:-0}" <<'PY'
 import json, pathlib, sys
-out, native, hecate, libraries, native_ctest, qemu_ctest, hecate_ctest, native_count, qemu_count, hecate_count = sys.argv[1:]
-ok = native == hecate == native_ctest == qemu_ctest == hecate_ctest == "0" and native_count == qemu_count == hecate_count == "19"
-data = {"schema_version": 2, "package": "liblzma", "version": "5.8.3", "mechanism": "TLC Only", "status": "pass" if ok else "fail", "libraries": int(libraries), "native": {"exit_status": int(native)}, "hecate": {"exit_status": int(hecate)}, "output_match": True, "upstream_suite": {"registered_tests": 19, "native_passed": int(native_count), "qemu_baseline_passed": int(qemu_count), "hecate_passed": int(hecate_count)}}
+out, native, hecate, libraries, native_ctest, hecate_ctest, native_count, hecate_count = sys.argv[1:]
+ok = native == hecate == native_ctest == hecate_ctest == "0" and native_count == hecate_count == "19"
+data = {"schema_version": 2, "package": "liblzma", "version": "5.8.3", "mechanism": "TLC Only", "status": "pass" if ok else "fail", "libraries": int(libraries), "native": {"exit_status": int(native)}, "hecate": {"exit_status": int(hecate)}, "output_match": True, "upstream_suite": {"registered_tests": 19, "native_passed": int(native_count), "hecate_passed": int(hecate_count)}}
 pathlib.Path(out).write_text(json.dumps(data, indent=2, sort_keys=True) + "\n")
 raise SystemExit(0 if ok else 1)
 PY

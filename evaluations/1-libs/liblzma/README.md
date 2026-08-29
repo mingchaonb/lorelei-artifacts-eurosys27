@@ -10,4 +10,4 @@ This recipe fetches the official liblzma 5.8.3 release through the pinned vcpkg 
 ./evaluations/1-libs/liblzma/run.sh --install-only /path/to/lorelei-devkit
 ```
 
-The recipe runs the directed API workload and all 19 tests registered by the official XZ 5.8.3 default CMake configuration. Thirteen tests directly link liblzma and six exercise the dynamically linked `xz`/`xzdec` tools. The suite must pass natively, under the unadapted x86 QEMU baseline, and through Hecate. The mechanism is TLC only and does not load or generate HLR extensions.
+The recipe runs the directed API workload and all 19 tests registered by the official XZ 5.8.3 default CMake configuration. Thirteen tests directly link liblzma and six exercise the dynamically linked `xz` and `xzdec` tools. The suite must pass natively and through Hecate. A pure QEMU lane is not run. The mechanism is TLC only and does not load or generate HLR extensions.

@@ -106,6 +106,17 @@ for pattern in "${patterns[@]}"; do
 done
 host_path=$(IFS=:; echo "${thunk_host[*]}")
 guest_path=$(IFS=:; echo "${thunk_guest[*]}")
+TEST_CASE_DRIVER="$recipe_dir/tests/ctest-case.sh" \
+TEST_NATIVE_DATA="$native_prefix/share/bzip2/upstream-tests" \
+TEST_HECATE_DATA="$guest_prefix/share/bzip2/upstream-tests" \
+NATIVE_LIBRARY_PATH="$native_prefix/lib" \
+HECATE_HOST_LIBRARY_PATH="$devkit/lib:$hecate_prefix/lib:$host_path" \
+HECATE_GUEST_LIBRARY_PATH="$devkit/x86_64/lib:$guest_path" \
+QEMU="$qemu" GUEST_SYSROOT="$devkit/x86_64/sysroot" \
+  "$repo_root/evaluations/1-libs/ctest-driver/run.sh" \
+  "$repo_root/evaluations/1-libs/ctest-driver" "$work/ctest" \
+  "$recipe_dir/tests/CTestManifest.cmake" "$repo_root/evaluations/1-libs/ctest-driver/launch.sh" \
+  "$work/tests/native" "$work/tests/guest" "$run_dir/logs"
 set +e
 LD_LIBRARY_PATH="$native_prefix/lib" "$work/tests/native/workload" 2>&1 | tee "$run_dir/logs/native/workload.log"
 native_status=${PIPESTATUS[0]}

@@ -108,6 +108,15 @@ for pattern in "${patterns[@]}"; do
 done
 host_path=$(IFS=:; echo "${thunk_host[*]}")
 guest_path=$(IFS=:; echo "${thunk_guest[*]}")
+TEST_NATIVE_DATA="$native_upstream/data" TEST_HECATE_DATA="$guest_upstream/data" \
+NATIVE_LIBRARY_PATH="$native_prefix/lib" \
+HECATE_HOST_LIBRARY_PATH="$devkit/lib:$hecate_prefix/lib:$host_path" \
+HECATE_GUEST_LIBRARY_PATH="$devkit/x86_64/lib:$guest_path" \
+QEMU="$qemu" GUEST_SYSROOT="$devkit/x86_64/sysroot" \
+  "$repo_root/evaluations/1-libs/ctest-driver/run.sh" \
+  "$repo_root/evaluations/1-libs/ctest-driver" "$work/ctest" \
+  "$recipe_dir/tests/CTestManifest.cmake" "$repo_root/evaluations/1-libs/ctest-driver/launch.sh" \
+  "$native_upstream" "$guest_upstream" "$run_dir/logs"
 set +e
 LD_LIBRARY_PATH="$native_prefix/lib" "$work/tests/native/workload" 2>&1 | tee "$run_dir/logs/native/workload.log"
 native_status=${PIPESTATUS[0]}
@@ -128,11 +137,12 @@ run_lzo_test() {
   LD_LIBRARY_PATH="$native_prefix/lib" "$native_upstream/$test_name" "$@" >"$run_dir/logs/native/$test_name.log" 2>&1
   local ns=$?
   if [[ $test_name == testmini ]]; then
-    env LD_LIBRARY_PATH="$devkit/lib" "$qemu" -L "$devkit/x86_64/sysroot" -E "LD_LIBRARY_PATH=$guest_prefix/lib" "$guest_upstream/$test_name" "$@" >"$run_dir/logs/hecate/$test_name.log" 2>&1
+    printf '%s\n' 'Not run for Hecate because testmini does not use the shared library ABI.' >"$run_dir/logs/hecate/$test_name.log"
+    local hs=0
   else
     env LD_LIBRARY_PATH="$devkit/lib:$hecate_prefix/lib:$host_path" "$qemu" -L "$devkit/x86_64/sysroot" -E LD_BIND_NOW=1 -E "LD_LIBRARY_PATH=$devkit/x86_64/lib:$guest_path" "$guest_upstream/$test_name" "$@" >"$run_dir/logs/hecate/$test_name.log" 2>&1
+    local hs=$?
   fi
-  local hs=$?
   set -e
   printf '%s\n' "$ns" >"$run_dir/logs/native/$test_name.exit-status.txt"
   printf '%s\n' "$hs" >"$run_dir/logs/hecate/$test_name.exit-status.txt"

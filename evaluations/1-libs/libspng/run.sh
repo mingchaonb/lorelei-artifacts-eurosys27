@@ -115,7 +115,16 @@ sed '/no version information available/d' "$run_dir/logs/native/workload.log" >"
 sed '/no version information available/d' "$run_dir/logs/hecate/workload.log" >"$run_dir/logs/hecate/workload.normalized"
 cmp "$run_dir/logs/native/workload.normalized" "$run_dir/logs/hecate/workload.normalized"
 chmod +x "$recipe_dir/tests/upstream-suite.sh"
-"$recipe_dir/tests/upstream-suite.sh" "$devkit" "$qemu" "$work/upstream" "$run_dir/logs/upstream" "$native_prefix" "$guest_prefix" "$repo_root" "$nm_tool"
+cmake -S "$repo_root/evaluations/1-libs/ctest-driver" -B "$work/ctest" \
+  -DTEST_MANIFEST="$recipe_dir/tests/CTestManifest.cmake" \
+  -DUPSTREAM_SUITE="$recipe_dir/tests/upstream-suite.sh" \
+  -DTEST_DEVKIT="$devkit" -DTEST_QEMU="$qemu" \
+  -DTEST_WORK="$work/upstream" -DTEST_RESULT="$run_dir/logs/upstream" \
+  -DTEST_NATIVE_PREFIX="$native_prefix" -DTEST_GUEST_PREFIX="$guest_prefix" \
+  -DTEST_REPO_ROOT="$repo_root" -DTEST_NM="$nm_tool" \
+  >"$run_dir/logs/preparation/ctest-configure.log" 2>&1
+ctest --test-dir "$work/ctest" -N >"$run_dir/logs/preparation/ctest-discovery.log" 2>&1
+ctest --test-dir "$work/ctest" --output-on-failure >"$run_dir/logs/hecate/ctest.log" 2>&1
 python3 - "$run_dir/summary.json" "$native_status" "$hecate_status" "$index" <<'PY'
 import json, pathlib, sys
 out, native, hecate, libraries = sys.argv[1:]

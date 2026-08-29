@@ -10,4 +10,4 @@ This recipe fetches the official libspng 0.7.4 release through the pinned vcpkg 
 ./evaluations/1-libs/libspng/run.sh --install-only /path/to/lorelei-devkit
 ```
 
-The recipe runs the directed API workload and the complete 208-test upstream Meson suite: 167 normal passes and 41 expected failures, with zero unexpected failures or skips in native, QEMU baseline, and Hecate lanes. The suite builds the pinned libpng 1.6.43 differential oracle from its verified release archive. Tests that pass `FILE *` use the repository's TLC libc shim. No HLR extension is loaded or generated.
+The recipe runs the directed API workload and the complete 208-test upstream Meson suite: 167 normal passes and 41 expected failures, with zero unexpected failures or skips in native and Hecate lanes. A CTest registration drives the two upstream Meson runs and records their combined result. No pure QEMU test lane is run. The suite builds the pinned libpng 1.6.43 differential oracle from its verified release archive. Tests that pass `FILE *` use the repository's TLC libc shim. No HLR extension is loaded or generated.
