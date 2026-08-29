@@ -140,14 +140,28 @@ run_upstream_suite() {
     set -e
     if [[ $status == 0 || $status == 77 ]]; then passed=$((passed + 1)); else failed=$((failed + 1)); cat "$run_dir/logs/$lane/$name.log"; fi
   done
+  local -a index_cases=(test_lzma_index_memusage test_lzma_index_memused test_lzma_index_append test_lzma_index_stream_flags test_lzma_index_checks test_lzma_index_stream_padding test_lzma_index_stream_count test_lzma_index_block_count test_lzma_index_size test_lzma_index_stream_size test_lzma_index_total_size test_lzma_index_file_size test_lzma_index_uncompressed_size test_lzma_index_iter_init test_lzma_index_iter_rewind test_lzma_index_iter_next test_lzma_index_iter_locate test_lzma_index_cat test_lzma_index_dup test_lzma_index_encoder test_lzma_index_decoder test_lzma_index_buffer_encode test_lzma_index_buffer_decode test_decode_empty_and_append)
+  local index_failed=0
+  for index_case in "${index_cases[@]}"; do
+    set +e
+    if [[ $lane == native ]]; then
+      env LD_LIBRARY_PATH="$prefix/lib" srcdir="$suite/source" "$suite/tests_bin/test_index" "$index_case" >"$run_dir/logs/$lane/test_index-$index_case.log" 2>&1
+    else
+      env QEMU="$qemu" DEVKIT="$devkit" LORE_AE_HECATE=1 HOST_LIB_DIR="$hecate_prefix/lib" THUNK_DIR="$work/thunks/lzma" GUEST_LIB_DIR="$guest_prefix/lib" srcdir="$suite/source" "$qemu_wrapper" "$suite/tests_bin/test_index" "$index_case" >"$run_dir/logs/$lane/test_index-$index_case.log" 2>&1
+    fi
+    status=$?
+    set -e
+    if [[ $status != 0 ]]; then index_failed=1; cat "$run_dir/logs/$lane/test_index-$index_case.log"; fi
+  done
+  if [[ $index_failed == 0 ]]; then passed=$((passed + 1)); else failed=$((failed + 1)); fi
   export QEMU="$qemu" DEVKIT="$devkit" QEMU_WRAPPER="$qemu_wrapper" LORE_AE_HECATE=0 GUEST_LIB_DIR="$guest_prefix/lib"
   if [[ $lane == hecate ]]; then
     export LORE_AE_HECATE=1 HOST_LIB_DIR="$hecate_prefix/lib" THUNK_DIR="$work/thunks/lzma"
   fi
-  local -a script_names=(test_scripts.sh)
-  local -a script_dirs=(test_scripts)
-  local -a script_files=(test_scripts.sh)
-  local -a script_args=("..")
+  local -a script_names=(test_scripts.sh test_suffix.sh test_compress_generated_abc test_compress_generated_text test_compress_generated_random test_files.sh)
+  local -a script_dirs=(test_scripts test_suffix test_compress test_compress test_compress test_files)
+  local -a script_files=(test_scripts.sh test_suffix.sh test_compress.sh test_compress.sh test_compress.sh test_files.sh)
+  local -a script_args=(".." ".." "compress_generated_abc .." "compress_generated_text .." "compress_generated_random .." ".. ..")
   for i in "${!script_names[@]}"; do
     name=${script_names[$i]}
     read -ra args <<<"${script_args[$i]}"
@@ -157,9 +171,9 @@ run_upstream_suite() {
     set -e
     if [[ $status == 0 || $status == 77 ]]; then passed=$((passed + 1)); else failed=$((failed + 1)); cat "$run_dir/logs/$lane/$name.log"; fi
   done
-  printf '%s selected upstream tests: %d passed, %d failed, 13 total, 6 excluded\n' "$lane" "$passed" "$failed" | tee "$run_dir/logs/$lane/upstream-summary.log"
+  printf '%s upstream tests: %d passed, %d failed, 19 total\n' "$lane" "$passed" "$failed" | tee "$run_dir/logs/$lane/upstream-summary.log"
   printf '%s\n' "$passed" >"$run_dir/logs/$lane/upstream-passed.txt"
-  [[ $failed == 0 && $passed == 13 ]]
+  [[ $failed == 0 && $passed == 19 ]]
 }
 native_status=0
 hecate_status=0
@@ -170,8 +184,8 @@ hecate_count=$(<"$run_dir/logs/hecate/upstream-passed.txt")
 python3 - "$run_dir/summary.json" "$native_status" "$hecate_status" "$index" "$native_count" "$hecate_count" <<'PY'
 import json, pathlib, sys
 out, native, hecate, libraries, native_count, hecate_count = sys.argv[1:]
-ok = native == hecate == "0" and native_count == hecate_count == "13"
-data = {"schema_version": 2, "package": "liblzma", "version": "5.8.3", "mechanism": "TLC Only", "status": "pass" if ok else "fail", "libraries": int(libraries), "native": {"exit_status": int(native)}, "hecate": {"exit_status": int(hecate)}, "output_match": True, "upstream_suite": {"registered_tests": 19, "selected_tests": 13, "native_passed": int(native_count), "hecate_passed": int(hecate_count), "excluded": ["test_index", "test_suffix.sh", "test_compress_generated_abc", "test_compress_generated_text", "test_compress_generated_random", "test_files.sh"]}}
+ok = native == hecate == "0" and native_count == hecate_count == "19"
+data = {"schema_version": 2, "package": "liblzma", "version": "5.8.3", "mechanism": "TLC Only", "status": "pass" if ok else "fail", "libraries": int(libraries), "native": {"exit_status": int(native)}, "hecate": {"exit_status": int(hecate)}, "output_match": True, "upstream_suite": {"registered_tests": 19, "native_passed": int(native_count), "hecate_passed": int(hecate_count), "test_index_isolated_cases": 24, "excluded": []}}
 pathlib.Path(out).write_text(json.dumps(data, indent=2, sort_keys=True) + "\n")
 raise SystemExit(0 if ok else 1)
 PY
