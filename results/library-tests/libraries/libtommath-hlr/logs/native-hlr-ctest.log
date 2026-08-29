@@ -1,0 +1,8 @@
+Internal ctest changing into directory: /home/functioner/Documents/rover2024/ae-libs/libtommath-build/hlr-input
+Test project /home/functioner/Documents/rover2024/ae-libs/libtommath-build/hlr-input
+    Start 1: test-ltm
+1/1 Test #1: test-ltm .........................   Passed    2.77 sec
+
+100% tests passed, 0 tests failed out of 1
+
+Total Test time (real) =   2.77 sec

@@ -1,0 +1,14 @@
+{
+  "library": "LibTomMath",
+  "release": "v1.3.0",
+  "baseline_commit": "95d80fd8229d05dd6cb4ec88bc8d4f5377ff00ef",
+  "hlr_commit": "58ca16c7a6ec4d5f746cda45667766ffcf05df6b",
+  "lorelei_commit": "a4e0903db583d875bd904ad068139b403c9a9a12",
+  "host_arch": "aarch64",
+  "guest_arch": "x86_64",
+  "generated_at_utc": "2026-08-29T16:36:05Z",
+  "tlc_callback_replacement": false,
+  "host_hlr_extension": true,
+  "guest_hlr_extension": true,
+  "thread_hook_preloaded": true
+}

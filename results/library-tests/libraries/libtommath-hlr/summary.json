@@ -1,0 +1,19 @@
+{
+  "status": "pass",
+  "production_translation_units": 154,
+  "files_patched": 3,
+  "ccg_signatures": 1,
+  "fdg_signatures_detected": 1,
+  "fdg_disabled_for_internal_static_initializer": true,
+  "native_upstream_ctest": {
+    "passed": 1,
+    "failed": 0
+  },
+  "hlr_callback_workload": {
+    "passed": 1,
+    "failed": 0,
+    "callback_calls": 2,
+    "matches_qemu_baseline": true
+  },
+  "scope_note": "The upstream guest test directly references library data symbols, which TLC does not support. The HLR workload targets the previously blocking persistent mp_rand_source callback and representative multiplication and radix conversion."
+}
