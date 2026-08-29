@@ -74,7 +74,14 @@ guest_prefix=$work/installed/guest/x64-linux-ae
 mkdir -p "$work/tests/native" "$work/tests/guest"
 run_logged "$run_dir/logs/preparation/test-native.log" cc -I"$native_prefix/include" "$recipe_dir/tests/workload.c" -L"$native_prefix/lib" -Wl,-rpath,"$native_prefix/lib" -llzo2 -o "$work/tests/native/workload"
 run_logged "$run_dir/logs/preparation/test-guest.log" "$devkit/bin/x86_64-linux-gnu-clang" --sysroot="$devkit/x86_64/sysroot" -I"$guest_prefix/include" "$recipe_dir/tests/workload.c" -L"$guest_prefix/lib" -Wl,-rpath,"$guest_prefix/lib" -llzo2 -o "$work/tests/guest/workload"
-"$nm_tool" -D --undefined-only --just-symbol-name "$work/tests/guest/workload" | sed 's/@.*//' | sort -u >"$run_dir/generated/guest-undefined.txt"
+upstream_tests=(lzotest simple testmini align chksum)
+native_upstream=$native_prefix/share/lzo/upstream-tests
+guest_upstream=$guest_prefix/share/lzo/upstream-tests
+for test_name in "${upstream_tests[@]}"; do chmod +x "$native_upstream/$test_name" "$guest_upstream/$test_name"; done
+{
+  "$nm_tool" -D --undefined-only --just-symbol-name "$work/tests/guest/workload"
+  for test_name in lzotest simple align chksum; do "$nm_tool" -D --undefined-only --just-symbol-name "$guest_upstream/$test_name"; done
+} | sed 's/@.*//' | sort -u >"$run_dir/generated/guest-undefined.txt"
 thunk_host=()
 thunk_guest=()
 index=0
@@ -114,11 +121,35 @@ printf '%s\n' "$hecate_status" >"$run_dir/logs/hecate/exit-status.txt"
 sed '/no version information available/d' "$run_dir/logs/native/workload.log" >"$run_dir/logs/native/workload.normalized"
 sed '/no version information available/d' "$run_dir/logs/hecate/workload.log" >"$run_dir/logs/hecate/workload.normalized"
 cmp "$run_dir/logs/native/workload.normalized" "$run_dir/logs/hecate/workload.normalized"
-python3 - "$run_dir/summary.json" "$native_status" "$hecate_status" "$index" <<'PY'
+upstream_failures=0
+run_lzo_test() {
+  local test_name=$1; shift
+  set +e
+  LD_LIBRARY_PATH="$native_prefix/lib" "$native_upstream/$test_name" "$@" >"$run_dir/logs/native/$test_name.log" 2>&1
+  local ns=$?
+  if [[ $test_name == testmini ]]; then
+    env LD_LIBRARY_PATH="$devkit/lib" "$qemu" -L "$devkit/x86_64/sysroot" -E "LD_LIBRARY_PATH=$guest_prefix/lib" "$guest_upstream/$test_name" "$@" >"$run_dir/logs/hecate/$test_name.log" 2>&1
+  else
+    env LD_LIBRARY_PATH="$devkit/lib:$hecate_prefix/lib:$host_path" "$qemu" -L "$devkit/x86_64/sysroot" -E LD_BIND_NOW=1 -E "LD_LIBRARY_PATH=$devkit/x86_64/lib:$guest_path" "$guest_upstream/$test_name" "$@" >"$run_dir/logs/hecate/$test_name.log" 2>&1
+  fi
+  local hs=$?
+  set -e
+  printf '%s\n' "$ns" >"$run_dir/logs/native/$test_name.exit-status.txt"
+  printf '%s\n' "$hs" >"$run_dir/logs/hecate/$test_name.exit-status.txt"
+  if [[ $ns != 0 || $hs != 0 ]]; then upstream_failures=$((upstream_failures + 1)); fi
+}
+run_lzo_test simple
+run_lzo_test testmini
+run_lzo_test lzotest -mlzo -n2 -q "$guest_upstream/data/COPYING"
+run_lzo_test lzotest -mavail -n10 -q "$guest_upstream/data/COPYING"
+run_lzo_test lzotest -mall -n10 -q "$guest_upstream/data/lzodefs.h"
+run_lzo_test align
+run_lzo_test chksum
+python3 - "$run_dir/summary.json" "$native_status" "$hecate_status" "$index" "$upstream_failures" <<'PY'
 import json, pathlib, sys
-out, native, hecate, libraries = sys.argv[1:]
-ok = native == hecate == "0"
-data = {"schema_version": 2, "package": "lzo", "version": "2.10", "mechanism": "TLC Only", "status": "pass" if ok else "fail", "libraries": int(libraries), "native": {"exit_status": int(native)}, "hecate": {"exit_status": int(hecate)}, "output_match": True}
+out, native, hecate, libraries, failures = sys.argv[1:]
+ok = native == hecate == "0" and failures == "0"
+data = {"schema_version": 2, "package": "lzo", "version": "2.10", "mechanism": "TLC Only", "status": "pass" if ok else "fail", "libraries": int(libraries), "native": {"exit_status": int(native)}, "hecate": {"exit_status": int(hecate)}, "output_match": True, "upstream_suite": {"registered_tests": 5, "additional_tests": 2, "tree_sweep_methods": 37, "passed": 7 - int(failures), "failed": int(failures), "non_dso_registered_tests": ["testmini"]}}
 pathlib.Path(out).write_text(json.dumps(data, indent=2, sort_keys=True) + "\n")
 raise SystemExit(0 if ok else 1)
 PY

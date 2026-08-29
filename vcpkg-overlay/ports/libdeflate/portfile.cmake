@@ -23,11 +23,29 @@ vcpkg_cmake_configure(
         -DLIBDEFLATE_BUILD_SHARED_LIB=${LIBDEFLATE_BUILD_SHARED}
         -DLIBDEFLATE_BUILD_STATIC_LIB=${LIBDEFLATE_BUILD_STATIC}
         -DLIBDEFLATE_BUILD_GZIP=OFF
+        -DLIBDEFLATE_BUILD_TESTS=ON
+        -DLIBDEFLATE_USE_SHARED_LIB=ON
         -DLIBDEFLATE_USER_SET_RELEASE_FLAGS=ON # Prevent wrong C flags modification
         ${FEATURE_OPTIONS}
 )
 
 vcpkg_cmake_install()
+set(LIBDEFLATE_TEST_DIR "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/programs")
+foreach(TEST_NAME IN ITEMS
+    test_checksums
+    test_custom_malloc
+    test_incomplete_codes
+    test_invalid_streams
+    test_litrunlen_overflow
+    test_overread
+    test_slow_decompression
+    test_trailing_bytes)
+    if(NOT EXISTS "${LIBDEFLATE_TEST_DIR}/${TEST_NAME}")
+        message(FATAL_ERROR "Missing upstream test executable: ${TEST_NAME}")
+    endif()
+    file(INSTALL "${LIBDEFLATE_TEST_DIR}/${TEST_NAME}"
+        DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}/upstream-tests")
+endforeach()
 vcpkg_cmake_config_fixup(CONFIG_PATH "lib/cmake/libdeflate")
 vcpkg_fixup_pkgconfig()
 

@@ -10,4 +10,4 @@ This recipe fetches the official lzo 2.10 release through the pinned vcpkg overl
 ./evaluations/1-libs/lzo/run.sh --install-only /path/to/lorelei-devkit
 ```
 
-The workload checks a deterministic public-API construction or roundtrip path. Success requires identical normalized output and exit status zero in both lanes. This claim excludes fuzzing, sanitizers, stress, concurrency, command-line tools, optional backends, and the complete upstream suite. The mechanism is TLC only. It does not load or generate HLR extensions.
+The recipe runs all five tests registered by upstream CMake, including the `-mall` 37-method tree sweep, plus the upstream alignment and checksum tests. Four registered tests and both additions cross the shared liblzo2 ABI in native and Hecate lanes. `testmini` is retained for suite completeness but embeds miniLZO and is explicitly reported as a non-DSO test. The mechanism is TLC only and does not load or generate HLR extensions.

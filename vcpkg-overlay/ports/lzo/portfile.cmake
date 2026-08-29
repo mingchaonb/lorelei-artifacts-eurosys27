@@ -7,7 +7,9 @@ vcpkg_download_distfile(ARCHIVE
 vcpkg_extract_source_archive(
     SOURCE_PATH
     ARCHIVE "${ARCHIVE}"
-    PATCHES always_install_pc.patch
+    PATCHES
+        always_install_pc.patch
+        enable-internal-tests.patch
 )
 
 set(LZO_STATIC OFF)
@@ -28,6 +30,14 @@ vcpkg_cmake_configure(
 vcpkg_cmake_install()
 vcpkg_fixup_pkgconfig()
 vcpkg_copy_pdbs()
+
+set(LZO_TEST_DIR "${CURRENT_PACKAGES_DIR}/share/${PORT}/upstream-tests")
+file(MAKE_DIRECTORY "${LZO_TEST_DIR}")
+foreach(TEST_NAME IN ITEMS lzotest simple testmini align chksum)
+    file(INSTALL "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/${TEST_NAME}" DESTINATION "${LZO_TEST_DIR}")
+endforeach()
+file(INSTALL "${SOURCE_PATH}/COPYING" DESTINATION "${LZO_TEST_DIR}/data")
+file(INSTALL "${SOURCE_PATH}/include/lzo/lzodefs.h" DESTINATION "${LZO_TEST_DIR}/data")
 
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/share/doc")
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/libexec")

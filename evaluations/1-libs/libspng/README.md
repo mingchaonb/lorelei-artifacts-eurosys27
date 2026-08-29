@@ -10,4 +10,4 @@ This recipe fetches the official libspng 0.7.4 release through the pinned vcpkg 
 ./evaluations/1-libs/libspng/run.sh --install-only /path/to/lorelei-devkit
 ```
 
-The workload checks a deterministic public-API construction or roundtrip path. Success requires identical normalized output and exit status zero in both lanes. This claim excludes fuzzing, sanitizers, stress, concurrency, command-line tools, optional backends, and the complete upstream suite. The mechanism is TLC only. It does not load or generate HLR extensions.
+The recipe runs the directed API workload and the complete 208-test upstream Meson suite: 167 normal passes and 41 expected failures, with zero unexpected failures or skips in native, QEMU baseline, and Hecate lanes. The suite builds the pinned libpng 1.6.43 differential oracle from its verified release archive. Tests that pass `FILE *` use the repository's TLC libc shim. No HLR extension is loaded or generated.

@@ -10,4 +10,4 @@ This recipe fetches the official liblzma 5.8.3 release through the pinned vcpkg 
 ./evaluations/1-libs/liblzma/run.sh --install-only /path/to/lorelei-devkit
 ```
 
-The workload checks a deterministic public-API construction or roundtrip path. Success requires identical normalized output and exit status zero in both lanes. This claim excludes fuzzing, sanitizers, stress, concurrency, command-line tools, optional backends, and the complete upstream suite. The mechanism is TLC only. It does not load or generate HLR extensions.
+The recipe runs the directed API workload and all 19 tests registered by the official XZ 5.8.3 default CMake configuration. Thirteen tests directly link liblzma and six exercise the dynamically linked `xz`/`xzdec` tools. The suite must pass natively, under the unadapted x86 QEMU baseline, and through Hecate. The mechanism is TLC only and does not load or generate HLR extensions.

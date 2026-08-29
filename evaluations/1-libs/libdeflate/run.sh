@@ -74,7 +74,16 @@ guest_prefix=$work/installed/guest/x64-linux-ae
 mkdir -p "$work/tests/native" "$work/tests/guest"
 run_logged "$run_dir/logs/preparation/test-native.log" cc -I"$native_prefix/include" "$recipe_dir/tests/workload.c" -L"$native_prefix/lib" -Wl,-rpath,"$native_prefix/lib" -ldeflate -o "$work/tests/native/workload"
 run_logged "$run_dir/logs/preparation/test-guest.log" "$devkit/bin/x86_64-linux-gnu-clang" --sysroot="$devkit/x86_64/sysroot" -I"$guest_prefix/include" "$recipe_dir/tests/workload.c" -L"$guest_prefix/lib" -Wl,-rpath,"$guest_prefix/lib" -ldeflate -o "$work/tests/guest/workload"
-"$nm_tool" -D --undefined-only --just-symbol-name "$work/tests/guest/workload" | sed 's/@.*//' | sort -u >"$run_dir/generated/guest-undefined.txt"
+upstream_tests=(test_checksums test_custom_malloc test_incomplete_codes test_invalid_streams test_litrunlen_overflow test_overread test_slow_decompression test_trailing_bytes)
+native_upstream=$native_prefix/share/libdeflate/upstream-tests
+guest_upstream=$guest_prefix/share/libdeflate/upstream-tests
+chmod +x "$native_upstream"/test_* "$guest_upstream"/test_*
+{
+  "$nm_tool" -D --undefined-only --just-symbol-name "$work/tests/guest/workload"
+  for test_name in "${upstream_tests[@]}"; do
+    "$nm_tool" -D --undefined-only --just-symbol-name "$guest_upstream/$test_name"
+  done
+} | sed 's/@.*//' | sort -u >"$run_dir/generated/guest-undefined.txt"
 thunk_host=()
 thunk_guest=()
 index=0
@@ -114,11 +123,23 @@ printf '%s\n' "$hecate_status" >"$run_dir/logs/hecate/exit-status.txt"
 sed '/no version information available/d' "$run_dir/logs/native/workload.log" >"$run_dir/logs/native/workload.normalized"
 sed '/no version information available/d' "$run_dir/logs/hecate/workload.log" >"$run_dir/logs/hecate/workload.normalized"
 cmp "$run_dir/logs/native/workload.normalized" "$run_dir/logs/hecate/workload.normalized"
-python3 - "$run_dir/summary.json" "$native_status" "$hecate_status" "$index" <<'PY'
+upstream_failures=0
+for test_name in "${upstream_tests[@]}"; do
+  set +e
+  LD_LIBRARY_PATH="$native_prefix/lib" "$native_upstream/$test_name" >"$run_dir/logs/native/$test_name.log" 2>&1
+  native_test_status=$?
+  env LD_LIBRARY_PATH="$devkit/lib:$hecate_prefix/lib:$host_path" "$qemu" -L "$devkit/x86_64/sysroot" -E LD_BIND_NOW=1 -E "LD_LIBRARY_PATH=$devkit/x86_64/lib:$guest_path:$guest_prefix/lib" "$guest_upstream/$test_name" >"$run_dir/logs/hecate/$test_name.log" 2>&1
+  hecate_test_status=$?
+  set -e
+  printf '%s\n' "$native_test_status" >"$run_dir/logs/native/$test_name.exit-status.txt"
+  printf '%s\n' "$hecate_test_status" >"$run_dir/logs/hecate/$test_name.exit-status.txt"
+  if [[ $native_test_status != 0 || $hecate_test_status != 0 ]]; then upstream_failures=$((upstream_failures + 1)); fi
+done
+python3 - "$run_dir/summary.json" "$native_status" "$hecate_status" "$index" "$upstream_failures" <<'PY'
 import json, pathlib, sys
-out, native, hecate, libraries = sys.argv[1:]
-ok = native == hecate == "0"
-data = {"schema_version": 2, "package": "libdeflate", "version": "1.26", "mechanism": "TLC Only", "status": "pass" if ok else "fail", "libraries": int(libraries), "native": {"exit_status": int(native)}, "hecate": {"exit_status": int(hecate)}, "output_match": True}
+out, native, hecate, libraries, upstream_failures = sys.argv[1:]
+ok = native == hecate == "0" and upstream_failures == "0"
+data = {"schema_version": 2, "package": "libdeflate", "version": "1.26", "mechanism": "TLC Only", "status": "pass" if ok else "fail", "libraries": int(libraries), "native": {"exit_status": int(native)}, "hecate": {"exit_status": int(hecate)}, "output_match": True, "upstream_suite": {"registered_tests": 8, "passed": 8 - int(upstream_failures), "failed": int(upstream_failures)}}
 pathlib.Path(out).write_text(json.dumps(data, indent=2, sort_keys=True) + "\n")
 raise SystemExit(0 if ok else 1)
 PY

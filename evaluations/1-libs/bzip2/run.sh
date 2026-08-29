@@ -74,7 +74,12 @@ guest_prefix=$work/installed/guest/x64-linux-ae
 mkdir -p "$work/tests/native" "$work/tests/guest"
 run_logged "$run_dir/logs/preparation/test-native.log" cc -I"$native_prefix/include" "$recipe_dir/tests/workload.c" -L"$native_prefix/lib" -Wl,-rpath,"$native_prefix/lib" -lbz2 -o "$work/tests/native/workload"
 run_logged "$run_dir/logs/preparation/test-guest.log" "$devkit/bin/x86_64-linux-gnu-clang" --sysroot="$devkit/x86_64/sysroot" -I"$guest_prefix/include" "$recipe_dir/tests/workload.c" -L"$guest_prefix/lib" -Wl,-rpath,"$guest_prefix/lib" -lbz2 -o "$work/tests/guest/workload"
-"$nm_tool" -D --undefined-only --just-symbol-name "$work/tests/guest/workload" | sed 's/@.*//' | sort -u >"$run_dir/generated/guest-undefined.txt"
+run_logged "$run_dir/logs/preparation/upstream-cli-native.log" cc -O2 -I"$native_prefix/include" "$native_prefix/share/bzip2/upstream-tests/bzip2.c" -L"$native_prefix/lib" -Wl,-rpath,"$native_prefix/lib" -lbz2 -o "$work/tests/native/bzip2"
+run_logged "$run_dir/logs/preparation/upstream-cli-guest.log" "$devkit/bin/x86_64-linux-gnu-clang" --sysroot="$devkit/x86_64/sysroot" -O2 -I"$guest_prefix/include" "$guest_prefix/share/bzip2/upstream-tests/bzip2.c" -L"$guest_prefix/lib" -Wl,-rpath,"$guest_prefix/lib" -lbz2 -o "$work/tests/guest/bzip2"
+{
+  "$nm_tool" -D --undefined-only --just-symbol-name "$work/tests/guest/workload"
+  "$nm_tool" -D --undefined-only --just-symbol-name "$work/tests/guest/bzip2"
+} | sed 's/@.*//' | sort -u >"$run_dir/generated/guest-undefined.txt"
 thunk_host=()
 thunk_guest=()
 index=0
@@ -93,7 +98,7 @@ for pattern in "${patterns[@]}"; do
   { echo '[Function]'; cat "$audit/used-functions.txt"; } >"$audit/Symbols.conf"
   [[ -s $audit/used-functions.txt ]] || { echo "No tested functions found for $lib_name" >&2; exit 1; }
   thunk="$work/thunks/$lib_name"
-  run_logged "$run_dir/logs/preparation/thunk-$lib_name.log" "$devkit/bin/LoreMakeThunk.py" --name "$lib_name" --out "$thunk" --lib "$host_lib" --symbols "$audit/Symbols.conf" --desc "$overlay_dir/ports/bzip2/lorelei/Desc.h" --gtl-alias "$(basename "$host_lib")" --devkit "$devkit" --keep-intermediates -- -I"$hecate_prefix/include"
+  run_logged "$run_dir/logs/preparation/thunk-$lib_name.log" "$devkit/bin/LoreMakeThunk.py" --name "$lib_name" --out "$thunk" --lib "$host_lib" --symbols "$audit/Symbols.conf" --desc "$overlay_dir/ports/bzip2/lorelei/Desc.h" --manifest-guest "$overlay_dir/ports/bzip2/lorelei/Manifest_guest.cpp" --gtl-alias "$(basename "$host_lib")" --devkit "$devkit" --keep-intermediates -- -I"$hecate_prefix/include" -I"$overlay_dir/ports/bzip2/lorelei"
   cp "$thunk/.gen/$lib_name/ThunkStat.json" "$audit/ThunkStat.json"
   thunk_host+=("$thunk")
   thunk_guest+=("$thunk/x86_64")
@@ -114,11 +119,41 @@ printf '%s\n' "$hecate_status" >"$run_dir/logs/hecate/exit-status.txt"
 sed '/no version information available/d' "$run_dir/logs/native/workload.log" >"$run_dir/logs/native/workload.normalized"
 sed '/no version information available/d' "$run_dir/logs/hecate/workload.log" >"$run_dir/logs/hecate/workload.normalized"
 cmp "$run_dir/logs/native/workload.normalized" "$run_dir/logs/hecate/workload.normalized"
+run_bzip2_suite() {
+  local lane=$1 prefix=$2 command_dir=$3
+  local suite_dir=$work/upstream-$lane
+  mkdir -p "$suite_dir"
+  cp "$prefix/share/bzip2/upstream-tests/"sample*.ref "$prefix/share/bzip2/upstream-tests/"sample*.bz2 "$suite_dir/"
+  if [[ $lane == native ]]; then
+    command=(env LD_LIBRARY_PATH="$native_prefix/lib" "$work/tests/native/bzip2")
+  else
+    command=(env LD_LIBRARY_PATH="$devkit/lib:$hecate_prefix/lib:$host_path" "$qemu" -L "$devkit/x86_64/sysroot" -E LD_BIND_NOW=1 -E "LD_LIBRARY_PATH=$devkit/x86_64/lib:$guest_path" "$work/tests/guest/bzip2")
+  fi
+  (
+    cd "$suite_dir"
+    "${command[@]}" -1 <sample1.ref >sample1.rb2
+    "${command[@]}" -2 <sample2.ref >sample2.rb2
+    "${command[@]}" -3 <sample3.ref >sample3.rb2
+    "${command[@]}" -d <sample1.bz2 >sample1.tst
+    "${command[@]}" -d <sample2.bz2 >sample2.tst
+    "${command[@]}" -ds <sample3.bz2 >sample3.tst
+    cmp sample1.bz2 sample1.rb2
+    cmp sample2.bz2 sample2.rb2
+    cmp sample3.bz2 sample3.rb2
+    cmp sample1.ref sample1.tst
+    cmp sample2.ref sample2.tst
+    cmp sample3.ref sample3.tst
+    sha256sum sample1.rb2 sample2.rb2 sample3.rb2 sample1.tst sample2.tst sample3.tst
+  ) >"$run_dir/logs/$lane/upstream-suite.log" 2>&1
+}
+run_bzip2_suite native "$native_prefix" "$work/tests/native"
+run_bzip2_suite hecate "$guest_prefix" "$work/tests/guest"
+cmp "$run_dir/logs/native/upstream-suite.log" "$run_dir/logs/hecate/upstream-suite.log"
 python3 - "$run_dir/summary.json" "$native_status" "$hecate_status" "$index" <<'PY'
 import json, pathlib, sys
 out, native, hecate, libraries = sys.argv[1:]
 ok = native == hecate == "0"
-data = {"schema_version": 2, "package": "bzip2", "version": "1.0.8", "mechanism": "TLC Only", "status": "pass" if ok else "fail", "libraries": int(libraries), "native": {"exit_status": int(native)}, "hecate": {"exit_status": int(hecate)}, "output_match": True}
+data = {"schema_version": 2, "package": "bzip2", "version": "1.0.8", "mechanism": "TLC Only", "status": "pass" if ok else "fail", "libraries": int(libraries), "native": {"exit_status": int(native)}, "hecate": {"exit_status": int(hecate)}, "output_match": True, "upstream_suite": {"sample_checks": 6, "passed": 6, "standard_stream_filter": True}}
 pathlib.Path(out).write_text(json.dumps(data, indent=2, sort_keys=True) + "\n")
 raise SystemExit(0 if ok else 1)
 PY

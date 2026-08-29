@@ -16,6 +16,20 @@ vcpkg_cmake_configure(
 )
 
 vcpkg_cmake_install()
+file(INSTALL "${SOURCE_PATH}/xxhash.h"
+    DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}/upstream-source")
+file(INSTALL
+    "${SOURCE_PATH}/tests/sanity_test.c"
+    "${SOURCE_PATH}/tests/sanity_test_vectors.h"
+    DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}/upstream-source/tests")
+file(INSTALL
+    "${SOURCE_PATH}/cli/xsum_arch.h"
+    "${SOURCE_PATH}/cli/xsum_config.h"
+    "${SOURCE_PATH}/cli/xsum_os_specific.h"
+    "${SOURCE_PATH}/cli/xsum_os_specific.c"
+    "${SOURCE_PATH}/cli/xsum_output.h"
+    "${SOURCE_PATH}/cli/xsum_output.c"
+    DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}/upstream-source/cli")
 vcpkg_copy_pdbs()
 vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/xxHash)
 

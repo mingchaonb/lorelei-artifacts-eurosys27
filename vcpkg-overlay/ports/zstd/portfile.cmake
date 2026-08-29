@@ -13,11 +13,7 @@ vcpkg_from_github(
 string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "static" ZSTD_BUILD_STATIC)
 string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "dynamic" ZSTD_BUILD_SHARED)
 
-if("tools" IN_LIST FEATURES)
-   set(ZSTD_BUILD_PROGRAMS 1)
-else()
-   set(ZSTD_BUILD_PROGRAMS 0)
-endif()
+set(ZSTD_BUILD_PROGRAMS 1)
 
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}/build/cmake"
@@ -26,6 +22,7 @@ vcpkg_cmake_configure(
         -DZSTD_BUILD_STATIC=${ZSTD_BUILD_STATIC}
         -DZSTD_LEGACY_SUPPORT=1
         -DZSTD_BUILD_TESTS=0
+        -DZSTD_PROGRAMS_LINK_SHARED=ON
         -DZSTD_BUILD_CONTRIB=0
         -DZSTD_MULTITHREAD_SUPPORT=1
     OPTIONS_RELEASE
@@ -60,6 +57,13 @@ if(VCPKG_TARGET_IS_WINDOWS AND ZSTD_BUILD_PROGRAMS)
 endif()
 
 file(INSTALL "${CMAKE_CURRENT_LIST_DIR}/usage" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}")
+set(ZSTD_UPSTREAM_DIR "${CURRENT_PACKAGES_DIR}/share/${PORT}/upstream-tests")
+file(MAKE_DIRECTORY "${ZSTD_UPSTREAM_DIR}/bin")
+file(INSTALL "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/programs/zstd" DESTINATION "${ZSTD_UPSTREAM_DIR}/bin")
+file(COPY "${SOURCE_PATH}/tests/" DESTINATION "${ZSTD_UPSTREAM_DIR}/tests")
+file(COPY "${SOURCE_PATH}/programs/" DESTINATION "${ZSTD_UPSTREAM_DIR}/programs")
+file(COPY "${SOURCE_PATH}/lib/common/" DESTINATION "${ZSTD_UPSTREAM_DIR}/lib/common")
+file(INSTALL "${SOURCE_PATH}/lib/zstd.h" DESTINATION "${ZSTD_UPSTREAM_DIR}/lib")
 vcpkg_install_copyright(
     COMMENT "ZSTD is dual licensed under BSD and GPLv2."
     FILE_LIST

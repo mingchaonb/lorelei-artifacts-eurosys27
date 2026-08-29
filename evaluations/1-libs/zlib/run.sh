@@ -74,7 +74,20 @@ guest_prefix=$work/installed/guest/x64-linux-ae
 mkdir -p "$work/tests/native" "$work/tests/guest"
 run_logged "$run_dir/logs/preparation/test-native.log" cc -I"$native_prefix/include" "$recipe_dir/tests/workload.c" -L"$native_prefix/lib" -Wl,-rpath,"$native_prefix/lib" -lz -o "$work/tests/native/workload"
 run_logged "$run_dir/logs/preparation/test-guest.log" "$devkit/bin/x86_64-linux-gnu-clang" --sysroot="$devkit/x86_64/sysroot" -I"$guest_prefix/include" "$recipe_dir/tests/workload.c" -L"$guest_prefix/lib" -Wl,-rpath,"$guest_prefix/lib" -lz -o "$work/tests/guest/workload"
-"$nm_tool" -D --undefined-only --just-symbol-name "$work/tests/guest/workload" | sed 's/@.*//' | sort -u >"$run_dir/generated/guest-undefined.txt"
+upstream_tests=(zlib_example zlib_example64 minigzip)
+registered_tests=(zlib_example zlib_example64)
+native_upstream=$native_prefix/share/zlib/upstream-tests
+guest_upstream=$guest_prefix/share/zlib/upstream-tests
+for test_name in "${upstream_tests[@]}"; do
+  [[ -f $native_upstream/$test_name && -f $guest_upstream/$test_name ]] || { echo "Missing upstream test: $test_name" >&2; exit 1; }
+  chmod +x "$native_upstream/$test_name" "$guest_upstream/$test_name"
+done
+{
+  "$nm_tool" -D --undefined-only --just-symbol-name "$work/tests/guest/workload"
+  for test_name in "${upstream_tests[@]}"; do
+    "$nm_tool" -D --undefined-only --just-symbol-name "$guest_upstream/$test_name"
+  done
+} | sed 's/@.*//' | sort -u >"$run_dir/generated/guest-undefined.txt"
 thunk_host=()
 thunk_guest=()
 index=0
@@ -114,11 +127,46 @@ printf '%s\n' "$hecate_status" >"$run_dir/logs/hecate/exit-status.txt"
 sed '/no version information available/d' "$run_dir/logs/native/workload.log" >"$run_dir/logs/native/workload.normalized"
 sed '/no version information available/d' "$run_dir/logs/hecate/workload.log" >"$run_dir/logs/hecate/workload.normalized"
 cmp "$run_dir/logs/native/workload.normalized" "$run_dir/logs/hecate/workload.normalized"
-python3 - "$run_dir/summary.json" "$native_status" "$hecate_status" "$index" <<'PY'
+upstream_failures=0
+for test_name in "${registered_tests[@]}"; do
+  native_test_dir=$work/upstream-native-$test_name
+  hecate_test_dir=$work/upstream-hecate-$test_name
+  mkdir -p "$native_test_dir" "$hecate_test_dir"
+  set +e
+  (cd "$native_test_dir" && LD_LIBRARY_PATH="$native_prefix/lib" "$native_upstream/$test_name") >"$run_dir/logs/native/$test_name.log" 2>&1
+  native_test_status=$?
+  (cd "$hecate_test_dir" && env LD_LIBRARY_PATH="$devkit/lib:$hecate_prefix/lib:$host_path" "$qemu" -L "$devkit/x86_64/sysroot" -E LD_BIND_NOW=1 -E "LD_LIBRARY_PATH=$devkit/x86_64/lib:$guest_path" "$guest_upstream/$test_name") >"$run_dir/logs/hecate/$test_name.log" 2>&1
+  hecate_test_status=$?
+  set -e
+  printf '%s\n' "$native_test_status" >"$run_dir/logs/native/$test_name.exit-status.txt"
+  printf '%s\n' "$hecate_test_status" >"$run_dir/logs/hecate/$test_name.exit-status.txt"
+  sed '/no version information available/d' "$run_dir/logs/native/$test_name.log" >"$run_dir/logs/native/$test_name.normalized"
+  sed '/no version information available/d' "$run_dir/logs/hecate/$test_name.log" >"$run_dir/logs/hecate/$test_name.normalized"
+  if [[ $native_test_status != 0 || $hecate_test_status != 0 ]] || ! cmp "$run_dir/logs/native/$test_name.normalized" "$run_dir/logs/hecate/$test_name.normalized"; then
+    upstream_failures=$((upstream_failures + 1))
+  fi
+done
+# minigzip is an upstream smoke tool rather than a CTest registration. Exercise
+# both compression and decompression through the shared-library boundary.
+printf 'zlib minigzip shared-library smoke\n' >"$work/minigzip.input"
+set +e
+LD_LIBRARY_PATH="$native_prefix/lib" "$native_upstream/minigzip" <"$work/minigzip.input" >"$work/minigzip.native.gz" 2>"$run_dir/logs/native/minigzip-compress.log"
+native_minigzip_compress=$?
+LD_LIBRARY_PATH="$native_prefix/lib" "$native_upstream/minigzip" -d <"$work/minigzip.native.gz" >"$work/minigzip.native.out" 2>"$run_dir/logs/native/minigzip-decompress.log"
+native_minigzip_decompress=$?
+env LD_LIBRARY_PATH="$devkit/lib:$hecate_prefix/lib:$host_path" "$qemu" -L "$devkit/x86_64/sysroot" -E LD_BIND_NOW=1 -E "LD_LIBRARY_PATH=$devkit/x86_64/lib:$guest_path" "$guest_upstream/minigzip" <"$work/minigzip.input" >"$work/minigzip.hecate.gz" 2>"$run_dir/logs/hecate/minigzip-compress.log"
+hecate_minigzip_compress=$?
+env LD_LIBRARY_PATH="$devkit/lib:$hecate_prefix/lib:$host_path" "$qemu" -L "$devkit/x86_64/sysroot" -E LD_BIND_NOW=1 -E "LD_LIBRARY_PATH=$devkit/x86_64/lib:$guest_path" "$guest_upstream/minigzip" -d <"$work/minigzip.hecate.gz" >"$work/minigzip.hecate.out" 2>"$run_dir/logs/hecate/minigzip-decompress.log"
+hecate_minigzip_decompress=$?
+set -e
+if [[ $native_minigzip_compress != 0 || $native_minigzip_decompress != 0 || $hecate_minigzip_compress != 0 || $hecate_minigzip_decompress != 0 ]] || ! cmp "$work/minigzip.input" "$work/minigzip.native.out" || ! cmp "$work/minigzip.input" "$work/minigzip.hecate.out"; then
+  upstream_failures=$((upstream_failures + 1))
+fi
+python3 - "$run_dir/summary.json" "$native_status" "$hecate_status" "$index" "$upstream_failures" <<'PY'
 import json, pathlib, sys
-out, native, hecate, libraries = sys.argv[1:]
-ok = native == hecate == "0"
-data = {"schema_version": 2, "package": "zlib", "version": "1.3.2", "mechanism": "TLC Only", "status": "pass" if ok else "fail", "libraries": int(libraries), "native": {"exit_status": int(native)}, "hecate": {"exit_status": int(hecate)}, "output_match": True}
+out, native, hecate, libraries, upstream_failures = sys.argv[1:]
+ok = native == hecate == "0" and upstream_failures == "0"
+data = {"schema_version": 2, "package": "zlib", "version": "1.3.2", "mechanism": "TLC Only", "status": "pass" if ok else "fail", "libraries": int(libraries), "native": {"exit_status": int(native)}, "hecate": {"exit_status": int(hecate)}, "output_match": True, "upstream_suite": {"registered_tests": 2, "registered_passed": 2 - min(int(upstream_failures), 2), "additional_shared_tools": 1, "failed": int(upstream_failures), "excluded": ["static-library duplicates", "coverage instrumentation", "CMake install and package-consumer checks"]}}
 pathlib.Path(out).write_text(json.dumps(data, indent=2, sort_keys=True) + "\n")
 raise SystemExit(0 if ok else 1)
 PY

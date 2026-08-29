@@ -74,7 +74,17 @@ guest_prefix=$work/installed/guest/x64-linux-ae
 mkdir -p "$work/tests/native" "$work/tests/guest"
 run_logged "$run_dir/logs/preparation/test-native.log" cc -I"$native_prefix/include" "$recipe_dir/tests/workload.c" -L"$native_prefix/lib" -Wl,-rpath,"$native_prefix/lib" -lzstd -o "$work/tests/native/workload"
 run_logged "$run_dir/logs/preparation/test-guest.log" "$devkit/bin/x86_64-linux-gnu-clang" --sysroot="$devkit/x86_64/sysroot" -I"$guest_prefix/include" "$recipe_dir/tests/workload.c" -L"$guest_prefix/lib" -Wl,-rpath,"$guest_prefix/lib" -lzstd -o "$work/tests/guest/workload"
-"$nm_tool" -D --undefined-only --just-symbol-name "$work/tests/guest/workload" | sed 's/@.*//' | sort -u >"$run_dir/generated/guest-undefined.txt"
+native_upstream=$native_prefix/share/zstd/upstream-tests
+guest_upstream=$guest_prefix/share/zstd/upstream-tests
+native_cli=$native_upstream/bin/zstd
+guest_cli=$guest_upstream/bin/zstd
+chmod +x "$native_cli" "$guest_cli" "$recipe_dir/tests/QEMUWrapper.sh" "$recipe_dir/tests/QEMUDataGenWrapper.sh"
+run_logged "$run_dir/logs/preparation/datagen-native.log" cc -O2 -I"$native_upstream/programs" "$native_upstream/programs/datagen.c" "$native_upstream/programs/lorem.c" "$native_upstream/tests/loremOut.c" "$native_upstream/tests/datagencli.c" -o "$work/tests/native/datagen"
+run_logged "$run_dir/logs/preparation/datagen-guest.log" "$devkit/bin/x86_64-linux-gnu-clang" --sysroot="$devkit/x86_64/sysroot" -O2 -I"$guest_upstream/programs" "$guest_upstream/programs/datagen.c" "$guest_upstream/programs/lorem.c" "$guest_upstream/tests/loremOut.c" "$guest_upstream/tests/datagencli.c" -o "$work/tests/guest/datagen"
+{
+  "$nm_tool" -D --undefined-only --just-symbol-name "$work/tests/guest/workload"
+  "$nm_tool" -D --undefined-only --just-symbol-name "$guest_cli"
+} | sed 's/@.*//' | sort -u >"$run_dir/generated/guest-undefined.txt"
 thunk_host=()
 thunk_guest=()
 index=0
@@ -93,7 +103,7 @@ for pattern in "${patterns[@]}"; do
   { echo '[Function]'; cat "$audit/used-functions.txt"; } >"$audit/Symbols.conf"
   [[ -s $audit/used-functions.txt ]] || { echo "No tested functions found for $lib_name" >&2; exit 1; }
   thunk="$work/thunks/$lib_name"
-  run_logged "$run_dir/logs/preparation/thunk-$lib_name.log" "$devkit/bin/LoreMakeThunk.py" --name "$lib_name" --out "$thunk" --lib "$host_lib" --symbols "$audit/Symbols.conf" --desc "$overlay_dir/ports/zstd/lorelei/Desc.h" --gtl-alias "$(basename "$host_lib")" --devkit "$devkit" --keep-intermediates -- -I"$hecate_prefix/include"
+  run_logged "$run_dir/logs/preparation/thunk-$lib_name.log" "$devkit/bin/LoreMakeThunk.py" --name "$lib_name" --out "$thunk" --lib "$host_lib" --symbols "$audit/Symbols.conf" --desc "$overlay_dir/ports/zstd/lorelei/Desc.h" --gtl-alias "$(basename "$host_lib")" --devkit "$devkit" --keep-intermediates -- -DZDICT_STATIC_LINKING_ONLY -I"$hecate_prefix/include" -I"$hecate_prefix/share/zstd/upstream-tests/lib"
   cp "$thunk/.gen/$lib_name/ThunkStat.json" "$audit/ThunkStat.json"
   thunk_host+=("$thunk")
   thunk_guest+=("$thunk/x86_64")
@@ -114,11 +124,29 @@ printf '%s\n' "$hecate_status" >"$run_dir/logs/hecate/exit-status.txt"
 sed '/no version information available/d' "$run_dir/logs/native/workload.log" >"$run_dir/logs/native/workload.normalized"
 sed '/no version information available/d' "$run_dir/logs/hecate/workload.log" >"$run_dir/logs/hecate/workload.normalized"
 cmp "$run_dir/logs/native/workload.normalized" "$run_dir/logs/hecate/workload.normalized"
-python3 - "$run_dir/summary.json" "$native_status" "$hecate_status" "$index" <<'PY'
+upstream_failures=0
+native_suite=$work/zstd-play-native
+hecate_suite=$work/zstd-play-hecate
+mkdir -p "$native_suite/tests" "$hecate_suite/tests"
+cp -R "$native_upstream/tests/." "$native_suite/tests/"
+cp -R "$guest_upstream/tests/." "$hecate_suite/tests/"
+cp -R "$native_upstream/programs" "$native_suite/programs"
+cp -R "$guest_upstream/programs" "$hecate_suite/programs"
+# These four invocations are upstream's alias checks. Prefix them just like the
+# other guest-architecture invocations so they cross QEMU and the TLC thunk.
+sed -i -E 's#^([[:space:]]*)\./(xz|unxz|lzma|unlzma)([[:space:]])#\1$EXE_PREFIX ./\2\3#' "$hecate_suite/tests/playTests.sh"
+set +e
+(cd "$native_suite" && EXE_PREFIX= ZSTD_BIN="$native_cli" DATAGEN_BIN="$work/tests/native/datagen" LD_LIBRARY_PATH="$native_prefix/lib" sh ./tests/playTests.sh) >"$run_dir/logs/native/upstream-playTests.log" 2>&1
+native_suite_status=$?
+(cd "$hecate_suite" && QEMU="$qemu" DEVKIT="$devkit" GUEST_LIB_DIR="$guest_prefix/lib" LORE_AE_HECATE=1 HOST_LIB_DIR="$hecate_prefix/lib" THUNK_DIR="$work/thunks/zstd" EXE_PREFIX="$recipe_dir/tests/QEMUWrapper.sh" ZSTD_BIN="$guest_cli" QEMU_WRAPPER="$recipe_dir/tests/QEMUWrapper.sh" GUEST_DATAGEN="$work/tests/guest/datagen" DATAGEN_BIN="$recipe_dir/tests/QEMUDataGenWrapper.sh" sh ./tests/playTests.sh) >"$run_dir/logs/hecate/upstream-playTests.log" 2>&1
+hecate_suite_status=$?
+set -e
+if [[ $native_suite_status != 0 || $hecate_suite_status != 0 ]]; then upstream_failures=1; fi
+python3 - "$run_dir/summary.json" "$native_status" "$hecate_status" "$index" "$native_suite_status" "$hecate_suite_status" <<'PY'
 import json, pathlib, sys
-out, native, hecate, libraries = sys.argv[1:]
-ok = native == hecate == "0"
-data = {"schema_version": 2, "package": "zstd", "version": "1.5.7", "mechanism": "TLC Only", "status": "pass" if ok else "fail", "libraries": int(libraries), "native": {"exit_status": int(native)}, "hecate": {"exit_status": int(hecate)}, "output_match": True}
+out, native, hecate, libraries, native_suite, hecate_suite = sys.argv[1:]
+ok = native == hecate == native_suite == hecate_suite == "0"
+data = {"schema_version": 2, "package": "zstd", "version": "1.5.7", "mechanism": "TLC Only", "status": "pass" if ok else "fail", "libraries": int(libraries), "native": {"exit_status": int(native)}, "hecate": {"exit_status": int(hecate)}, "output_match": True, "upstream_suite": {"test": "tests/playTests.sh", "native_exit_status": int(native_suite), "hecate_exit_status": int(hecate_suite), "excluded": ["CMake fullbench, fuzzer, and zstreamtest statically link libzstd and do not cross the shared-library ABI", "paramgrill is a performance tuner"]}}
 pathlib.Path(out).write_text(json.dumps(data, indent=2, sort_keys=True) + "\n")
 raise SystemExit(0 if ok else 1)
 PY

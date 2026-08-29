@@ -6,6 +6,7 @@
   "license": "MIT",
   "supports": "linux",
   "dependencies": [
+    "zlib",
     {
       "name": "vcpkg-cmake",
       "host": true

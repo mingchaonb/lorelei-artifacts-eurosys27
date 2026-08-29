@@ -72,8 +72,17 @@ fi
 native_prefix=$work/installed/native/arm64-linux-ae
 guest_prefix=$work/installed/guest/x64-linux-ae
 mkdir -p "$work/tests/native" "$work/tests/guest"
-run_logged "$run_dir/logs/preparation/test-native.log" cc -I"$native_prefix/include" "$recipe_dir/tests/workload.c" -L"$native_prefix/lib" -Wl,-rpath,"$native_prefix/lib" -lxxhash -o "$work/tests/native/workload"
-run_logged "$run_dir/logs/preparation/test-guest.log" "$devkit/bin/x86_64-linux-gnu-clang" --sysroot="$devkit/x86_64/sysroot" -I"$guest_prefix/include" "$recipe_dir/tests/workload.c" -L"$guest_prefix/lib" -Wl,-rpath,"$guest_prefix/lib" -lxxhash -o "$work/tests/guest/workload"
+for lane in native guest; do
+  prefix=$native_prefix
+  if [[ $lane == guest ]]; then prefix=$guest_prefix; fi
+  mkdir -p "$work/upstream-$lane/tests" "$work/upstream-$lane/cli"
+  cp "$prefix/share/xxhash/upstream-source/xxhash.h" "$work/upstream-$lane/"
+  cp "$prefix/share/xxhash/upstream-source/tests/sanity_test_vectors.h" "$work/upstream-$lane/tests/"
+  cp "$prefix/share/xxhash/upstream-source/cli/"* "$work/upstream-$lane/cli/"
+  sed '/^#define XXH_IMPLEMENTATION/d' "$prefix/share/xxhash/upstream-source/tests/sanity_test.c" >"$work/upstream-$lane/tests/sanity_test.c"
+done
+run_logged "$run_dir/logs/preparation/test-native.log" cc -O2 -include stdlib.h -include string.h "$work/upstream-native/tests/sanity_test.c" -L"$native_prefix/lib" -Wl,-rpath,"$native_prefix/lib" -lxxhash -o "$work/tests/native/workload"
+run_logged "$run_dir/logs/preparation/test-guest.log" "$devkit/bin/x86_64-linux-gnu-clang" --sysroot="$devkit/x86_64/sysroot" -O2 -include stdlib.h -include string.h "$work/upstream-guest/tests/sanity_test.c" -L"$guest_prefix/lib" -Wl,-rpath,"$guest_prefix/lib" -lxxhash -o "$work/tests/guest/workload"
 "$nm_tool" -D --undefined-only --just-symbol-name "$work/tests/guest/workload" | sed 's/@.*//' | sort -u >"$run_dir/generated/guest-undefined.txt"
 thunk_host=()
 thunk_guest=()
@@ -118,7 +127,7 @@ python3 - "$run_dir/summary.json" "$native_status" "$hecate_status" "$index" <<'
 import json, pathlib, sys
 out, native, hecate, libraries = sys.argv[1:]
 ok = native == hecate == "0"
-data = {"schema_version": 2, "package": "xxhash", "version": "0.8.3", "mechanism": "TLC Only", "status": "pass" if ok else "fail", "libraries": int(libraries), "native": {"exit_status": int(native)}, "hecate": {"exit_status": int(hecate)}, "output_match": True}
+data = {"schema_version": 2, "package": "xxhash", "version": "0.8.3", "mechanism": "TLC Only", "status": "pass" if ok else "fail", "libraries": int(libraries), "native": {"exit_status": int(native)}, "hecate": {"exit_status": int(hecate)}, "output_match": True, "upstream_suite": {"program": "tests/sanity_test.c", "scope": "all official vector families", "implementation_embedding_removed": True}}
 pathlib.Path(out).write_text(json.dumps(data, indent=2, sort_keys=True) + "\n")
 raise SystemExit(0 if ok else 1)
 PY

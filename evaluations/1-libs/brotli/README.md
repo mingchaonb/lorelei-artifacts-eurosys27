@@ -10,4 +10,4 @@ This recipe fetches the official brotli 1.2.0 release through the pinned vcpkg o
 ./evaluations/1-libs/brotli/run.sh --install-only /path/to/lorelei-devkit
 ```
 
-The workload checks a deterministic public-API construction or roundtrip path. Success requires identical normalized output and exit status zero in both lanes. The workload directly calls the common, encoder, and decoder DSOs. This claim excludes fuzzing, sanitizers, stress, concurrency, command-line tools, optional backends, and the complete upstream suite. The mechanism is TLC only. It does not load or generate HLR extensions.
+The recipe runs the directed API workload, all 28 upstream roundtrip registrations, and two additional valid compatibility vectors. The four Canterbury inputs are fetched from the verified official v1.2.0 `testdata.txz` release asset. The CLI path dynamically exercises the common, encoder, and decoder DSOs in native and Hecate lanes. Fuzzers and benchmarks are excluded. The mechanism is TLC only and does not load or generate HLR extensions.

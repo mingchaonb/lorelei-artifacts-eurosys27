@@ -15,12 +15,24 @@ string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "static" ZLIB_BUILD_STATIC)
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
     OPTIONS
-        -DZLIB_BUILD_TESTING=OFF
+        -DZLIB_BUILD_TESTING=ON
         -DZLIB_BUILD_SHARED=${ZLIB_BUILD_SHARED}
         -DZLIB_BUILD_STATIC=${ZLIB_BUILD_STATIC}
 )
 
 vcpkg_cmake_install()
+
+# Preserve the upstream shared-library runtime tests for the evaluation recipe.
+# The static, coverage, and CMake package-consumer tests do not exercise the
+# installed shared-library ABI and are intentionally not exported here.
+set(ZLIB_TEST_DIR "${CURRENT_PACKAGES_DIR}/share/${PORT}/upstream-tests")
+file(MAKE_DIRECTORY "${ZLIB_TEST_DIR}")
+foreach(TEST_NAME IN ITEMS zlib_example zlib_example64 minigzip)
+    if(EXISTS "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/test/${TEST_NAME}")
+        file(INSTALL "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/test/${TEST_NAME}"
+             DESTINATION "${ZLIB_TEST_DIR}")
+    endif()
+endforeach()
 vcpkg_copy_pdbs()
 vcpkg_cmake_config_fixup(CONFIG_PATH "lib/cmake/zlib")
 vcpkg_fixup_pkgconfig()

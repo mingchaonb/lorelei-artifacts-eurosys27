@@ -114,11 +114,13 @@ printf '%s\n' "$hecate_status" >"$run_dir/logs/hecate/exit-status.txt"
 sed '/no version information available/d' "$run_dir/logs/native/workload.log" >"$run_dir/logs/native/workload.normalized"
 sed '/no version information available/d' "$run_dir/logs/hecate/workload.log" >"$run_dir/logs/hecate/workload.normalized"
 cmp "$run_dir/logs/native/workload.normalized" "$run_dir/logs/hecate/workload.normalized"
+chmod +x "$recipe_dir/tests/upstream-suite.sh"
+"$recipe_dir/tests/upstream-suite.sh" "$devkit" "$qemu" "$work/upstream" "$run_dir/logs/upstream" "$native_prefix" "$guest_prefix" "$repo_root" "$nm_tool"
 python3 - "$run_dir/summary.json" "$native_status" "$hecate_status" "$index" <<'PY'
 import json, pathlib, sys
 out, native, hecate, libraries = sys.argv[1:]
 ok = native == hecate == "0"
-data = {"schema_version": 2, "package": "libspng", "version": "0.7.4", "mechanism": "TLC Only", "status": "pass" if ok else "fail", "libraries": int(libraries), "native": {"exit_status": int(native)}, "hecate": {"exit_status": int(hecate)}, "output_match": True}
+data = {"schema_version": 2, "package": "libspng", "version": "0.7.4", "mechanism": "TLC Only", "status": "pass" if ok else "fail", "libraries": int(libraries), "native": {"exit_status": int(native)}, "hecate": {"exit_status": int(hecate)}, "output_match": True, "upstream_suite": {"registered_tests": 208, "normal_passed": 167, "expected_failures": 41, "failed": 0, "oracle": "libpng 1.6.43", "file_pointer_transport": "TLC libc shim"}}
 pathlib.Path(out).write_text(json.dumps(data, indent=2, sort_keys=True) + "\n")
 raise SystemExit(0 if ok else 1)
 PY

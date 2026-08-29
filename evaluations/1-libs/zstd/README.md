@@ -10,4 +10,4 @@ This recipe fetches the official zstd 1.5.7 release through the pinned vcpkg ove
 ./evaluations/1-libs/zstd/run.sh --install-only /path/to/lorelei-devkit
 ```
 
-The workload checks a deterministic public-API construction or roundtrip path. Success requires identical normalized output and exit status zero in both lanes. This claim excludes fuzzing, sanitizers, stress, concurrency, command-line tools, optional backends, and the complete upstream suite. The mechanism is TLC only. It does not load or generate HLR extensions.
+The recipe runs the directed API workload and upstream's comprehensive `tests/playTests.sh` CLI correctness suite in native and Hecate lanes, using a zstd CLI dynamically linked to libzstd. Upstream CMake's `fullbench`, `fuzzer`, and `zstreamtest` targets are explicitly excluded from the TLC ABI count because v1.5.7 hard-wires them to `libzstd_static`; `paramgrill` is a performance tuner. The mechanism is TLC only and does not load or generate HLR extensions.

@@ -28,7 +28,9 @@ vcpkg_cmake_configure(
     OPTIONS
         ${FEATURE_OPTIONS}
         ${WASM_OPTIONS}
-        -DBUILD_TESTING=OFF
+        -DBUILD_TESTING=ON
+        -DBUILD_TOOLS=ON
+        -DCMAKE_CROSSCOMPILING_EMULATOR=${CMAKE_CURRENT_LIST_DIR}/lorelei/QEMUWrapper.sh
         -DCREATE_XZ_SYMLINKS=OFF
         -DCREATE_LZMA_SYMLINKS=OFF
         -DCMAKE_MSVC_DEBUG_INFORMATION_FORMAT=   # using flags from (vcpkg) toolchain

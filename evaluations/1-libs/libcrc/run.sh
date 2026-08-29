@@ -72,8 +72,10 @@ fi
 native_prefix=$work/installed/native/arm64-linux-ae
 guest_prefix=$work/installed/guest/x64-linux-ae
 mkdir -p "$work/tests/native" "$work/tests/guest"
-run_logged "$run_dir/logs/preparation/test-native.log" cc -I"$native_prefix/include" "$recipe_dir/tests/workload.c" -L"$native_prefix/lib" -Wl,-rpath,"$native_prefix/lib" -lcrc -o "$work/tests/native/workload"
-run_logged "$run_dir/logs/preparation/test-guest.log" "$devkit/bin/x86_64-linux-gnu-clang" --sysroot="$devkit/x86_64/sysroot" -I"$guest_prefix/include" "$recipe_dir/tests/workload.c" -L"$guest_prefix/lib" -Wl,-rpath,"$guest_prefix/lib" -lcrc -o "$work/tests/guest/workload"
+native_tests=$native_prefix/share/libcrc/upstream-tests
+guest_tests=$guest_prefix/share/libcrc/upstream-tests
+run_logged "$run_dir/logs/preparation/test-native.log" cc -funsigned-char -I"$native_prefix/include" -I"$native_tests" "$native_tests/testall.c" "$native_tests/testcrc.c" "$native_tests/testnmea.c" -L"$native_prefix/lib" -Wl,-rpath,"$native_prefix/lib" -lcrc -o "$work/tests/native/workload"
+run_logged "$run_dir/logs/preparation/test-guest.log" "$devkit/bin/x86_64-linux-gnu-clang" --sysroot="$devkit/x86_64/sysroot" -funsigned-char -I"$guest_prefix/include" -I"$guest_tests" "$guest_tests/testall.c" "$guest_tests/testcrc.c" "$guest_tests/testnmea.c" -L"$guest_prefix/lib" -Wl,-rpath,"$guest_prefix/lib" -lcrc -o "$work/tests/guest/workload"
 "$nm_tool" -D --undefined-only --just-symbol-name "$work/tests/guest/workload" | sed 's/@.*//' | sort -u >"$run_dir/generated/guest-undefined.txt"
 thunk_host=()
 thunk_guest=()
@@ -118,7 +120,7 @@ python3 - "$run_dir/summary.json" "$native_status" "$hecate_status" "$index" <<'
 import json, pathlib, sys
 out, native, hecate, libraries = sys.argv[1:]
 ok = native == hecate == "0"
-data = {"schema_version": 2, "package": "libcrc", "version": "2.0", "mechanism": "TLC Only", "status": "pass" if ok else "fail", "libraries": int(libraries), "native": {"exit_status": int(native)}, "hecate": {"exit_status": int(hecate)}, "output_match": True}
+data = {"schema_version": 2, "package": "libcrc", "version": "2.0", "mechanism": "TLC Only", "status": "pass" if ok else "fail", "libraries": int(libraries), "native": {"exit_status": int(native)}, "hecate": {"exit_status": int(hecate)}, "output_match": True, "upstream_suite": {"program": "testall", "scope": "complete", "components": ["CRC routines", "NMEA checksum"]}}
 pathlib.Path(out).write_text(json.dumps(data, indent=2, sort_keys=True) + "\n")
 raise SystemExit(0 if ok else 1)
 PY

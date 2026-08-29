@@ -29,6 +29,16 @@ vcpkg_cmake_configure(
 )
 
 vcpkg_cmake_install()
+file(INSTALL "${SOURCE_PATH}/bzip2.c"
+    DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}/upstream-tests")
+file(INSTALL
+    "${SOURCE_PATH}/sample1.ref"
+    "${SOURCE_PATH}/sample2.ref"
+    "${SOURCE_PATH}/sample3.ref"
+    "${SOURCE_PATH}/sample1.bz2"
+    "${SOURCE_PATH}/sample2.bz2"
+    "${SOURCE_PATH}/sample3.bz2"
+    DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}/upstream-tests")
 vcpkg_copy_pdbs()
 
 file(READ "${CURRENT_PACKAGES_DIR}/include/bzlib.h" BZLIB_H)

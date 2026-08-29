@@ -1,0 +1,12 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 3ab171a..df2c667 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -136,6 +136,6 @@ lzo_add_executable(precomp2 examples/precomp2.c)
+ lzo_add_executable(simple   examples/simple.c)
+ # some boring internal test programs
+-if(0)
++if(1)
+     lzo_add_executable(align    tests/align.c)
+     lzo_add_executable(chksum   tests/chksum.c)
+     lzo_add_executable(promote  tests/promote.c)

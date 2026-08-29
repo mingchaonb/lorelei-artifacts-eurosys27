@@ -10,4 +10,4 @@ This recipe fetches the official libdeflate 1.26 release through the pinned vcpk
 ./evaluations/1-libs/libdeflate/run.sh --install-only /path/to/lorelei-devkit
 ```
 
-The workload checks a deterministic public-API construction or roundtrip path. Success requires identical normalized output and exit status zero in both lanes. This claim excludes fuzzing, sanitizers, stress, concurrency, command-line tools, optional backends, and the complete upstream suite. The mechanism is TLC only. It does not load or generate HLR extensions.
+The recipe runs the directed zlib-format roundtrip and all eight upstream registered unit-test executables in native and Hecate lanes. The upstream set covers checksums, custom allocation callbacks, incomplete codes, invalid streams, literal-run-length overflow, overread protection, slow decompression, and trailing bytes. Success requires all nine processes in each lane to exit zero. The non-registered benchmark and command-line gzip integration scripts are outside this shared-library correctness suite. The mechanism is TLC only. It does not load or generate HLR extensions.

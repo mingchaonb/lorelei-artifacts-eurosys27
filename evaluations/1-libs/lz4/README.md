@@ -10,4 +10,4 @@ This recipe fetches the official lz4 1.10.0 release through the pinned vcpkg ove
 ./evaluations/1-libs/lz4/run.sh --install-only /path/to/lorelei-devkit
 ```
 
-The workload checks a deterministic public-API construction or roundtrip path. Success requires identical normalized output and exit status zero in both lanes. This claim excludes fuzzing, sanitizers, stress, concurrency, command-line tools, optional backends, and the complete upstream suite. The mechanism is TLC only. It does not load or generate HLR extensions.
+The recipe runs the directed API workload and upstream `tests/fuzzer.c` for 150 deterministic cycles with seed 12345 in native and Hecate lanes. This is broad randomized coverage of normal, HC, dictionary, streaming, and frame APIs, but it is a bounded run of an intentionally unbounded upstream fuzzer rather than a claim that fuzzing is complete. Success requires both completion markers and zero exits. The mechanism is TLC only and does not load or generate HLR extensions.

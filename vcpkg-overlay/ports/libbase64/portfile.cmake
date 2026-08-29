@@ -12,5 +12,13 @@ vcpkg_cmake_configure(SOURCE_PATH "${SOURCE_PATH}" OPTIONS
     -DBASE64_WITH_AVX2=OFF -DBASE64_WITH_AVX512=OFF -DBASE64_WITH_NEON32=OFF
     -DBASE64_WITH_NEON64=OFF)
 vcpkg_cmake_install()
+file(INSTALL
+    "${SOURCE_PATH}/test/codec_supported.c"
+    "${SOURCE_PATH}/test/codec_supported.h"
+    "${SOURCE_PATH}/test/test_base64.c"
+    "${SOURCE_PATH}/test/benchmark.c"
+    "${SOURCE_PATH}/test/moby_dick.h"
+    DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}/upstream-tests"
+)
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include" "${CURRENT_PACKAGES_DIR}/debug/share")
 vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")

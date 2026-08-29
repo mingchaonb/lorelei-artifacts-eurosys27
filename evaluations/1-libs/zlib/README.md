@@ -10,4 +10,6 @@ This recipe fetches the official zlib 1.3.2 release through the pinned vcpkg ove
 ./evaluations/1-libs/zlib/run.sh --install-only /path/to/lorelei-devkit
 ```
 
-The workload checks a deterministic public-API construction or roundtrip path. Success requires identical normalized output and exit status zero in both lanes. This claim excludes fuzzing, sanitizers, stress, concurrency, command-line tools, optional backends, and the complete upstream suite. The mechanism is TLC only. It does not load or generate HLR extensions.
+The recipe runs the directed public-API roundtrip, both upstream CTest registrations that link the shared library (`zlib_example` and `zlib_example64`), and bidirectional `minigzip` smoke coverage. Success requires zero exit status in both lanes, identical normalized example output, and successful native and Hecate minigzip roundtrips.
+
+The upstream static-library duplicates, coverage instrumentation, and CMake install/package-consumer checks are excluded because they do not execute across the installed shared-library ABI. The mechanism is TLC only. It does not load or generate HLR extensions.
