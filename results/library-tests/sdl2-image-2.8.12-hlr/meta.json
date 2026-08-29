@@ -1,0 +1,17 @@
+{
+  "library": "SDL2_image",
+  "release": "2.8.12",
+  "baseline_commit": "12cb2e40330d256d9b1329647be8f366546d715c",
+  "hlr_commit": "2aaf516",
+  "hlr_generated_commit": "4dcfe8b",
+  "source_branch": "ae",
+  "configuration": "shared library with built-in BMP, GIF, LBM, PCX, PNM, QOI, SVG, TGA, XCF, XPM and XV backends",
+  "translation_units": 20,
+  "hlr_ccg_signatures": 1,
+  "hlr_fdg_signatures": 1,
+  "source_insertions": 227,
+  "source_deletions": 22,
+  "manual_change": "Disable FDG publication for internal format detector functions retained in static initializer tables",
+  "workload": "Load a two-pixel PNM image from an SDL_RWops object and free the returned surface",
+  "result": "pass"
+}

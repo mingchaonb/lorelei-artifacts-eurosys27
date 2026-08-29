@@ -1,0 +1,365 @@
+[1/3] Building C object CMakeFiles/SDL2_image.dir/src/IMG.c.o
+FAILED: CMakeFiles/SDL2_image.dir/src/IMG.c.o 
+/usr/bin/cc -DBUILD_SDL -DDLL_EXPORT -DLOAD_BMP -DLOAD_GIF -DLOAD_LBM -DLOAD_PCX -DLOAD_PNM -DLOAD_QOI -DLOAD_SVG -DLOAD_TGA -DLOAD_XCF -DLOAD_XPM -DLOAD_XV -DSDL_BUILD_MAJOR_VERSION=2 -DSDL_BUILD_MICRO_VERSION=12 -DSDL_BUILD_MINOR_VERSION=8 -I/home/functioner/Documents/rover2024/ae-libs/SDL2_image/include -isystem /home/functioner/Documents/rover2024/ae-libs/SDL-build/install-clean/include -isystem /home/functioner/Documents/rover2024/ae-libs/SDL-build/install-clean/include/SDL2 -I/home/functioner/Documents/rover2024/lorelei-ae/build/install/include -O3 -DNDEBUG -fPIC -fvisibility=hidden -MD -MT CMakeFiles/SDL2_image.dir/src/IMG.c.o -MF CMakeFiles/SDL2_image.dir/src/IMG.c.o.d -o CMakeFiles/SDL2_image.dir/src/IMG.c.o -c /home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c
+In file included from /home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c:9:
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:70:7: error: initializer element is not constant
+   70 |       ((__LORE_FUNC_TYPE__(EXPR))                                                                  \
+      |       ^
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:108:25: note: in expansion of macro ‘LORE_FDG_GET’
+  108 | #define LORE_FDG_1_8(X) LORE_FDG_GET(1, 8, (X))
+      |                         ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c:70:14: note: in expansion of macro ‘LORE_FDG_1_8’
+   70 |     { "AVIF",LORE_FDG_1_8(IMG_isAVIF),IMG_LoadAVIF_RW },
+      |              ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:70:7: note: (near initialization for ‘supported[1].is’)
+   70 |       ((__LORE_FUNC_TYPE__(EXPR))                                                                  \
+      |       ^
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:108:25: note: in expansion of macro ‘LORE_FDG_GET’
+  108 | #define LORE_FDG_1_8(X) LORE_FDG_GET(1, 8, (X))
+      |                         ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c:70:14: note: in expansion of macro ‘LORE_FDG_1_8’
+   70 |     { "AVIF",LORE_FDG_1_8(IMG_isAVIF),IMG_LoadAVIF_RW },
+      |              ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:70:7: error: initializer element is not constant
+   70 |       ((__LORE_FUNC_TYPE__(EXPR))                                                                  \
+      |       ^
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:110:26: note: in expansion of macro ‘LORE_FDG_GET’
+  110 | #define LORE_FDG_1_10(X) LORE_FDG_GET(1, 10, (X))
+      |                          ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c:71:14: note: in expansion of macro ‘LORE_FDG_1_10’
+   71 |     { "CUR", LORE_FDG_1_10(IMG_isCUR), IMG_LoadCUR_RW },
+      |              ^~~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:70:7: note: (near initialization for ‘supported[2].is’)
+   70 |       ((__LORE_FUNC_TYPE__(EXPR))                                                                  \
+      |       ^
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:110:26: note: in expansion of macro ‘LORE_FDG_GET’
+  110 | #define LORE_FDG_1_10(X) LORE_FDG_GET(1, 10, (X))
+      |                          ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c:71:14: note: in expansion of macro ‘LORE_FDG_1_10’
+   71 |     { "CUR", LORE_FDG_1_10(IMG_isCUR), IMG_LoadCUR_RW },
+      |              ^~~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:70:7: error: initializer element is not constant
+   70 |       ((__LORE_FUNC_TYPE__(EXPR))                                                                  \
+      |       ^
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:109:25: note: in expansion of macro ‘LORE_FDG_GET’
+  109 | #define LORE_FDG_1_9(X) LORE_FDG_GET(1, 9, (X))
+      |                         ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c:72:14: note: in expansion of macro ‘LORE_FDG_1_9’
+   72 |     { "ICO", LORE_FDG_1_9(IMG_isICO), IMG_LoadICO_RW },
+      |              ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:70:7: note: (near initialization for ‘supported[3].is’)
+   70 |       ((__LORE_FUNC_TYPE__(EXPR))                                                                  \
+      |       ^
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:109:25: note: in expansion of macro ‘LORE_FDG_GET’
+  109 | #define LORE_FDG_1_9(X) LORE_FDG_GET(1, 9, (X))
+      |                         ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c:72:14: note: in expansion of macro ‘LORE_FDG_1_9’
+   72 |     { "ICO", LORE_FDG_1_9(IMG_isICO), IMG_LoadICO_RW },
+      |              ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:70:7: error: initializer element is not constant
+   70 |       ((__LORE_FUNC_TYPE__(EXPR))                                                                  \
+      |       ^
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:111:26: note: in expansion of macro ‘LORE_FDG_GET’
+  111 | #define LORE_FDG_1_11(X) LORE_FDG_GET(1, 11, (X))
+      |                          ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c:73:14: note: in expansion of macro ‘LORE_FDG_1_11’
+   73 |     { "BMP", LORE_FDG_1_11(IMG_isBMP), IMG_LoadBMP_RW },
+      |              ^~~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:70:7: note: (near initialization for ‘supported[4].is’)
+   70 |       ((__LORE_FUNC_TYPE__(EXPR))                                                                  \
+      |       ^
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:111:26: note: in expansion of macro ‘LORE_FDG_GET’
+  111 | #define LORE_FDG_1_11(X) LORE_FDG_GET(1, 11, (X))
+      |                          ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c:73:14: note: in expansion of macro ‘LORE_FDG_1_11’
+   73 |     { "BMP", LORE_FDG_1_11(IMG_isBMP), IMG_LoadBMP_RW },
+      |              ^~~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:70:7: error: initializer element is not constant
+   70 |       ((__LORE_FUNC_TYPE__(EXPR))                                                                  \
+      |       ^
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:112:26: note: in expansion of macro ‘LORE_FDG_GET’
+  112 | #define LORE_FDG_1_12(X) LORE_FDG_GET(1, 12, (X))
+      |                          ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c:74:14: note: in expansion of macro ‘LORE_FDG_1_12’
+   74 |     { "GIF", LORE_FDG_1_12(IMG_isGIF), IMG_LoadGIF_RW },
+      |              ^~~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:70:7: note: (near initialization for ‘supported[5].is’)
+   70 |       ((__LORE_FUNC_TYPE__(EXPR))                                                                  \
+      |       ^
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:112:26: note: in expansion of macro ‘LORE_FDG_GET’
+  112 | #define LORE_FDG_1_12(X) LORE_FDG_GET(1, 12, (X))
+      |                          ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c:74:14: note: in expansion of macro ‘LORE_FDG_1_12’
+   74 |     { "GIF", LORE_FDG_1_12(IMG_isGIF), IMG_LoadGIF_RW },
+      |              ^~~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:70:7: error: initializer element is not constant
+   70 |       ((__LORE_FUNC_TYPE__(EXPR))                                                                  \
+      |       ^
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:113:26: note: in expansion of macro ‘LORE_FDG_GET’
+  113 | #define LORE_FDG_1_13(X) LORE_FDG_GET(1, 13, (X))
+      |                          ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c:75:14: note: in expansion of macro ‘LORE_FDG_1_13’
+   75 |     { "JPG", LORE_FDG_1_13(IMG_isJPG), IMG_LoadJPG_RW },
+      |              ^~~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:70:7: note: (near initialization for ‘supported[6].is’)
+   70 |       ((__LORE_FUNC_TYPE__(EXPR))                                                                  \
+      |       ^
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:113:26: note: in expansion of macro ‘LORE_FDG_GET’
+  113 | #define LORE_FDG_1_13(X) LORE_FDG_GET(1, 13, (X))
+      |                          ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c:75:14: note: in expansion of macro ‘LORE_FDG_1_13’
+   75 |     { "JPG", LORE_FDG_1_13(IMG_isJPG), IMG_LoadJPG_RW },
+      |              ^~~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:70:7: error: initializer element is not constant
+   70 |       ((__LORE_FUNC_TYPE__(EXPR))                                                                  \
+      |       ^
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:114:26: note: in expansion of macro ‘LORE_FDG_GET’
+  114 | #define LORE_FDG_1_14(X) LORE_FDG_GET(1, 14, (X))
+      |                          ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c:76:14: note: in expansion of macro ‘LORE_FDG_1_14’
+   76 |     { "JXL", LORE_FDG_1_14(IMG_isJXL), IMG_LoadJXL_RW },
+      |              ^~~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:70:7: note: (near initialization for ‘supported[7].is’)
+   70 |       ((__LORE_FUNC_TYPE__(EXPR))                                                                  \
+      |       ^
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:114:26: note: in expansion of macro ‘LORE_FDG_GET’
+  114 | #define LORE_FDG_1_14(X) LORE_FDG_GET(1, 14, (X))
+      |                          ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c:76:14: note: in expansion of macro ‘LORE_FDG_1_14’
+   76 |     { "JXL", LORE_FDG_1_14(IMG_isJXL), IMG_LoadJXL_RW },
+      |              ^~~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:70:7: error: initializer element is not constant
+   70 |       ((__LORE_FUNC_TYPE__(EXPR))                                                                  \
+      |       ^
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:115:26: note: in expansion of macro ‘LORE_FDG_GET’
+  115 | #define LORE_FDG_1_15(X) LORE_FDG_GET(1, 15, (X))
+      |                          ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c:77:14: note: in expansion of macro ‘LORE_FDG_1_15’
+   77 |     { "LBM", LORE_FDG_1_15(IMG_isLBM), IMG_LoadLBM_RW },
+      |              ^~~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:70:7: note: (near initialization for ‘supported[8].is’)
+   70 |       ((__LORE_FUNC_TYPE__(EXPR))                                                                  \
+      |       ^
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:115:26: note: in expansion of macro ‘LORE_FDG_GET’
+  115 | #define LORE_FDG_1_15(X) LORE_FDG_GET(1, 15, (X))
+      |                          ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c:77:14: note: in expansion of macro ‘LORE_FDG_1_15’
+   77 |     { "LBM", LORE_FDG_1_15(IMG_isLBM), IMG_LoadLBM_RW },
+      |              ^~~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:70:7: error: initializer element is not constant
+   70 |       ((__LORE_FUNC_TYPE__(EXPR))                                                                  \
+      |       ^
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:116:26: note: in expansion of macro ‘LORE_FDG_GET’
+  116 | #define LORE_FDG_1_16(X) LORE_FDG_GET(1, 16, (X))
+      |                          ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c:78:14: note: in expansion of macro ‘LORE_FDG_1_16’
+   78 |     { "PCX", LORE_FDG_1_16(IMG_isPCX), IMG_LoadPCX_RW },
+      |              ^~~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:70:7: note: (near initialization for ‘supported[9].is’)
+   70 |       ((__LORE_FUNC_TYPE__(EXPR))                                                                  \
+      |       ^
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:116:26: note: in expansion of macro ‘LORE_FDG_GET’
+  116 | #define LORE_FDG_1_16(X) LORE_FDG_GET(1, 16, (X))
+      |                          ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c:78:14: note: in expansion of macro ‘LORE_FDG_1_16’
+   78 |     { "PCX", LORE_FDG_1_16(IMG_isPCX), IMG_LoadPCX_RW },
+      |              ^~~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:70:7: error: initializer element is not constant
+   70 |       ((__LORE_FUNC_TYPE__(EXPR))                                                                  \
+      |       ^
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:117:26: note: in expansion of macro ‘LORE_FDG_GET’
+  117 | #define LORE_FDG_1_17(X) LORE_FDG_GET(1, 17, (X))
+      |                          ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c:79:14: note: in expansion of macro ‘LORE_FDG_1_17’
+   79 |     { "PNG", LORE_FDG_1_17(IMG_isPNG), IMG_LoadPNG_RW },
+      |              ^~~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:70:7: note: (near initialization for ‘supported[10].is’)
+   70 |       ((__LORE_FUNC_TYPE__(EXPR))                                                                  \
+      |       ^
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:117:26: note: in expansion of macro ‘LORE_FDG_GET’
+  117 | #define LORE_FDG_1_17(X) LORE_FDG_GET(1, 17, (X))
+      |                          ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c:79:14: note: in expansion of macro ‘LORE_FDG_1_17’
+   79 |     { "PNG", LORE_FDG_1_17(IMG_isPNG), IMG_LoadPNG_RW },
+      |              ^~~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:70:7: error: initializer element is not constant
+   70 |       ((__LORE_FUNC_TYPE__(EXPR))                                                                  \
+      |       ^
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:118:26: note: in expansion of macro ‘LORE_FDG_GET’
+  118 | #define LORE_FDG_1_18(X) LORE_FDG_GET(1, 18, (X))
+      |                          ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c:80:14: note: in expansion of macro ‘LORE_FDG_1_18’
+   80 |     { "PNM", LORE_FDG_1_18(IMG_isPNM), IMG_LoadPNM_RW }, /* P[BGP]M share code */
+      |              ^~~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:70:7: note: (near initialization for ‘supported[11].is’)
+   70 |       ((__LORE_FUNC_TYPE__(EXPR))                                                                  \
+      |       ^
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:118:26: note: in expansion of macro ‘LORE_FDG_GET’
+  118 | #define LORE_FDG_1_18(X) LORE_FDG_GET(1, 18, (X))
+      |                          ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c:80:14: note: in expansion of macro ‘LORE_FDG_1_18’
+   80 |     { "PNM", LORE_FDG_1_18(IMG_isPNM), IMG_LoadPNM_RW }, /* P[BGP]M share code */
+      |              ^~~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:70:7: error: initializer element is not constant
+   70 |       ((__LORE_FUNC_TYPE__(EXPR))                                                                  \
+      |       ^
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:101:25: note: in expansion of macro ‘LORE_FDG_GET’
+  101 | #define LORE_FDG_1_1(X) LORE_FDG_GET(1, 1, (X))
+      |                         ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c:81:14: note: in expansion of macro ‘LORE_FDG_1_1’
+   81 |     { "SVG", LORE_FDG_1_1(IMG_isSVG), IMG_LoadSVG_RW },
+      |              ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:70:7: note: (near initialization for ‘supported[12].is’)
+   70 |       ((__LORE_FUNC_TYPE__(EXPR))                                                                  \
+      |       ^
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:101:25: note: in expansion of macro ‘LORE_FDG_GET’
+  101 | #define LORE_FDG_1_1(X) LORE_FDG_GET(1, 1, (X))
+      |                         ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c:81:14: note: in expansion of macro ‘LORE_FDG_1_1’
+   81 |     { "SVG", LORE_FDG_1_1(IMG_isSVG), IMG_LoadSVG_RW },
+      |              ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:70:7: error: initializer element is not constant
+   70 |       ((__LORE_FUNC_TYPE__(EXPR))                                                                  \
+      |       ^
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:103:25: note: in expansion of macro ‘LORE_FDG_GET’
+  103 | #define LORE_FDG_1_3(X) LORE_FDG_GET(1, 3, (X))
+      |                         ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c:82:14: note: in expansion of macro ‘LORE_FDG_1_3’
+   82 |     { "TIF", LORE_FDG_1_3(IMG_isTIF), IMG_LoadTIF_RW },
+      |              ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:70:7: note: (near initialization for ‘supported[13].is’)
+   70 |       ((__LORE_FUNC_TYPE__(EXPR))                                                                  \
+      |       ^
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:103:25: note: in expansion of macro ‘LORE_FDG_GET’
+  103 | #define LORE_FDG_1_3(X) LORE_FDG_GET(1, 3, (X))
+      |                         ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c:82:14: note: in expansion of macro ‘LORE_FDG_1_3’
+   82 |     { "TIF", LORE_FDG_1_3(IMG_isTIF), IMG_LoadTIF_RW },
+      |              ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:70:7: error: initializer element is not constant
+   70 |       ((__LORE_FUNC_TYPE__(EXPR))                                                                  \
+      |       ^
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:104:25: note: in expansion of macro ‘LORE_FDG_GET’
+  104 | #define LORE_FDG_1_4(X) LORE_FDG_GET(1, 4, (X))
+      |                         ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c:83:14: note: in expansion of macro ‘LORE_FDG_1_4’
+   83 |     { "XCF", LORE_FDG_1_4(IMG_isXCF), IMG_LoadXCF_RW },
+      |              ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:70:7: note: (near initialization for ‘supported[14].is’)
+   70 |       ((__LORE_FUNC_TYPE__(EXPR))                                                                  \
+      |       ^
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:104:25: note: in expansion of macro ‘LORE_FDG_GET’
+  104 | #define LORE_FDG_1_4(X) LORE_FDG_GET(1, 4, (X))
+      |                         ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c:83:14: note: in expansion of macro ‘LORE_FDG_1_4’
+   83 |     { "XCF", LORE_FDG_1_4(IMG_isXCF), IMG_LoadXCF_RW },
+      |              ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:70:7: error: initializer element is not constant
+   70 |       ((__LORE_FUNC_TYPE__(EXPR))                                                                  \
+      |       ^
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:105:25: note: in expansion of macro ‘LORE_FDG_GET’
+  105 | #define LORE_FDG_1_5(X) LORE_FDG_GET(1, 5, (X))
+      |                         ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c:84:14: note: in expansion of macro ‘LORE_FDG_1_5’
+   84 |     { "XPM", LORE_FDG_1_5(IMG_isXPM), IMG_LoadXPM_RW },
+      |              ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:70:7: note: (near initialization for ‘supported[15].is’)
+   70 |       ((__LORE_FUNC_TYPE__(EXPR))                                                                  \
+      |       ^
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:105:25: note: in expansion of macro ‘LORE_FDG_GET’
+  105 | #define LORE_FDG_1_5(X) LORE_FDG_GET(1, 5, (X))
+      |                         ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c:84:14: note: in expansion of macro ‘LORE_FDG_1_5’
+   84 |     { "XPM", LORE_FDG_1_5(IMG_isXPM), IMG_LoadXPM_RW },
+      |              ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:70:7: error: initializer element is not constant
+   70 |       ((__LORE_FUNC_TYPE__(EXPR))                                                                  \
+      |       ^
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:106:25: note: in expansion of macro ‘LORE_FDG_GET’
+  106 | #define LORE_FDG_1_6(X) LORE_FDG_GET(1, 6, (X))
+      |                         ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c:85:14: note: in expansion of macro ‘LORE_FDG_1_6’
+   85 |     { "XV",  LORE_FDG_1_6(IMG_isXV),  IMG_LoadXV_RW  },
+      |              ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:70:7: note: (near initialization for ‘supported[16].is’)
+   70 |       ((__LORE_FUNC_TYPE__(EXPR))                                                                  \
+      |       ^
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:106:25: note: in expansion of macro ‘LORE_FDG_GET’
+  106 | #define LORE_FDG_1_6(X) LORE_FDG_GET(1, 6, (X))
+      |                         ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c:85:14: note: in expansion of macro ‘LORE_FDG_1_6’
+   85 |     { "XV",  LORE_FDG_1_6(IMG_isXV),  IMG_LoadXV_RW  },
+      |              ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:70:7: error: initializer element is not constant
+   70 |       ((__LORE_FUNC_TYPE__(EXPR))                                                                  \
+      |       ^
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:107:25: note: in expansion of macro ‘LORE_FDG_GET’
+  107 | #define LORE_FDG_1_7(X) LORE_FDG_GET(1, 7, (X))
+      |                         ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c:86:15: note: in expansion of macro ‘LORE_FDG_1_7’
+   86 |     { "WEBP", LORE_FDG_1_7(IMG_isWEBP), IMG_LoadWEBP_RW },
+      |               ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:70:7: note: (near initialization for ‘supported[17].is’)
+   70 |       ((__LORE_FUNC_TYPE__(EXPR))                                                                  \
+      |       ^
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:107:25: note: in expansion of macro ‘LORE_FDG_GET’
+  107 | #define LORE_FDG_1_7(X) LORE_FDG_GET(1, 7, (X))
+      |                         ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c:86:15: note: in expansion of macro ‘LORE_FDG_1_7’
+   86 |     { "WEBP", LORE_FDG_1_7(IMG_isWEBP), IMG_LoadWEBP_RW },
+      |               ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:70:7: error: initializer element is not constant
+   70 |       ((__LORE_FUNC_TYPE__(EXPR))                                                                  \
+      |       ^
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:102:25: note: in expansion of macro ‘LORE_FDG_GET’
+  102 | #define LORE_FDG_1_2(X) LORE_FDG_GET(1, 2, (X))
+      |                         ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c:87:14: note: in expansion of macro ‘LORE_FDG_1_2’
+   87 |     { "QOI", LORE_FDG_1_2(IMG_isQOI), IMG_LoadQOI_RW },
+      |              ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:70:7: note: (near initialization for ‘supported[18].is’)
+   70 |       ((__LORE_FUNC_TYPE__(EXPR))                                                                  \
+      |       ^
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:102:25: note: in expansion of macro ‘LORE_FDG_GET’
+  102 | #define LORE_FDG_1_2(X) LORE_FDG_GET(1, 2, (X))
+      |                         ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c:87:14: note: in expansion of macro ‘LORE_FDG_1_2’
+   87 |     { "QOI", LORE_FDG_1_2(IMG_isQOI), IMG_LoadQOI_RW },
+      |              ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:70:7: error: initializer element is not constant
+   70 |       ((__LORE_FUNC_TYPE__(EXPR))                                                                  \
+      |       ^
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:112:26: note: in expansion of macro ‘LORE_FDG_GET’
+  112 | #define LORE_FDG_1_12(X) LORE_FDG_GET(1, 12, (X))
+      |                          ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c:97:14: note: in expansion of macro ‘LORE_FDG_1_12’
+   97 |     { "GIF", LORE_FDG_1_12(IMG_isGIF), IMG_LoadGIFAnimation_RW },
+      |              ^~~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:70:7: note: (near initialization for ‘supported_anims[0].is’)
+   70 |       ((__LORE_FUNC_TYPE__(EXPR))                                                                  \
+      |       ^
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:112:26: note: in expansion of macro ‘LORE_FDG_GET’
+  112 | #define LORE_FDG_1_12(X) LORE_FDG_GET(1, 12, (X))
+      |                          ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c:97:14: note: in expansion of macro ‘LORE_FDG_1_12’
+   97 |     { "GIF", LORE_FDG_1_12(IMG_isGIF), IMG_LoadGIFAnimation_RW },
+      |              ^~~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:70:7: error: initializer element is not constant
+   70 |       ((__LORE_FUNC_TYPE__(EXPR))                                                                  \
+      |       ^
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:107:25: note: in expansion of macro ‘LORE_FDG_GET’
+  107 | #define LORE_FDG_1_7(X) LORE_FDG_GET(1, 7, (X))
+      |                         ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c:98:15: note: in expansion of macro ‘LORE_FDG_1_7’
+   98 |     { "WEBP", LORE_FDG_1_7(IMG_isWEBP), IMG_LoadWEBPAnimation_RW },
+      |               ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:70:7: note: (near initialization for ‘supported_anims[1].is’)
+   70 |       ((__LORE_FUNC_TYPE__(EXPR))                                                                  \
+      |       ^
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/../LoreFileContext.h:107:25: note: in expansion of macro ‘LORE_FDG_GET’
+  107 | #define LORE_FDG_1_7(X) LORE_FDG_GET(1, 7, (X))
+      |                         ^~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c:98:15: note: in expansion of macro ‘LORE_FDG_1_7’
+   98 |     { "WEBP", LORE_FDG_1_7(IMG_isWEBP), IMG_LoadWEBPAnimation_RW },
+      |               ^~~~~~~~~~~~
+ninja: build stopped: subcommand failed.

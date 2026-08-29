@@ -1,0 +1,5 @@
+[1/1] Cleaning all built files...
+Cleaning... 4 files.
+[1/3] Building C object CMakeFiles/SDL2_ttf.dir/SDL_ttf.c.o
+[2/3] Linking C shared library libSDL2_ttf-2.0.so.0.2400.0
+[3/3] Creating library symlink libSDL2_ttf-2.0.so.0 libSDL2_ttf-2.0.so

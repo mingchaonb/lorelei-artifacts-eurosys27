@@ -1,0 +1,33 @@
+{
+    "callbackCheckGuardSignatures": [
+        "int (*)(struct SDL_RWops *)"
+    ],
+    "filesNeedPatch": [
+        "/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c"
+    ],
+    "functionDecayGuardStats": [
+        {
+            "locations": {
+                "/home/functioner/Documents/rover2024/ae-libs/SDL2_image/include/SDL_image.h:1000:1": "/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c",
+                "/home/functioner/Documents/rover2024/ae-libs/SDL2_image/include/SDL_image.h:1043:1": "/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c",
+                "/home/functioner/Documents/rover2024/ae-libs/SDL2_image/include/SDL_image.h:1086:1": "/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c",
+                "/home/functioner/Documents/rover2024/ae-libs/SDL2_image/include/SDL_image.h:1129:1": "/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c",
+                "/home/functioner/Documents/rover2024/ae-libs/SDL2_image/include/SDL_image.h:1172:1": "/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c",
+                "/home/functioner/Documents/rover2024/ae-libs/SDL2_image/include/SDL_image.h:1215:1": "/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c",
+                "/home/functioner/Documents/rover2024/ae-libs/SDL2_image/include/SDL_image.h:1258:1": "/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c",
+                "/home/functioner/Documents/rover2024/ae-libs/SDL2_image/include/SDL_image.h:527:1": "/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c",
+                "/home/functioner/Documents/rover2024/ae-libs/SDL2_image/include/SDL_image.h:570:1": "/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c",
+                "/home/functioner/Documents/rover2024/ae-libs/SDL2_image/include/SDL_image.h:613:1": "/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c",
+                "/home/functioner/Documents/rover2024/ae-libs/SDL2_image/include/SDL_image.h:656:1": "/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c",
+                "/home/functioner/Documents/rover2024/ae-libs/SDL2_image/include/SDL_image.h:699:1": "/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c",
+                "/home/functioner/Documents/rover2024/ae-libs/SDL2_image/include/SDL_image.h:742:1": "/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c",
+                "/home/functioner/Documents/rover2024/ae-libs/SDL2_image/include/SDL_image.h:785:1": "/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c",
+                "/home/functioner/Documents/rover2024/ae-libs/SDL2_image/include/SDL_image.h:828:1": "/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c",
+                "/home/functioner/Documents/rover2024/ae-libs/SDL2_image/include/SDL_image.h:871:1": "/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c",
+                "/home/functioner/Documents/rover2024/ae-libs/SDL2_image/include/SDL_image.h:914:1": "/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c",
+                "/home/functioner/Documents/rover2024/ae-libs/SDL2_image/include/SDL_image.h:957:1": "/home/functioner/Documents/rover2024/ae-libs/SDL2_image/src/IMG.c"
+            },
+            "signature": "int (*)(struct SDL_RWops *)"
+        }
+    ]
+}

@@ -1,0 +1,56 @@
+{
+    "callbackCheckGuardSignatures": [
+        "void (*)(int, void *)",
+        "void (*)(int, void *, int, void *)"
+    ],
+    "filesNeedPatch": [
+        "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c",
+        "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_stereoreverse.c",
+        "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/mixer.c"
+    ],
+    "functionDecayGuardStats": [
+        {
+            "locations": {
+                "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c:96:1": "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c"
+            },
+            "signature": "void (*)(int, void *)"
+        },
+        {
+            "locations": {
+                "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c:1004:1": "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c",
+                "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c:1071:1": "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c",
+                "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c:1092:1": "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c",
+                "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c:112:1": "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c",
+                "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c:1139:1": "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c",
+                "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c:1199:1": "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c",
+                "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c:1234:1": "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c",
+                "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c:1281:1": "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c",
+                "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c:1340:1": "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c",
+                "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c:1361:1": "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c",
+                "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c:1408:1": "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c",
+                "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c:1468:1": "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c",
+                "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c:1487:1": "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c",
+                "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c:1530:1": "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c",
+                "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c:157:1": "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c",
+                "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c:246:1": "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c",
+                "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c:375:1": "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c",
+                "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c:426:1": "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c",
+                "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c:464:1": "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c",
+                "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c:513:1": "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c",
+                "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c:581:1": "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c",
+                "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c:630:1": "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c",
+                "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c:661:1": "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c",
+                "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c:713:1": "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c",
+                "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c:779:1": "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c",
+                "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c:813:1": "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c",
+                "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c:860:1": "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c",
+                "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c:919:1": "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c",
+                "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c:951:1": "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_position.c",
+                "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_stereoreverse.c:51:1": "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_stereoreverse.c",
+                "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_stereoreverse.c:68:1": "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_stereoreverse.c",
+                "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_stereoreverse.c:82:1": "/home/functioner/Documents/rover2024/ae-libs/SDL2_mixer/src/effect_stereoreverse.c"
+            },
+            "signature": "void (*)(int, void *, int, void *)"
+        }
+    ]
+}
