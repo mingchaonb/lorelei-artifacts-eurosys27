@@ -1,0 +1,83 @@
+{
+    "callbackCheckGuardSignatures": [
+        "void (*)(struct uv__work *)",
+        "void (*)(struct uv__work *, int)",
+        "void (*)(struct uv_async_s *)",
+        "void (*)(struct uv_handle_s *)",
+        "void (*)(struct uv_signal_s *, int)",
+        "void (*)(struct uv_work_s *)",
+        "void (*)(struct uv_work_s *, int)"
+    ],
+    "filesNeedPatch": [
+        "/home/functioner/Documents/rover2024/ae-libs/libuv/src/fs-poll.c",
+        "/home/functioner/Documents/rover2024/ae-libs/libuv/src/random.c",
+        "/home/functioner/Documents/rover2024/ae-libs/libuv/src/threadpool.c",
+        "/home/functioner/Documents/rover2024/ae-libs/libuv/src/unix/async.c",
+        "/home/functioner/Documents/rover2024/ae-libs/libuv/src/unix/core.c",
+        "/home/functioner/Documents/rover2024/ae-libs/libuv/src/unix/fs.c",
+        "/home/functioner/Documents/rover2024/ae-libs/libuv/src/unix/getaddrinfo.c",
+        "/home/functioner/Documents/rover2024/ae-libs/libuv/src/unix/getnameinfo.c",
+        "/home/functioner/Documents/rover2024/ae-libs/libuv/src/unix/loop.c",
+        "/home/functioner/Documents/rover2024/ae-libs/libuv/src/unix/process.c",
+        "/home/functioner/Documents/rover2024/ae-libs/libuv/src/unix/proctitle.c",
+        "/home/functioner/Documents/rover2024/ae-libs/libuv/src/unix/random-devurandom.c",
+        "/home/functioner/Documents/rover2024/ae-libs/libuv/src/unix/signal.c",
+        "/home/functioner/Documents/rover2024/ae-libs/libuv/src/unix/thread.c"
+    ],
+    "functionDecayGuardStats": [
+        {
+            "locations": {
+                "/home/functioner/Documents/rover2024/ae-libs/libuv/src/random.c:82:1": "/home/functioner/Documents/rover2024/ae-libs/libuv/src/random.c",
+                "/home/functioner/Documents/rover2024/ae-libs/libuv/src/threadpool.c:368:1": "/home/functioner/Documents/rover2024/ae-libs/libuv/src/threadpool.c",
+                "/home/functioner/Documents/rover2024/ae-libs/libuv/src/threadpool.c:58:1": "/home/functioner/Documents/rover2024/ae-libs/libuv/src/threadpool.c",
+                "/home/functioner/Documents/rover2024/ae-libs/libuv/src/unix/fs.c:1690:1": "/home/functioner/Documents/rover2024/ae-libs/libuv/src/unix/fs.c",
+                "/home/functioner/Documents/rover2024/ae-libs/libuv/src/unix/getaddrinfo.c:105:1": "/home/functioner/Documents/rover2024/ae-libs/libuv/src/unix/getaddrinfo.c",
+                "/home/functioner/Documents/rover2024/ae-libs/libuv/src/unix/getnameinfo.c:40:1": "/home/functioner/Documents/rover2024/ae-libs/libuv/src/unix/getnameinfo.c"
+            },
+            "signature": "void (*)(struct uv__work *)"
+        },
+        {
+            "locations": {
+                "/home/functioner/Documents/rover2024/ae-libs/libuv/src/random.c:90:1": "/home/functioner/Documents/rover2024/ae-libs/libuv/src/random.c",
+                "/home/functioner/Documents/rover2024/ae-libs/libuv/src/threadpool.c:375:1": "/home/functioner/Documents/rover2024/ae-libs/libuv/src/threadpool.c",
+                "/home/functioner/Documents/rover2024/ae-libs/libuv/src/unix/fs.c:1762:1": "/home/functioner/Documents/rover2024/ae-libs/libuv/src/unix/fs.c",
+                "/home/functioner/Documents/rover2024/ae-libs/libuv/src/unix/getaddrinfo.c:115:1": "/home/functioner/Documents/rover2024/ae-libs/libuv/src/unix/getaddrinfo.c",
+                "/home/functioner/Documents/rover2024/ae-libs/libuv/src/unix/getnameinfo.c:64:1": "/home/functioner/Documents/rover2024/ae-libs/libuv/src/unix/getnameinfo.c"
+            },
+            "signature": "void (*)(struct uv__work *, int)"
+        },
+        {
+            "locations": {
+                "/home/functioner/Documents/rover2024/ae-libs/libuv/src/uv-common.h:225:1": "/home/functioner/Documents/rover2024/ae-libs/libuv/src/unix/loop.c"
+            },
+            "signature": "void (*)(struct uv_async_s *)"
+        },
+        {
+            "locations": {
+                "/home/functioner/Documents/rover2024/ae-libs/libuv/src/fs-poll.c:246:1": "/home/functioner/Documents/rover2024/ae-libs/libuv/src/fs-poll.c",
+                "/home/functioner/Documents/rover2024/ae-libs/libuv/src/fs-poll.c:63:1": "/home/functioner/Documents/rover2024/ae-libs/libuv/src/fs-poll.c"
+            },
+            "signature": "void (*)(struct uv_handle_s *)"
+        },
+        {
+            "locations": {
+                "/home/functioner/Documents/rover2024/ae-libs/libuv/src/unix/process.c:84:1": "/home/functioner/Documents/rover2024/ae-libs/libuv/src/unix/process.c"
+            },
+            "signature": "void (*)(struct uv_signal_s *, int)"
+        },
+        {
+            "locations": {
+                "/home/functioner/Documents/rover2024/ae-libs/libuv/src/threadpool.c:265:1": "/home/functioner/Documents/rover2024/ae-libs/libuv/src/threadpool.c",
+                "/home/functioner/Documents/rover2024/ae-libs/libuv/src/threadpool.c:272:1": "/home/functioner/Documents/rover2024/ae-libs/libuv/src/threadpool.c",
+                "/home/functioner/Documents/rover2024/ae-libs/libuv/src/unix/fs.c:283:1": "/home/functioner/Documents/rover2024/ae-libs/libuv/src/unix/fs.c",
+                "/home/functioner/Documents/rover2024/ae-libs/libuv/src/unix/proctitle.c:50:1": "/home/functioner/Documents/rover2024/ae-libs/libuv/src/unix/proctitle.c",
+                "/home/functioner/Documents/rover2024/ae-libs/libuv/src/unix/random-devurandom.c:83:1": "/home/functioner/Documents/rover2024/ae-libs/libuv/src/unix/random-devurandom.c",
+                "/home/functioner/Documents/rover2024/ae-libs/libuv/src/unix/signal.c:108:1": "/home/functioner/Documents/rover2024/ae-libs/libuv/src/unix/signal.c",
+                "/home/functioner/Documents/rover2024/ae-libs/libuv/src/unix/signal.c:71:1": "/home/functioner/Documents/rover2024/ae-libs/libuv/src/unix/signal.c",
+                "/home/functioner/Documents/rover2024/ae-libs/libuv/src/unix/signal.c:73:1": "/home/functioner/Documents/rover2024/ae-libs/libuv/src/unix/signal.c",
+                "/home/functioner/Documents/rover2024/ae-libs/libuv/src/unix/thread.c:541:1": "/home/functioner/Documents/rover2024/ae-libs/libuv/src/unix/thread.c"
+            },
+            "signature": "void (*)(void)"
+        }
+    ]
+}

@@ -1,0 +1,14 @@
+{
+  "library": "libuv",
+  "release": "1.52.1",
+  "upstream_commit": "1cfa32ff59c076ffb6ed735bbc8c18361558661f",
+  "hlr_commit": "d1c442c",
+  "lorelei_commit": "f9e35ef",
+  "host_arch": "aarch64",
+  "guest_arch": "x86_64",
+  "tlc_callback_replacement": false,
+  "host_hlr_extension": true,
+  "guest_hlr_extension": true,
+  "thread_hook_preloaded": true,
+  "compilation_database": "shared DSO entries only"
+}

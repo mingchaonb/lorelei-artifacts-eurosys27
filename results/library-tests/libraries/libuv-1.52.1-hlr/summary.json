@@ -1,0 +1,16 @@
+{
+  "status": "pass",
+  "production_translation_units": 35,
+  "files_patched": 14,
+  "ccg_signatures": 7,
+  "fdg_signatures_detected": 6,
+  "fdg_disabled_for_internal_static_workers": true,
+  "hlr_callback_workload": {
+    "passed": 1,
+    "failed": 0,
+    "host_worker_thread_callbacks": 1,
+    "event_loop_after_callbacks": 1,
+    "library_shutdown": true,
+    "matches_qemu_baseline": true
+  }
+}

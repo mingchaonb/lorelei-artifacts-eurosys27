@@ -1,0 +1,22 @@
+/home/functioner/Documents/rover2024/ae-libs/libuv-build/thunk-hlr/.gen/uv/Thunk_guest.cpp:19:32: warning: unknown warning group '-Wattribute-alias', ignored [-Wunknown-warning-option]
+   19 | #pragma GCC diagnostic ignored "-Wattribute-alias"
+      |                                ^
+1 warning generated.
+[1/5] host arch=aarch64  soname=libuv.so.1  functions: 6
+[2/5] writing intermediates + running TLC stat
+  $ /home/functioner/Documents/rover2024/lorelei-ae/build/install/bin/LoreTLC stat -o /home/functioner/Documents/rover2024/ae-libs/libuv-build/thunk-hlr/.gen/uv/ThunkStat.json -c /home/functioner/Documents/rover2024/ae-libs/libuv-build/thunk-hlr/.gen/uv/Symbols.conf /home/functioner/Documents/rover2024/ae-libs/libuv-build/thunk-hlr/.gen/uv/Desc.h -- -xc++ -std=gnu++20 -I/home/functioner/Documents/rover2024/lorelei-ae/build/install/include -I/home/functioner/Documents/rover2024/ae-libs/libuv/include
+[3/5] TLC generate (host + guest)
+  $ /home/functioner/Documents/rover2024/lorelei-ae/build/install/bin/LoreTLC generate -o /home/functioner/Documents/rover2024/ae-libs/libuv-build/thunk-hlr/.gen/uv/Thunk_host.cpp -s /home/functioner/Documents/rover2024/ae-libs/libuv-build/thunk-hlr/.gen/uv/ThunkStat.json -m host /home/functioner/Documents/rover2024/ae-libs/libuv-build/thunk-hlr/.gen/uv/Manifest_host.cpp -- -xc++ -std=gnu++20 -target aarch64-unknown-linux-gnu -I/home/functioner/Documents/rover2024/lorelei-ae/build/install/include -I/home/functioner/Documents/rover2024/ae-libs/libuv-build/thunk-hlr/.gen/uv -I/home/functioner/Documents/rover2024/ae-libs/libuv/include
+  $ /home/functioner/Documents/rover2024/lorelei-ae/build/install/bin/LoreTLC generate -o /home/functioner/Documents/rover2024/ae-libs/libuv-build/thunk-hlr/.gen/uv/Thunk_guest.cpp -s /home/functioner/Documents/rover2024/ae-libs/libuv-build/thunk-hlr/.gen/uv/ThunkStat.json -m guest /home/functioner/Documents/rover2024/ae-libs/libuv-build/thunk-hlr/.gen/uv/Manifest_guest.cpp -- -xc++ -std=gnu++20 -target x86_64-pc-linux-gnu --sysroot=/home/functioner/Documents/rover2024/lorelei-ae/build/install/x86_64/sysroot -I/home/functioner/Documents/rover2024/lorelei-ae/build/install/x86_64/include -I/home/functioner/Documents/rover2024/ae-libs/libuv-build/thunk-hlr/.gen/uv -I/home/functioner/Documents/rover2024/ae-libs/libuv/include
+[4/5] compile host thunk (HTL)
+  $ /usr/bin/c++ -shared -std=gnu++20 -fPIC -fvisibility=hidden -fvisibility-inlines-hidden -fno-exceptions -fno-rtti -I/home/functioner/Documents/rover2024/lorelei-ae/build/install/include -I/home/functioner/Documents/rover2024/ae-libs/libuv-build/thunk-hlr/.gen/uv -I/home/functioner/Documents/rover2024/ae-libs/libuv/include /home/functioner/Documents/rover2024/ae-libs/libuv-build/thunk-hlr/.gen/uv/Thunk_host.cpp -o /home/functioner/Documents/rover2024/ae-libs/libuv-build/thunk-hlr/libuv_HTL.so -L/home/functioner/Documents/rover2024/lorelei-ae/build/install/lib -lLoreHostRT -L/home/functioner/Documents/rover2024/ae-libs/libuv-build/hlr-input -l:libuv.so.1.0.0
+[5/5] compile guest thunk (GTL)
+  $ /home/functioner/Documents/rover2024/lorelei-ae/build/install/bin/x86_64-linux-gnu-clang++ --sysroot=/home/functioner/Documents/rover2024/lorelei-ae/build/install/x86_64/sysroot -shared -std=gnu++20 -fPIC -fvisibility=hidden -fvisibility-inlines-hidden -fno-exceptions -fno-rtti -I/home/functioner/Documents/rover2024/lorelei-ae/build/install/x86_64/include -I/home/functioner/Documents/rover2024/ae-libs/libuv-build/thunk-hlr/.gen/uv -I/home/functioner/Documents/rover2024/ae-libs/libuv/include -DLORE_THUNK_NEXT_LIBRARY="../libuv_HTL.so" /home/functioner/Documents/rover2024/ae-libs/libuv-build/thunk-hlr/.gen/uv/Thunk_guest.cpp -o /home/functioner/Documents/rover2024/ae-libs/libuv-build/thunk-hlr/x86_64/libuv.so -L/home/functioner/Documents/rover2024/lorelei-ae/build/install/x86_64/lib -lLoreGuestRT -Wl,-soname,libuv.so.1
+
+done. thunk-pack prefix: /home/functioner/Documents/rover2024/ae-libs/libuv-build/thunk-hlr
+  HTL: /home/functioner/Documents/rover2024/ae-libs/libuv-build/thunk-hlr/libuv_HTL.so 
+  GTL: /home/functioner/Documents/rover2024/ae-libs/libuv-build/thunk-hlr/x86_64/libuv.so (+ libuv.so.1)
+
+run a guest over it by putting the GTL dir on the guest -E LD_LIBRARY_PATH:
+  /home/functioner/Documents/rover2024/ae-libs/libuv-build/thunk-hlr/x86_64/libuv.so
+the host runtime finds the rest of the pack from there.
