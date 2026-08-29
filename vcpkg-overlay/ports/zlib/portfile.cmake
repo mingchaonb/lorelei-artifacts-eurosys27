@@ -25,7 +25,7 @@ vcpkg_cmake_install()
 # Preserve the upstream shared-library runtime tests for the evaluation recipe.
 # The static, coverage, and CMake package-consumer tests do not exercise the
 # installed shared-library ABI and are intentionally not exported here.
-set(ZLIB_TEST_DIR "${CURRENT_PACKAGES_DIR}/share/${PORT}/upstream-tests")
+set(ZLIB_TEST_DIR "${CURRENT_PACKAGES_DIR}/tools/${PORT}/upstream-tests")
 file(MAKE_DIRECTORY "${ZLIB_TEST_DIR}")
 foreach(TEST_NAME IN ITEMS zlib_example zlib_example64 minigzip)
     if(EXISTS "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/test/${TEST_NAME}")

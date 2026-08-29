@@ -8,12 +8,5 @@ vcpkg_from_github(
 file(COPY "${CMAKE_CURRENT_LIST_DIR}/CMakeLists.txt" DESTINATION "${SOURCE_PATH}")
 vcpkg_cmake_configure(SOURCE_PATH "${SOURCE_PATH}" OPTIONS -DBUILD_SHARED_LIBS=ON)
 vcpkg_cmake_install()
-file(INSTALL
-    "${SOURCE_PATH}/test/testall.c"
-    "${SOURCE_PATH}/test/testcrc.c"
-    "${SOURCE_PATH}/test/testnmea.c"
-    "${SOURCE_PATH}/test/testall.h"
-    DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}/upstream-tests"
-)
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include" "${CURRENT_PACKAGES_DIR}/debug/share")
 vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")

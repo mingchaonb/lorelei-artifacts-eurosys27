@@ -6,6 +6,7 @@ vcpkg_from_github(
     HEAD_REF dev
     PATCHES
         target-lz4-lz4.diff
+        patches/install-tests.patch
 )
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
@@ -17,6 +18,7 @@ vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}/build/cmake"
     OPTIONS
         ${FEATURE_OPTIONS}
+        -DLZ4_BUILD_TESTS=ON
     OPTIONS_DEBUG
         -DCMAKE_DEBUG_POSTFIX=d
 )
@@ -54,11 +56,6 @@ file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/share")
 
 file(INSTALL "${CMAKE_CURRENT_LIST_DIR}/usage" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}")
-file(COPY "${SOURCE_PATH}/tests/fuzzer.c" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}/upstream-tests/tests")
-file(COPY "${SOURCE_PATH}/lib/xxhash.c" "${SOURCE_PATH}/lib/xxhash.h" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}/upstream-tests/lib")
-file(GLOB LZ4_PROGRAM_HEADERS "${SOURCE_PATH}/programs/*.h")
-file(COPY ${LZ4_PROGRAM_HEADERS} DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}/upstream-tests/programs")
-
 set(LICENSE_FILES "${SOURCE_PATH}/lib/LICENSE")
 if("tools" IN_LIST FEATURES)
     list(APPEND LICENSE_FILES "${SOURCE_PATH}/programs/COPYING")

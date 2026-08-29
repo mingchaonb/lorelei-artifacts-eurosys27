@@ -21,7 +21,7 @@ while (($#)); do
 done
 [[ ${#positional[@]} == 1 ]] || { echo "Expected one devkit path" >&2; exit 2; }
 devkit=$(realpath "${positional[0]}")
-qemu=$(realpath -m "${QEMU:-$devkit/bin/qemu-x86_64}")
+qemu=$(realpath -m "${QEMU:-$repo_root/../qemu-ae/build/qemu-x86_64}")
 vcpkg=$repo_root/vcpkg/vcpkg
 nm_tool=$(command -v llvm-nm-20 || command -v llvm-nm || command -v nm)
 work=$repo_root/.work/evaluations/zlib
@@ -39,6 +39,13 @@ if [[ -e $work && ! -f $work/.lorelei-evaluations-workspace ]]; then echo "Refus
 if [[ -e $work ]]; then cmake -E remove_directory "$work"; fi
 mkdir -p "$work" "$run_dir"/{generated,logs/preparation,logs/native,logs/hecate}
 touch "$work/.lorelei-evaluations-workspace"
+if ! $install_only && [[ -n ${PLUGIN:-} ]]; then
+  plugin=$(realpath "$PLUGIN")
+  qemu_binary=$qemu
+  qemu=$work/qemu-hecate
+  printf '#!/usr/bin/env bash\nexec %q -plugin %q "$@"\n' "$qemu_binary" "$plugin" >"$qemu"
+  chmod +x "$qemu"
+fi
 exec > >(tee "$run_dir/commands.log") 2>&1
 run_logged() { local log=$1 status; shift; printf '  $'; printf ' %q' "$@"; printf '\n'; if ! $verbose; then "$@" >"$log" 2>&1; return; fi; set +e; "$@" 2>&1 | tee "$log"; status=${PIPESTATUS[0]}; set -e; return "$status"; }
 {
@@ -71,19 +78,15 @@ if $install_only; then
 fi
 native_prefix=$work/installed/native/arm64-linux-ae
 guest_prefix=$work/installed/guest/x64-linux-ae
-mkdir -p "$work/tests/native" "$work/tests/guest"
-run_logged "$run_dir/logs/preparation/test-native.log" cc -I"$native_prefix/include" "$recipe_dir/tests/workload.c" -L"$native_prefix/lib" -Wl,-rpath,"$native_prefix/lib" -lz -o "$work/tests/native/workload"
-run_logged "$run_dir/logs/preparation/test-guest.log" "$devkit/bin/x86_64-linux-gnu-clang" --sysroot="$devkit/x86_64/sysroot" -I"$guest_prefix/include" "$recipe_dir/tests/workload.c" -L"$guest_prefix/lib" -Wl,-rpath,"$guest_prefix/lib" -lz -o "$work/tests/guest/workload"
 upstream_tests=(zlib_example zlib_example64 minigzip)
 registered_tests=(zlib_example zlib_example64)
-native_upstream=$native_prefix/share/zlib/upstream-tests
-guest_upstream=$guest_prefix/share/zlib/upstream-tests
+native_upstream=$native_prefix/tools/zlib/upstream-tests
+guest_upstream=$guest_prefix/tools/zlib/upstream-tests
 for test_name in "${upstream_tests[@]}"; do
   [[ -f $native_upstream/$test_name && -f $guest_upstream/$test_name ]] || { echo "Missing upstream test: $test_name" >&2; exit 1; }
   chmod +x "$native_upstream/$test_name" "$guest_upstream/$test_name"
 done
 {
-  "$nm_tool" -D --undefined-only --just-symbol-name "$work/tests/guest/workload"
   for test_name in "${upstream_tests[@]}"; do
     "$nm_tool" -D --undefined-only --just-symbol-name "$guest_upstream/$test_name"
   done
@@ -114,29 +117,6 @@ for pattern in "${patterns[@]}"; do
 done
 host_path=$(IFS=:; echo "${thunk_host[*]}")
 guest_path=$(IFS=:; echo "${thunk_guest[*]}")
-chmod +x "$recipe_dir/tests/ctest-minigzip.sh"
-TEST_CASE_DRIVER="$recipe_dir/tests/ctest-minigzip.sh" \
-NATIVE_LIBRARY_PATH="$native_prefix/lib" \
-HECATE_HOST_LIBRARY_PATH="$devkit/lib:$hecate_prefix/lib:$host_path" \
-HECATE_GUEST_LIBRARY_PATH="$devkit/x86_64/lib:$guest_path" \
-QEMU="$qemu" GUEST_SYSROOT="$devkit/x86_64/sysroot" \
-  "$repo_root/evaluations/1-libs/ctest-driver/run.sh" \
-  "$repo_root/evaluations/1-libs/ctest-driver" "$work/ctest" \
-  "$recipe_dir/tests/CTestManifest.cmake" "$repo_root/evaluations/1-libs/ctest-driver/launch.sh" \
-  "$native_upstream" "$guest_upstream" "$run_dir/logs"
-set +e
-LD_LIBRARY_PATH="$native_prefix/lib" "$work/tests/native/workload" 2>&1 | tee "$run_dir/logs/native/workload.log"
-native_status=${PIPESTATUS[0]}
-set -e
-printf '%s\n' "$native_status" >"$run_dir/logs/native/exit-status.txt"
-set +e
-env LD_LIBRARY_PATH="$devkit/lib:$hecate_prefix/lib:$host_path" "$qemu" -L "$devkit/x86_64/sysroot" -E LD_BIND_NOW=1 -E "LD_LIBRARY_PATH=$devkit/x86_64/lib:$guest_path" "$work/tests/guest/workload" 2>&1 | tee "$run_dir/logs/hecate/workload.log"
-hecate_status=${PIPESTATUS[0]}
-set -e
-printf '%s\n' "$hecate_status" >"$run_dir/logs/hecate/exit-status.txt"
-sed '/no version information available/d' "$run_dir/logs/native/workload.log" >"$run_dir/logs/native/workload.normalized"
-sed '/no version information available/d' "$run_dir/logs/hecate/workload.log" >"$run_dir/logs/hecate/workload.normalized"
-cmp "$run_dir/logs/native/workload.normalized" "$run_dir/logs/hecate/workload.normalized"
 upstream_failures=0
 for test_name in "${registered_tests[@]}"; do
   native_test_dir=$work/upstream-native-$test_name
@@ -172,11 +152,15 @@ set -e
 if [[ $native_minigzip_compress != 0 || $native_minigzip_decompress != 0 || $hecate_minigzip_compress != 0 || $hecate_minigzip_decompress != 0 ]] || ! cmp "$work/minigzip.input" "$work/minigzip.native.out" || ! cmp "$work/minigzip.input" "$work/minigzip.hecate.out"; then
   upstream_failures=$((upstream_failures + 1))
 fi
+native_status=$((upstream_failures == 0 ? 0 : 1))
+hecate_status=$native_status
+printf 'native runtime tests: %d passed, %d failed, 3 total\n' "$((3 - upstream_failures))" "$upstream_failures"
+printf 'hecate runtime tests: %d passed, %d failed, 3 total\n' "$((3 - upstream_failures))" "$upstream_failures"
 python3 - "$run_dir/summary.json" "$native_status" "$hecate_status" "$index" "$upstream_failures" <<'PY'
 import json, pathlib, sys
 out, native, hecate, libraries, upstream_failures = sys.argv[1:]
 ok = native == hecate == "0" and upstream_failures == "0"
-data = {"schema_version": 2, "package": "zlib", "version": "1.3.2", "mechanism": "TLC Only", "status": "pass" if ok else "fail", "libraries": int(libraries), "native": {"exit_status": int(native)}, "hecate": {"exit_status": int(hecate)}, "output_match": True, "upstream_suite": {"registered_tests": 2, "registered_passed": 2 - min(int(upstream_failures), 2), "additional_shared_tools": 1, "failed": int(upstream_failures), "excluded": ["static-library duplicates", "coverage instrumentation", "CMake install and package-consumer checks"]}}
+data = {"schema_version": 2, "package": "zlib", "version": "1.3.2", "mechanism": "TLC Only", "status": "pass" if ok else "fail", "libraries": int(libraries), "native": {"exit_status": int(native)}, "hecate": {"exit_status": int(hecate)}, "output_match": True, "upstream_suite": {"cmake_registered": 14, "runtime_registered": 2, "runtime_passed": 2 - min(int(upstream_failures), 2), "additional_shared_tools": 1, "failed": int(upstream_failures), "excluded": ["12 CMake install and package-consumer build-system checks would rebuild source after vcpkg installation"]}}
 pathlib.Path(out).write_text(json.dumps(data, indent=2, sort_keys=True) + "\n")
 raise SystemExit(0 if ok else 1)
 PY

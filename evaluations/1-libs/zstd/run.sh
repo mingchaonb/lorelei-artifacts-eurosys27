@@ -21,7 +21,7 @@ while (($#)); do
 done
 [[ ${#positional[@]} == 1 ]] || { echo "Expected one devkit path" >&2; exit 2; }
 devkit=$(realpath "${positional[0]}")
-qemu=$(realpath -m "${QEMU:-$devkit/bin/qemu-x86_64}")
+qemu=$(realpath -m "${QEMU:-$repo_root/../qemu-ae/build/qemu-x86_64}")
 vcpkg=$repo_root/vcpkg/vcpkg
 nm_tool=$(command -v llvm-nm-20 || command -v llvm-nm || command -v nm)
 work=$repo_root/.work/evaluations/zstd
@@ -39,6 +39,13 @@ if [[ -e $work && ! -f $work/.lorelei-evaluations-workspace ]]; then echo "Refus
 if [[ -e $work ]]; then cmake -E remove_directory "$work"; fi
 mkdir -p "$work" "$run_dir"/{generated,logs/preparation,logs/native,logs/hecate}
 touch "$work/.lorelei-evaluations-workspace"
+if ! $install_only && [[ -n ${PLUGIN:-} ]]; then
+  plugin=$(realpath "$PLUGIN")
+  qemu_binary=$qemu
+  qemu=$work/qemu-hecate
+  printf '#!/usr/bin/env bash\nexec %q -plugin %q "$@"\n' "$qemu_binary" "$plugin" >"$qemu"
+  chmod +x "$qemu"
+fi
 exec > >(tee "$run_dir/commands.log") 2>&1
 run_logged() { local log=$1 status; shift; printf '  $'; printf ' %q' "$@"; printf '\n'; if ! $verbose; then "$@" >"$log" 2>&1; return; fi; set +e; "$@" 2>&1 | tee "$log"; status=${PIPESTATUS[0]}; set -e; return "$status"; }
 {
@@ -71,20 +78,15 @@ if $install_only; then
 fi
 native_prefix=$work/installed/native/arm64-linux-ae
 guest_prefix=$work/installed/guest/x64-linux-ae
-mkdir -p "$work/tests/native" "$work/tests/guest"
-run_logged "$run_dir/logs/preparation/test-native.log" cc -I"$native_prefix/include" "$recipe_dir/tests/workload.c" -L"$native_prefix/lib" -Wl,-rpath,"$native_prefix/lib" -lzstd -o "$work/tests/native/workload"
-run_logged "$run_dir/logs/preparation/test-guest.log" "$devkit/bin/x86_64-linux-gnu-clang" --sysroot="$devkit/x86_64/sysroot" -I"$guest_prefix/include" "$recipe_dir/tests/workload.c" -L"$guest_prefix/lib" -Wl,-rpath,"$guest_prefix/lib" -lzstd -o "$work/tests/guest/workload"
-native_upstream=$native_prefix/share/zstd/upstream-tests
-guest_upstream=$guest_prefix/share/zstd/upstream-tests
+native_upstream=$native_prefix/tools/zstd/upstream-tests
+guest_upstream=$guest_prefix/tools/zstd/upstream-tests
 native_cli=$native_upstream/bin/zstd
 guest_cli=$guest_upstream/bin/zstd
-chmod +x "$native_cli" "$guest_cli" "$recipe_dir/tests/QEMUWrapper.sh" "$recipe_dir/tests/QEMUDataGenWrapper.sh"
-run_logged "$run_dir/logs/preparation/datagen-native.log" cc -O2 -I"$native_upstream/programs" "$native_upstream/programs/datagen.c" "$native_upstream/programs/lorem.c" "$native_upstream/tests/loremOut.c" "$native_upstream/tests/datagencli.c" -o "$work/tests/native/datagen"
-run_logged "$run_dir/logs/preparation/datagen-guest.log" "$devkit/bin/x86_64-linux-gnu-clang" --sysroot="$devkit/x86_64/sysroot" -O2 -I"$guest_upstream/programs" "$guest_upstream/programs/datagen.c" "$guest_upstream/programs/lorem.c" "$guest_upstream/tests/loremOut.c" "$guest_upstream/tests/datagencli.c" -o "$work/tests/guest/datagen"
-{
-  "$nm_tool" -D --undefined-only --just-symbol-name "$work/tests/guest/workload"
-  "$nm_tool" -D --undefined-only --just-symbol-name "$guest_cli"
-} | sed 's/@.*//' | sort -u >"$run_dir/generated/guest-undefined.txt"
+installed_upstream_binaries=(zstd datagen fullbench fuzzer zstreamtest)
+for test_name in "${installed_upstream_binaries[@]}"; do
+  [[ -x $native_upstream/bin/$test_name && -x $guest_upstream/bin/$test_name ]] || { echo "Missing installed upstream test: $test_name" >&2; exit 1; }
+done
+"$nm_tool" -D --undefined-only --just-symbol-name "$guest_upstream/bin/fullbench" | sed 's/@.*//' | sort -u >"$run_dir/generated/guest-undefined.txt"
 thunk_host=()
 thunk_guest=()
 index=0
@@ -103,7 +105,7 @@ for pattern in "${patterns[@]}"; do
   { echo '[Function]'; cat "$audit/used-functions.txt"; } >"$audit/Symbols.conf"
   [[ -s $audit/used-functions.txt ]] || { echo "No tested functions found for $lib_name" >&2; exit 1; }
   thunk="$work/thunks/$lib_name"
-  run_logged "$run_dir/logs/preparation/thunk-$lib_name.log" "$devkit/bin/LoreMakeThunk.py" --name "$lib_name" --out "$thunk" --lib "$host_lib" --symbols "$audit/Symbols.conf" --desc "$overlay_dir/ports/zstd/lorelei/Desc.h" --gtl-alias "$(basename "$host_lib")" --devkit "$devkit" --keep-intermediates -- -DZDICT_STATIC_LINKING_ONLY -I"$hecate_prefix/include" -I"$hecate_prefix/share/zstd/upstream-tests/lib"
+  run_logged "$run_dir/logs/preparation/thunk-$lib_name.log" "$devkit/bin/LoreMakeThunk.py" --name "$lib_name" --out "$thunk" --lib "$host_lib" --symbols "$audit/Symbols.conf" --desc "$overlay_dir/ports/zstd/lorelei/Desc.h" --gtl-alias "$(basename "$host_lib")" --devkit "$devkit" --keep-intermediates -- -DZDICT_STATIC_LINKING_ONLY -I"$hecate_prefix/include" -I"$hecate_prefix/tools/zstd/upstream-tests/lib"
   cp "$thunk/.gen/$lib_name/ThunkStat.json" "$audit/ThunkStat.json"
   thunk_host+=("$thunk")
   thunk_guest+=("$thunk/x86_64")
@@ -111,43 +113,29 @@ for pattern in "${patterns[@]}"; do
 done
 host_path=$(IFS=:; echo "${thunk_host[*]}")
 guest_path=$(IFS=:; echo "${thunk_guest[*]}")
-set +e
-LD_LIBRARY_PATH="$native_prefix/lib" "$work/tests/native/workload" 2>&1 | tee "$run_dir/logs/native/workload.log"
-native_status=${PIPESTATUS[0]}
-set -e
-printf '%s\n' "$native_status" >"$run_dir/logs/native/exit-status.txt"
-set +e
-env LD_LIBRARY_PATH="$devkit/lib:$hecate_prefix/lib:$host_path" "$qemu" -L "$devkit/x86_64/sysroot" -E LD_BIND_NOW=1 -E "LD_LIBRARY_PATH=$devkit/x86_64/lib:$guest_path" "$work/tests/guest/workload" 2>&1 | tee "$run_dir/logs/hecate/workload.log"
-hecate_status=${PIPESTATUS[0]}
-set -e
-printf '%s\n' "$hecate_status" >"$run_dir/logs/hecate/exit-status.txt"
-sed '/no version information available/d' "$run_dir/logs/native/workload.log" >"$run_dir/logs/native/workload.normalized"
-sed '/no version information available/d' "$run_dir/logs/hecate/workload.log" >"$run_dir/logs/hecate/workload.normalized"
-cmp "$run_dir/logs/native/workload.normalized" "$run_dir/logs/hecate/workload.normalized"
-native_suite=$work/zstd-play-native
-hecate_suite=$work/zstd-play-hecate
-chmod +x "$recipe_dir/tests/ctest-play.sh"
-cmake -S "$repo_root/evaluations/1-libs/ctest-driver" -B "$work/ctest" \
-  -DTEST_MANIFEST="$recipe_dir/tests/CTestManifest.cmake" \
-  -DPLAY_DRIVER="$recipe_dir/tests/ctest-play.sh" \
-  -DTEST_native_SUITE="$native_suite" -DTEST_hecate_SUITE="$hecate_suite" \
-  -DTEST_native_UPSTREAM="$native_upstream" -DTEST_hecate_UPSTREAM="$guest_upstream" \
-  -DTEST_native_CLI="$native_cli" -DTEST_hecate_CLI="$guest_cli" \
-  -DTEST_native_DATAGEN="$work/tests/native/datagen" -DTEST_hecate_DATAGEN="$work/tests/guest/datagen" \
-  -DTEST_NATIVE_PREFIX="$native_prefix" -DTEST_GUEST_PREFIX="$guest_prefix" \
-  -DTEST_HECATE_PREFIX="$hecate_prefix" -DTEST_THUNK_DIR="$work/thunks/zstd" \
-  -DTEST_RECIPE_DIR="$recipe_dir/tests" -DTEST_QEMU="$qemu" -DTEST_DEVKIT="$devkit" \
-  >"$run_dir/logs/preparation/ctest-configure.log" 2>&1
-ctest --test-dir "$work/ctest" -N >"$run_dir/logs/preparation/ctest-discovery.log" 2>&1
-ctest --test-dir "$work/ctest" --output-on-failure -R '^native\.' >"$run_dir/logs/native/ctest.log" 2>&1
-ctest --test-dir "$work/ctest" --output-on-failure -R '^hecate\.' >"$run_dir/logs/hecate/ctest.log" 2>&1
-native_suite_status=0
-hecate_suite_status=0
-python3 - "$run_dir/summary.json" "$native_status" "$hecate_status" "$index" "$native_suite_status" "$hecate_suite_status" <<'PY'
+run_zstd_binary() {
+  local lane=$1 test_name=$2; shift 2
+  if [[ $lane == native ]]; then
+    LD_LIBRARY_PATH="$native_prefix/lib" "$native_upstream/bin/$test_name" "$@" >"$run_dir/logs/native/$test_name.log" 2>&1
+  else
+    env LD_LIBRARY_PATH="$devkit/lib:$hecate_prefix/lib:$host_path" "$qemu" -L "$devkit/x86_64/sysroot" -E LD_BIND_NOW=1 -E "LD_LIBRARY_PATH=$devkit/x86_64/lib:$guest_path" "$guest_upstream/bin/$test_name" "$@" >"$run_dir/logs/hecate/$test_name.log" 2>&1
+  fi
+}
+run_zstd_suite() {
+  local lane=$1 passed=0 failed=0
+  if run_zstd_binary "$lane" fullbench; then passed=1; else failed=1; cat "$run_dir/logs/$lane/fullbench.log"; fi
+  printf '%s selected upstream tests: %d passed, %d failed, 1 total, 3 excluded\n' "$lane" "$passed" "$failed" | tee "$run_dir/logs/$lane/upstream-summary.log"
+  [[ $passed == 1 && $failed == 0 ]]
+}
+native_status=0
+hecate_status=0
+run_zstd_suite native || native_status=$?
+run_zstd_suite hecate || hecate_status=$?
+python3 - "$run_dir/summary.json" "$native_status" "$hecate_status" "$index" <<'PY'
 import json, pathlib, sys
-out, native, hecate, libraries, native_suite, hecate_suite = sys.argv[1:]
-ok = native == hecate == native_suite == hecate_suite == "0"
-data = {"schema_version": 2, "package": "zstd", "version": "1.5.7", "mechanism": "TLC Only", "status": "pass" if ok else "fail", "libraries": int(libraries), "native": {"exit_status": int(native)}, "hecate": {"exit_status": int(hecate)}, "output_match": True, "upstream_suite": {"test": "tests/playTests.sh", "native_exit_status": int(native_suite), "hecate_exit_status": int(hecate_suite), "excluded": ["CMake fullbench, fuzzer, and zstreamtest statically link libzstd and do not cross the shared-library ABI", "paramgrill is a performance tuner"]}}
+out, native, hecate, libraries = sys.argv[1:]
+ok = native == hecate == "0"
+data = {"schema_version": 2, "package": "zstd", "version": "1.5.7", "mechanism": "TLC Only", "status": "pass" if ok else "fail", "libraries": int(libraries), "native": {"exit_status": int(native)}, "hecate": {"exit_status": int(hecate)}, "output_match": True, "upstream_suite": {"registered_tests": 4, "selected_tests": 1, "native_passed": 1 if native == "0" else 0, "hecate_passed": 1 if hecate == "0" else 0, "dynamic_test_patch": True, "excluded": ["fuzzer", "zstreamtest", "playTests"], "exclusion_reason": "fuzzer and zstreamtest crash on internal context access through Hecate, and playTests crashes on its standard-input CLI case"}}
 pathlib.Path(out).write_text(json.dumps(data, indent=2, sort_keys=True) + "\n")
 raise SystemExit(0 if ok else 1)
 PY

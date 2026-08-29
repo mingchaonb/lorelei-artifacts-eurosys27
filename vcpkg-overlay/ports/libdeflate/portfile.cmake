@@ -44,7 +44,7 @@ foreach(TEST_NAME IN ITEMS
         message(FATAL_ERROR "Missing upstream test executable: ${TEST_NAME}")
     endif()
     file(INSTALL "${LIBDEFLATE_TEST_DIR}/${TEST_NAME}"
-        DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}/upstream-tests")
+        DESTINATION "${CURRENT_PACKAGES_DIR}/tools/${PORT}/upstream-tests")
 endforeach()
 vcpkg_cmake_config_fixup(CONFIG_PATH "lib/cmake/libdeflate")
 vcpkg_fixup_pkgconfig()

@@ -1,6 +1,6 @@
 # lz4 1.10.0 validation (TLC Only) [ALL TESTS PASSED]
 
-This recipe fetches the official lz4 1.10.0 release through the pinned vcpkg overlay, builds shared libraries for AArch64 and x86-64, generates TLC thunks, and executes the same directed workload in native and Hecate lanes.
+This recipe installs lz4 1.10.0 and its upstream test through the pinned vcpkg overlay, generates TLC thunks, then executes the installed test in native and Hecate lanes.
 
 ## Commands
 
@@ -10,4 +10,4 @@ This recipe fetches the official lz4 1.10.0 release through the pinned vcpkg ove
 ./evaluations/1-libs/lz4/run.sh --install-only /path/to/lorelei-devkit
 ```
 
-The recipe runs the directed API workload and upstream `tests/fuzzer.c` for 150 deterministic cycles with seed 12345 in native and Hecate lanes. The evaluation CMake configuration exposes one fuzzer registration per lane to CTest. This is broad randomized coverage of normal, HC, dictionary, streaming, and frame APIs, but it is a bounded run of an intentionally unbounded upstream fuzzer rather than a claim that fuzzing is complete. Success requires both completion markers and zero exits. The mechanism is TLC only and does not load or generate HLR extensions.
+The source patch adds the upstream `tests/fuzzer.c` target, links it against the shared library, and installs it under `tools/lz4/upstream-tests`. Its CTest registration uses 150 deterministic cycles with seed 12345. The installed test passes in native and Hecate, covering normal, HC, dictionary, streaming, and frame APIs. No source-tree rebuild or pure QEMU lane is used.

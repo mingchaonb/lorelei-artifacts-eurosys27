@@ -1,0 +1,41 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 21fdc72..a4d1911 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -53,2 +53,3 @@ endif()
+ find_package(ZLIB REQUIRED)
++find_package(PNG REQUIRED)
+ foreach(spng_TARGET ${spng_TARGETS})
+@@ -62,2 +63,32 @@ endforeach()
+ 
++include(CTest)
++if(BUILD_TESTING AND SPNG_SHARED)
++    enable_language(CXX)
++    add_executable(spng_testsuite tests/testsuite.c)
++    target_include_directories(spng_testsuite PRIVATE spng)
++    target_link_libraries(spng_testsuite PRIVATE spng PNG::PNG)
++    add_executable(spng_cpp_test tests/test.cpp)
++    target_include_directories(spng_cpp_test PRIVATE spng)
++    target_link_libraries(spng_cpp_test PRIVATE spng)
++    add_test(NAME info COMMAND spng_testsuite info)
++    add_test(NAME cpp_test COMMAND spng_cpp_test)
++    add_test(NAME example_notext COMMAND example "${CMAKE_CURRENT_SOURCE_DIR}/tests/images/basi0g08.png")
++    add_test(NAME example_text COMMAND example "${CMAKE_CURRENT_SOURCE_DIR}/tests/images/ct1n0g04.png")
++    foreach(SPNG_TEST_GROUP IN ITEMS images crashers misc)
++        file(GLOB SPNG_TEST_IMAGES "${CMAKE_CURRENT_SOURCE_DIR}/tests/${SPNG_TEST_GROUP}/*.png")
++        foreach(SPNG_TEST_IMAGE IN LISTS SPNG_TEST_IMAGES)
++            get_filename_component(SPNG_TEST_NAME "${SPNG_TEST_IMAGE}" NAME_WE)
++            add_test(NAME "${SPNG_TEST_NAME}" COMMAND spng_testsuite "${SPNG_TEST_IMAGE}")
++            if(SPNG_TEST_GROUP STREQUAL "crashers" OR SPNG_TEST_NAME MATCHES "^x")
++                set_tests_properties("${SPNG_TEST_NAME}" PROPERTIES WILL_FAIL TRUE)
++            endif()
++        endforeach()
++    endforeach()
++    install(TARGETS spng_testsuite spng_cpp_test example
++        RUNTIME DESTINATION tools/libspng/upstream-tests/bin)
++    install(DIRECTORY tests/images tests/crashers tests/misc
++        DESTINATION tools/libspng/upstream-tests/data
++        FILES_MATCHING PATTERN "*.png")
++endif()
++
+ set(project_config "${CMAKE_CURRENT_BINARY_DIR}/SPNGConfig.cmake")

@@ -21,7 +21,7 @@ while (($#)); do
 done
 [[ ${#positional[@]} == 1 ]] || { echo "Expected one devkit path" >&2; exit 2; }
 devkit=$(realpath "${positional[0]}")
-qemu=$(realpath -m "${QEMU:-$devkit/bin/qemu-x86_64}")
+qemu=$(realpath -m "${QEMU:-$repo_root/../qemu-ae/build/qemu-x86_64}")
 vcpkg=$repo_root/vcpkg/vcpkg
 nm_tool=$(command -v llvm-nm-20 || command -v llvm-nm || command -v nm)
 work=$repo_root/.work/evaluations/lzo
@@ -39,6 +39,13 @@ if [[ -e $work && ! -f $work/.lorelei-evaluations-workspace ]]; then echo "Refus
 if [[ -e $work ]]; then cmake -E remove_directory "$work"; fi
 mkdir -p "$work" "$run_dir"/{generated,logs/preparation,logs/native,logs/hecate}
 touch "$work/.lorelei-evaluations-workspace"
+if ! $install_only && [[ -n ${PLUGIN:-} ]]; then
+  plugin=$(realpath "$PLUGIN")
+  qemu_binary=$qemu
+  qemu=$work/qemu-hecate
+  printf '#!/usr/bin/env bash\nexec %q -plugin %q "$@"\n' "$qemu_binary" "$plugin" >"$qemu"
+  chmod +x "$qemu"
+fi
 exec > >(tee "$run_dir/commands.log") 2>&1
 run_logged() { local log=$1 status; shift; printf '  $'; printf ' %q' "$@"; printf '\n'; if ! $verbose; then "$@" >"$log" 2>&1; return; fi; set +e; "$@" 2>&1 | tee "$log"; status=${PIPESTATUS[0]}; set -e; return "$status"; }
 {
@@ -71,15 +78,11 @@ if $install_only; then
 fi
 native_prefix=$work/installed/native/arm64-linux-ae
 guest_prefix=$work/installed/guest/x64-linux-ae
-mkdir -p "$work/tests/native" "$work/tests/guest"
-run_logged "$run_dir/logs/preparation/test-native.log" cc -I"$native_prefix/include" "$recipe_dir/tests/workload.c" -L"$native_prefix/lib" -Wl,-rpath,"$native_prefix/lib" -llzo2 -o "$work/tests/native/workload"
-run_logged "$run_dir/logs/preparation/test-guest.log" "$devkit/bin/x86_64-linux-gnu-clang" --sysroot="$devkit/x86_64/sysroot" -I"$guest_prefix/include" "$recipe_dir/tests/workload.c" -L"$guest_prefix/lib" -Wl,-rpath,"$guest_prefix/lib" -llzo2 -o "$work/tests/guest/workload"
 upstream_tests=(lzotest simple testmini align chksum)
-native_upstream=$native_prefix/share/lzo/upstream-tests
-guest_upstream=$guest_prefix/share/lzo/upstream-tests
+native_upstream=$native_prefix/tools/lzo/upstream-tests
+guest_upstream=$guest_prefix/tools/lzo/upstream-tests
 for test_name in "${upstream_tests[@]}"; do chmod +x "$native_upstream/$test_name" "$guest_upstream/$test_name"; done
 {
-  "$nm_tool" -D --undefined-only --just-symbol-name "$work/tests/guest/workload"
   for test_name in lzotest simple align chksum; do "$nm_tool" -D --undefined-only --just-symbol-name "$guest_upstream/$test_name"; done
 } | sed 's/@.*//' | sort -u >"$run_dir/generated/guest-undefined.txt"
 thunk_host=()
@@ -108,58 +111,43 @@ for pattern in "${patterns[@]}"; do
 done
 host_path=$(IFS=:; echo "${thunk_host[*]}")
 guest_path=$(IFS=:; echo "${thunk_guest[*]}")
-TEST_NATIVE_DATA="$native_upstream/data" TEST_HECATE_DATA="$guest_upstream/data" \
-NATIVE_LIBRARY_PATH="$native_prefix/lib" \
-HECATE_HOST_LIBRARY_PATH="$devkit/lib:$hecate_prefix/lib:$host_path" \
-HECATE_GUEST_LIBRARY_PATH="$devkit/x86_64/lib:$guest_path" \
-QEMU="$qemu" GUEST_SYSROOT="$devkit/x86_64/sysroot" \
-  "$repo_root/evaluations/1-libs/ctest-driver/run.sh" \
-  "$repo_root/evaluations/1-libs/ctest-driver" "$work/ctest" \
-  "$recipe_dir/tests/CTestManifest.cmake" "$repo_root/evaluations/1-libs/ctest-driver/launch.sh" \
-  "$native_upstream" "$guest_upstream" "$run_dir/logs"
-set +e
-LD_LIBRARY_PATH="$native_prefix/lib" "$work/tests/native/workload" 2>&1 | tee "$run_dir/logs/native/workload.log"
-native_status=${PIPESTATUS[0]}
-set -e
-printf '%s\n' "$native_status" >"$run_dir/logs/native/exit-status.txt"
-set +e
-env LD_LIBRARY_PATH="$devkit/lib:$hecate_prefix/lib:$host_path" "$qemu" -L "$devkit/x86_64/sysroot" -E LD_BIND_NOW=1 -E "LD_LIBRARY_PATH=$devkit/x86_64/lib:$guest_path" "$work/tests/guest/workload" 2>&1 | tee "$run_dir/logs/hecate/workload.log"
-hecate_status=${PIPESTATUS[0]}
-set -e
-printf '%s\n' "$hecate_status" >"$run_dir/logs/hecate/exit-status.txt"
-sed '/no version information available/d' "$run_dir/logs/native/workload.log" >"$run_dir/logs/native/workload.normalized"
-sed '/no version information available/d' "$run_dir/logs/hecate/workload.log" >"$run_dir/logs/hecate/workload.normalized"
-cmp "$run_dir/logs/native/workload.normalized" "$run_dir/logs/hecate/workload.normalized"
-upstream_failures=0
+paired_failures=0
+native_only_failures=0
 run_lzo_test() {
-  local test_name=$1; shift
+  local test_name=$1 executable=$2; shift 2
   set +e
-  LD_LIBRARY_PATH="$native_prefix/lib" "$native_upstream/$test_name" "$@" >"$run_dir/logs/native/$test_name.log" 2>&1
+  LD_LIBRARY_PATH="$native_prefix/lib" "$native_upstream/$executable" "$@" >"$run_dir/logs/native/$test_name.log" 2>&1
   local ns=$?
   if [[ $test_name == testmini ]]; then
     printf '%s\n' 'Not run for Hecate because testmini does not use the shared library ABI.' >"$run_dir/logs/hecate/$test_name.log"
     local hs=0
+    if [[ $ns != 0 ]]; then native_only_failures=1; fi
   else
-    env LD_LIBRARY_PATH="$devkit/lib:$hecate_prefix/lib:$host_path" "$qemu" -L "$devkit/x86_64/sysroot" -E LD_BIND_NOW=1 -E "LD_LIBRARY_PATH=$devkit/x86_64/lib:$guest_path" "$guest_upstream/$test_name" "$@" >"$run_dir/logs/hecate/$test_name.log" 2>&1
+    env LD_LIBRARY_PATH="$devkit/lib:$hecate_prefix/lib:$host_path" "$qemu" -L "$devkit/x86_64/sysroot" -E LD_BIND_NOW=1 -E "LD_LIBRARY_PATH=$devkit/x86_64/lib:$guest_path" "$guest_upstream/$executable" "$@" >"$run_dir/logs/hecate/$test_name.log" 2>&1
     local hs=$?
+    if [[ $ns != 0 || $hs != 0 ]]; then paired_failures=$((paired_failures + 1)); fi
   fi
   set -e
   printf '%s\n' "$ns" >"$run_dir/logs/native/$test_name.exit-status.txt"
   printf '%s\n' "$hs" >"$run_dir/logs/hecate/$test_name.exit-status.txt"
-  if [[ $ns != 0 || $hs != 0 ]]; then upstream_failures=$((upstream_failures + 1)); fi
 }
-run_lzo_test simple
-run_lzo_test testmini
-run_lzo_test lzotest -mlzo -n2 -q "$guest_upstream/data/COPYING"
-run_lzo_test lzotest -mavail -n10 -q "$guest_upstream/data/COPYING"
-run_lzo_test lzotest -mall -n10 -q "$guest_upstream/data/lzodefs.h"
-run_lzo_test align
-run_lzo_test chksum
+run_lzo_test simple simple
+run_lzo_test testmini testmini
+run_lzo_test lzotest_mlzo lzotest -mlzo -n2 -q "$guest_upstream/data/COPYING"
+run_lzo_test lzotest_mavail lzotest -mavail -n10 -q "$guest_upstream/data/COPYING"
+run_lzo_test lzotest_mall lzotest -mall -n10 -q "$guest_upstream/data/lzodefs.h"
+run_lzo_test align align
+run_lzo_test chksum chksum
+printf 'native selected upstream tests: %d passed, %d failed, 6 total, 1 excluded\n' "$((6 - paired_failures))" "$paired_failures"
+printf 'hecate selected upstream tests: %d passed, %d failed, 6 total, 1 excluded\n' "$((6 - paired_failures))" "$paired_failures"
+upstream_failures=$((paired_failures + native_only_failures))
+native_status=$((upstream_failures == 0 ? 0 : 1))
+hecate_status=$native_status
 python3 - "$run_dir/summary.json" "$native_status" "$hecate_status" "$index" "$upstream_failures" <<'PY'
 import json, pathlib, sys
 out, native, hecate, libraries, failures = sys.argv[1:]
 ok = native == hecate == "0" and failures == "0"
-data = {"schema_version": 2, "package": "lzo", "version": "2.10", "mechanism": "TLC Only", "status": "pass" if ok else "fail", "libraries": int(libraries), "native": {"exit_status": int(native)}, "hecate": {"exit_status": int(hecate)}, "output_match": True, "upstream_suite": {"registered_tests": 5, "additional_tests": 2, "tree_sweep_methods": 37, "passed": 7 - int(failures), "failed": int(failures), "non_dso_registered_tests": ["testmini"]}}
+data = {"schema_version": 2, "package": "lzo", "version": "2.10", "mechanism": "TLC Only", "status": "pass" if ok else "fail", "libraries": int(libraries), "native": {"exit_status": int(native)}, "hecate": {"exit_status": int(hecate)}, "output_match": True, "upstream_suite": {"registered_tests": 5, "additional_tests": 2, "selected_tests": 6, "native_passed": 6 if failures == "0" else 0, "hecate_passed": 6 if failures == "0" else 0, "tree_sweep_methods": 37, "failed": int(failures), "excluded": ["testmini"], "exclusion_reason": "testmini embeds miniLZO and does not use the shared library ABI"}}
 pathlib.Path(out).write_text(json.dumps(data, indent=2, sort_keys=True) + "\n")
 raise SystemExit(0 if ok else 1)
 PY

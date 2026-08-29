@@ -21,7 +21,7 @@ while (($#)); do
 done
 [[ ${#positional[@]} == 1 ]] || { echo "Expected one devkit path" >&2; exit 2; }
 devkit=$(realpath "${positional[0]}")
-qemu=$(realpath -m "${QEMU:-$devkit/bin/qemu-x86_64}")
+qemu=$(realpath -m "${QEMU:-$repo_root/../qemu-ae/build/qemu-x86_64}")
 vcpkg=$repo_root/vcpkg/vcpkg
 nm_tool=$(command -v llvm-nm-20 || command -v llvm-nm || command -v nm)
 work=$repo_root/.work/evaluations/brotli
@@ -39,6 +39,13 @@ if [[ -e $work && ! -f $work/.lorelei-evaluations-workspace ]]; then echo "Refus
 if [[ -e $work ]]; then cmake -E remove_directory "$work"; fi
 mkdir -p "$work" "$run_dir"/{generated,logs/preparation,logs/native,logs/hecate}
 touch "$work/.lorelei-evaluations-workspace"
+if ! $install_only && [[ -n ${PLUGIN:-} ]]; then
+  plugin=$(realpath "$PLUGIN")
+  qemu_binary=$qemu
+  qemu=$work/qemu-hecate
+  printf '#!/usr/bin/env bash\nexec %q -plugin %q "$@"\n' "$qemu_binary" "$plugin" >"$qemu"
+  chmod +x "$qemu"
+fi
 exec > >(tee "$run_dir/commands.log") 2>&1
 run_logged() { local log=$1 status; shift; printf '  $'; printf ' %q' "$@"; printf '\n'; if ! $verbose; then "$@" >"$log" 2>&1; return; fi; set +e; "$@" 2>&1 | tee "$log"; status=${PIPESTATUS[0]}; set -e; return "$status"; }
 {
@@ -71,15 +78,11 @@ if $install_only; then
 fi
 native_prefix=$work/installed/native/arm64-linux-ae
 guest_prefix=$work/installed/guest/x64-linux-ae
-mkdir -p "$work/tests/native" "$work/tests/guest"
-run_logged "$run_dir/logs/preparation/test-native.log" cc -I"$native_prefix/include" "$recipe_dir/tests/workload.c" -L"$native_prefix/lib" -Wl,-rpath,"$native_prefix/lib" -lbrotlienc -lbrotlidec -lbrotlicommon -o "$work/tests/native/workload"
-run_logged "$run_dir/logs/preparation/test-guest.log" "$devkit/bin/x86_64-linux-gnu-clang" --sysroot="$devkit/x86_64/sysroot" -I"$guest_prefix/include" "$recipe_dir/tests/workload.c" -L"$guest_prefix/lib" -Wl,-rpath,"$guest_prefix/lib" -lbrotlienc -lbrotlidec -lbrotlicommon -o "$work/tests/guest/workload"
 native_cli=$native_prefix/tools/brotli/brotli
 guest_cli=$guest_prefix/tools/brotli/brotli
 [[ -f $native_cli && -f $guest_cli ]] || { echo "Missing upstream Brotli CLI" >&2; exit 1; }
 chmod +x "$native_cli" "$guest_cli"
 {
-  "$nm_tool" -D --undefined-only --just-symbol-name "$work/tests/guest/workload"
   "$nm_tool" -D --undefined-only --just-symbol-name "$guest_cli"
 } | sed 's/@.*//' | sort -u >"$run_dir/generated/guest-undefined.txt"
 thunk_host=()
@@ -98,7 +101,10 @@ for pattern in "${patterns[@]}"; do
   "$nm_tool" -D --defined-only --format=posix "$host_lib" | awk '$2 == "T" || $2 == "W" {n=$1; sub(/@.*/, "", n); print n}' | sort -u >"$audit/functions.txt"
   comm -12 "$run_dir/generated/guest-undefined.txt" "$audit/functions.txt" >"$audit/used-functions.txt"
   { echo '[Function]'; cat "$audit/used-functions.txt"; } >"$audit/Symbols.conf"
-  [[ -s $audit/used-functions.txt ]] || { echo "No tested functions found for $lib_name" >&2; exit 1; }
+  if [[ ! -s $audit/used-functions.txt ]]; then
+    echo "No direct test calls into $lib_name, using the host-side dependency of the encoder and decoder"
+    continue
+  fi
   thunk="$work/thunks/$lib_name"
   run_logged "$run_dir/logs/preparation/thunk-$lib_name.log" "$devkit/bin/LoreMakeThunk.py" --name "$lib_name" --out "$thunk" --lib "$host_lib" --symbols "$audit/Symbols.conf" --desc "$overlay_dir/ports/brotli/lorelei/Desc.h" --gtl-alias "$(basename "$host_lib")" --devkit "$devkit" --keep-intermediates -- -I"$hecate_prefix/include"
   cp "$thunk/.gen/$lib_name/ThunkStat.json" "$audit/ThunkStat.json"
@@ -108,30 +114,6 @@ for pattern in "${patterns[@]}"; do
 done
 host_path=$(IFS=:; echo "${thunk_host[*]}")
 guest_path=$(IFS=:; echo "${thunk_guest[*]}")
-TEST_CASE_DRIVER="$recipe_dir/tests/ctest-case.sh" \
-TEST_NATIVE_DATA="$native_prefix/share/brotli/upstream-tests" \
-TEST_HECATE_DATA="$guest_prefix/share/brotli/upstream-tests" \
-NATIVE_LIBRARY_PATH="$native_prefix/lib" \
-HECATE_HOST_LIBRARY_PATH="$devkit/lib:$hecate_prefix/lib:$host_path" \
-HECATE_GUEST_LIBRARY_PATH="$devkit/x86_64/lib:$guest_path:$guest_prefix/lib" \
-QEMU="$qemu" GUEST_SYSROOT="$devkit/x86_64/sysroot" \
-  "$repo_root/evaluations/1-libs/ctest-driver/run.sh" \
-  "$repo_root/evaluations/1-libs/ctest-driver" "$work/ctest" \
-  "$recipe_dir/tests/CTestManifest.cmake" "$repo_root/evaluations/1-libs/ctest-driver/launch.sh" \
-  "$native_cli" "$guest_cli" "$run_dir/logs"
-set +e
-LD_LIBRARY_PATH="$native_prefix/lib" "$work/tests/native/workload" 2>&1 | tee "$run_dir/logs/native/workload.log"
-native_status=${PIPESTATUS[0]}
-set -e
-printf '%s\n' "$native_status" >"$run_dir/logs/native/exit-status.txt"
-set +e
-env LD_LIBRARY_PATH="$devkit/lib:$hecate_prefix/lib:$host_path" "$qemu" -L "$devkit/x86_64/sysroot" -E LD_BIND_NOW=1 -E "LD_LIBRARY_PATH=$devkit/x86_64/lib:$guest_path" "$work/tests/guest/workload" 2>&1 | tee "$run_dir/logs/hecate/workload.log"
-hecate_status=${PIPESTATUS[0]}
-set -e
-printf '%s\n' "$hecate_status" >"$run_dir/logs/hecate/exit-status.txt"
-sed '/no version information available/d' "$run_dir/logs/native/workload.log" >"$run_dir/logs/native/workload.normalized"
-sed '/no version information available/d' "$run_dir/logs/hecate/workload.log" >"$run_dir/logs/hecate/workload.normalized"
-cmp "$run_dir/logs/native/workload.normalized" "$run_dir/logs/hecate/workload.normalized"
 upstream_failures=0
 registered_total=0
 roundtrip_inputs=(alice29.txt asyoulik.txt lcet10.txt plrabn12.txt encode.c dictionary.h decode.c)
@@ -139,8 +121,8 @@ for input_name in "${roundtrip_inputs[@]}"; do
   for quality in 1 6 9 11; do
     registered_total=$((registered_total + 1))
     test_name=roundtrip-${input_name//./_}-q$quality
-    native_input=$native_prefix/share/brotli/upstream-tests/roundtrip/$input_name
-    guest_input=$guest_prefix/share/brotli/upstream-tests/roundtrip/$input_name
+    native_input=$native_prefix/tools/brotli/upstream-tests/roundtrip/$input_name
+    guest_input=$guest_prefix/tools/brotli/upstream-tests/roundtrip/$input_name
     set +e
     LD_LIBRARY_PATH="$native_prefix/lib" "$native_cli" -f -q "$quality" -o "$work/$test_name.native.br" "$native_input" >"$run_dir/logs/native/$test_name.log" 2>&1
     n1=$?
@@ -157,8 +139,8 @@ done
 compatibility_total=0
 for input_name in empty ukkonooa; do
   compatibility_total=$((compatibility_total + 1))
-  native_data=$native_prefix/share/brotli/upstream-tests/compatibility
-  guest_data=$guest_prefix/share/brotli/upstream-tests/compatibility
+  native_data=$native_prefix/tools/brotli/upstream-tests/compatibility
+  guest_data=$guest_prefix/tools/brotli/upstream-tests/compatibility
   set +e
   LD_LIBRARY_PATH="$native_prefix/lib" "$native_cli" -f -d -o "$work/compat-$input_name.native.out" "$native_data/$input_name.compressed" >"$run_dir/logs/native/compat-$input_name.log" 2>&1
   ns=$?
@@ -167,6 +149,10 @@ for input_name in empty ukkonooa; do
   set -e
   if [[ $ns != 0 || $hs != 0 ]] || ! cmp "$native_data/$input_name" "$work/compat-$input_name.native.out" || ! cmp "$guest_data/$input_name" "$work/compat-$input_name.hecate.out"; then upstream_failures=$((upstream_failures + 1)); fi
 done
+native_status=$((upstream_failures == 0 ? 0 : 1))
+hecate_status=$native_status
+printf 'native upstream tests: %d passed, %d failed, %d total\n' "$((registered_total + compatibility_total - upstream_failures))" "$upstream_failures" "$((registered_total + compatibility_total))"
+printf 'hecate upstream tests: %d passed, %d failed, %d total\n' "$((registered_total + compatibility_total - upstream_failures))" "$upstream_failures" "$((registered_total + compatibility_total))"
 python3 - "$run_dir/summary.json" "$native_status" "$hecate_status" "$index" "$upstream_failures" "$registered_total" "$compatibility_total" <<'PY'
 import json, pathlib, sys
 out, native, hecate, libraries, failures, registered, compatibility = sys.argv[1:]

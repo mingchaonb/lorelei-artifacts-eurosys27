@@ -1,6 +1,6 @@
-# lzo 2.10 validation (TLC Only) [ALL TESTS PASSED]
+# lzo 2.10 validation (TLC Only)
 
-This recipe fetches the official lzo 2.10 release through the pinned vcpkg overlay, builds shared libraries for AArch64 and x86-64, generates TLC thunks, and executes the same directed workload in native and Hecate lanes.
+This recipe installs lzo 2.10 and its upstream tests through the pinned vcpkg overlay, generates TLC thunks, then executes the installed tests in native and Hecate lanes.
 
 ## Commands
 
@@ -10,4 +10,4 @@ This recipe fetches the official lzo 2.10 release through the pinned vcpkg overl
 ./evaluations/1-libs/lzo/run.sh --install-only /path/to/lorelei-devkit
 ```
 
-The recipe runs all five tests registered by upstream CMake, including the `-mall` 37-method tree sweep, plus the upstream alignment and checksum tests. The evaluation CMake configuration exposes seven native registrations and six Hecate registrations. Four registered tests and both additions cross the shared liblzo2 ABI in both lanes. `testmini` is retained in the native suite because it embeds miniLZO, but it is not run as a pure QEMU test. The mechanism is TLC only and does not load or generate HLR extensions.
+The port installs the five tests registered by upstream CMake under `tools/lzo/upstream-tests`. Four shared-library tests pass in both lanes, including the `-mall` 37-method tree sweep. `testmini` embeds miniLZO and therefore does not test the shared ABI. It is run only as a native build check and is explicitly excluded from Hecate. No source-tree rebuild or pure QEMU lane is used.

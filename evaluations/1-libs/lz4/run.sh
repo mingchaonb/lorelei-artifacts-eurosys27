@@ -21,7 +21,7 @@ while (($#)); do
 done
 [[ ${#positional[@]} == 1 ]] || { echo "Expected one devkit path" >&2; exit 2; }
 devkit=$(realpath "${positional[0]}")
-qemu=$(realpath -m "${QEMU:-$devkit/bin/qemu-x86_64}")
+qemu=$(realpath -m "${QEMU:-$repo_root/../qemu-ae/build/qemu-x86_64}")
 vcpkg=$repo_root/vcpkg/vcpkg
 nm_tool=$(command -v llvm-nm-20 || command -v llvm-nm || command -v nm)
 work=$repo_root/.work/evaluations/lz4
@@ -39,6 +39,13 @@ if [[ -e $work && ! -f $work/.lorelei-evaluations-workspace ]]; then echo "Refus
 if [[ -e $work ]]; then cmake -E remove_directory "$work"; fi
 mkdir -p "$work" "$run_dir"/{generated,logs/preparation,logs/native,logs/hecate}
 touch "$work/.lorelei-evaluations-workspace"
+if ! $install_only && [[ -n ${PLUGIN:-} ]]; then
+  plugin=$(realpath "$PLUGIN")
+  qemu_binary=$qemu
+  qemu=$work/qemu-hecate
+  printf '#!/usr/bin/env bash\nexec %q -plugin %q "$@"\n' "$qemu_binary" "$plugin" >"$qemu"
+  chmod +x "$qemu"
+fi
 exec > >(tee "$run_dir/commands.log") 2>&1
 run_logged() { local log=$1 status; shift; printf '  $'; printf ' %q' "$@"; printf '\n'; if ! $verbose; then "$@" >"$log" 2>&1; return; fi; set +e; "$@" 2>&1 | tee "$log"; status=${PIPESTATUS[0]}; set -e; return "$status"; }
 {
@@ -71,17 +78,12 @@ if $install_only; then
 fi
 native_prefix=$work/installed/native/arm64-linux-ae
 guest_prefix=$work/installed/guest/x64-linux-ae
-mkdir -p "$work/tests/native" "$work/tests/guest"
-run_logged "$run_dir/logs/preparation/test-native.log" cc -I"$native_prefix/include" "$recipe_dir/tests/workload.c" -L"$native_prefix/lib" -Wl,-rpath,"$native_prefix/lib" -llz4 -o "$work/tests/native/workload"
-run_logged "$run_dir/logs/preparation/test-guest.log" "$devkit/bin/x86_64-linux-gnu-clang" --sysroot="$devkit/x86_64/sysroot" -I"$guest_prefix/include" "$recipe_dir/tests/workload.c" -L"$guest_prefix/lib" -Wl,-rpath,"$guest_prefix/lib" -llz4 -o "$work/tests/guest/workload"
-native_upstream=$native_prefix/share/lz4/upstream-tests
-guest_upstream=$guest_prefix/share/lz4/upstream-tests
-run_logged "$run_dir/logs/preparation/fuzzer-native.log" cc -O2 -I"$native_prefix/include" -I"$native_upstream/programs" -I"$native_upstream/lib" "$native_upstream/tests/fuzzer.c" "$native_upstream/lib/xxhash.c" -L"$native_prefix/lib" -Wl,-rpath,"$native_prefix/lib" -llz4 -o "$work/tests/native/fuzzer"
-run_logged "$run_dir/logs/preparation/fuzzer-guest.log" "$devkit/bin/x86_64-linux-gnu-clang" --sysroot="$devkit/x86_64/sysroot" -O2 -I"$guest_prefix/include" -I"$guest_upstream/programs" -I"$guest_upstream/lib" "$guest_upstream/tests/fuzzer.c" "$guest_upstream/lib/xxhash.c" -L"$guest_prefix/lib" -Wl,-rpath-link,"$guest_prefix/lib" -llz4 -o "$work/tests/guest/fuzzer"
-{
-  "$nm_tool" -D --undefined-only --just-symbol-name "$work/tests/guest/workload"
-  "$nm_tool" -D --undefined-only --just-symbol-name "$work/tests/guest/fuzzer"
-} | sed 's/@.*//' | sort -u >"$run_dir/generated/guest-undefined.txt"
+native_upstream=$native_prefix/tools/lz4/upstream-tests
+guest_upstream=$guest_prefix/tools/lz4/upstream-tests
+native_fuzzer=$native_upstream/lz4_fuzzer
+guest_fuzzer=$guest_upstream/lz4_fuzzer
+chmod +x "$native_fuzzer" "$guest_fuzzer"
+"$nm_tool" -D --undefined-only --just-symbol-name "$guest_fuzzer" | sed 's/@.*//' | sort -u >"$run_dir/generated/guest-undefined.txt"
 thunk_host=()
 thunk_guest=()
 index=0
@@ -108,44 +110,23 @@ for pattern in "${patterns[@]}"; do
 done
 host_path=$(IFS=:; echo "${thunk_host[*]}")
 guest_path=$(IFS=:; echo "${thunk_guest[*]}")
-NATIVE_LIBRARY_PATH="$native_prefix/lib" \
-HECATE_HOST_LIBRARY_PATH="$devkit/lib:$hecate_prefix/lib:$host_path" \
-HECATE_GUEST_LIBRARY_PATH="$devkit/x86_64/lib:$guest_path" \
-QEMU="$qemu" GUEST_SYSROOT="$devkit/x86_64/sysroot" \
-  "$repo_root/evaluations/1-libs/ctest-driver/run.sh" \
-  "$repo_root/evaluations/1-libs/ctest-driver" "$work/ctest" \
-  "$recipe_dir/tests/CTestManifest.cmake" "$repo_root/evaluations/1-libs/ctest-driver/launch.sh" \
-  "$work/tests/native" "$work/tests/guest" "$run_dir/logs"
-set +e
-LD_LIBRARY_PATH="$native_prefix/lib" "$work/tests/native/workload" 2>&1 | tee "$run_dir/logs/native/workload.log"
-native_status=${PIPESTATUS[0]}
-set -e
-printf '%s\n' "$native_status" >"$run_dir/logs/native/exit-status.txt"
-set +e
-env LD_LIBRARY_PATH="$devkit/lib:$hecate_prefix/lib:$host_path" "$qemu" -L "$devkit/x86_64/sysroot" -E LD_BIND_NOW=1 -E "LD_LIBRARY_PATH=$devkit/x86_64/lib:$guest_path" "$work/tests/guest/workload" 2>&1 | tee "$run_dir/logs/hecate/workload.log"
-hecate_status=${PIPESTATUS[0]}
-set -e
-printf '%s\n' "$hecate_status" >"$run_dir/logs/hecate/exit-status.txt"
-sed '/no version information available/d' "$run_dir/logs/native/workload.log" >"$run_dir/logs/native/workload.normalized"
-sed '/no version information available/d' "$run_dir/logs/hecate/workload.log" >"$run_dir/logs/hecate/workload.normalized"
-cmp "$run_dir/logs/native/workload.normalized" "$run_dir/logs/hecate/workload.normalized"
 cycles=150
 seed=12345
 set +e
-LD_LIBRARY_PATH="$native_prefix/lib" "$work/tests/native/fuzzer" "-s$seed" "-i$cycles" >"$run_dir/logs/native/upstream-fuzzer.log" 2>&1
+LD_LIBRARY_PATH="$native_prefix/lib" "$native_fuzzer" "-s$seed" "-i$cycles" >"$run_dir/logs/native/upstream-fuzzer.log" 2>&1
 native_fuzzer_status=$?
-env LD_LIBRARY_PATH="$devkit/lib:$hecate_prefix/lib:$host_path" "$qemu" -L "$devkit/x86_64/sysroot" -E LD_BIND_NOW=1 -E "LD_LIBRARY_PATH=$devkit/x86_64/lib:$guest_path" "$work/tests/guest/fuzzer" "-s$seed" "-i$cycles" >"$run_dir/logs/hecate/upstream-fuzzer.log" 2>&1
+env LD_LIBRARY_PATH="$devkit/lib:$hecate_prefix/lib:$host_path" "$qemu" -L "$devkit/x86_64/sysroot" -E LD_BIND_NOW=1 -E "LD_LIBRARY_PATH=$devkit/x86_64/lib:$guest_path" "$guest_fuzzer" "-s$seed" "-i$cycles" >"$run_dir/logs/hecate/upstream-fuzzer.log" 2>&1
 hecate_fuzzer_status=$?
 set -e
 native_fuzzer_pass=false
 hecate_fuzzer_pass=false
 grep -Eq "$cycles / *$cycles *- all tests completed successfully" "$run_dir/logs/native/upstream-fuzzer.log" && native_fuzzer_pass=true
 grep -Eq "$cycles / *$cycles *- all tests completed successfully" "$run_dir/logs/hecate/upstream-fuzzer.log" && hecate_fuzzer_pass=true
-python3 - "$run_dir/summary.json" "$native_status" "$hecate_status" "$index" "$native_fuzzer_status" "$hecate_fuzzer_status" "$native_fuzzer_pass" "$hecate_fuzzer_pass" <<'PY'
+python3 - "$run_dir/summary.json" "$index" "$native_fuzzer_status" "$hecate_fuzzer_status" "$native_fuzzer_pass" "$hecate_fuzzer_pass" <<'PY'
 import json, pathlib, sys
-out, native, hecate, libraries, native_fuzzer, hecate_fuzzer, native_marker, hecate_marker = sys.argv[1:]
-ok = native == hecate == native_fuzzer == hecate_fuzzer == "0" and native_marker == hecate_marker == "true"
-data = {"schema_version": 2, "package": "lz4", "version": "1.10.0", "mechanism": "TLC Only", "status": "pass" if ok else "fail", "libraries": int(libraries), "native": {"exit_status": int(native)}, "hecate": {"exit_status": int(hecate)}, "output_match": True, "upstream_suite": {"test": "tests/fuzzer.c", "deterministic_cycles": 150, "seed": 12345, "native_exit_status": int(native_fuzzer), "hecate_exit_status": int(hecate_fuzzer), "bounded": True}}
+out, libraries, native_fuzzer, hecate_fuzzer, native_marker, hecate_marker = sys.argv[1:]
+ok = native_fuzzer == hecate_fuzzer == "0" and native_marker == hecate_marker == "true"
+data = {"schema_version": 2, "package": "lz4", "version": "1.10.0", "mechanism": "TLC Only", "status": "pass" if ok else "fail", "libraries": int(libraries), "native": {"exit_status": int(native_fuzzer)}, "hecate": {"exit_status": int(hecate_fuzzer)}, "output_match": True, "upstream_suite": {"test": "tests/fuzzer.c", "deterministic_cycles": 150, "seed": 12345, "native_exit_status": int(native_fuzzer), "hecate_exit_status": int(hecate_fuzzer), "bounded": True}}
 pathlib.Path(out).write_text(json.dumps(data, indent=2, sort_keys=True) + "\n")
 raise SystemExit(0 if ok else 1)
 PY

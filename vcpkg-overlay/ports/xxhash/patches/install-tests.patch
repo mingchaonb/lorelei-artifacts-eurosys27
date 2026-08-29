@@ -1,0 +1,41 @@
+diff --git a/cmake_unofficial/CMakeLists.txt b/cmake_unofficial/CMakeLists.txt
+index 6f4dfb4..917c64a 100644
+--- a/cmake_unofficial/CMakeLists.txt
++++ b/cmake_unofficial/CMakeLists.txt
+@@ -49,5 +49,6 @@ endif()
+ endif()
+ 
+ option(BUILD_SHARED_LIBS "Build shared library" ON)
+ option(XXHASH_BUILD_XXHSUM "Build the xxhsum binary" ON)
++option(XXHASH_BUILD_TESTS "Build upstream tests" OFF)
+ 
+@@ -124,6 +125,19 @@ if(XXHASH_BUILD_XXHSUM)
+   target_link_libraries(xxhsum PRIVATE xxhash)
+   target_include_directories(xxhsum PRIVATE "${XXHASH_DIR}")
+ endif(XXHASH_BUILD_XXHSUM)
++
++if(XXHASH_BUILD_TESTS)
++  enable_testing()
++  add_executable(xxhash_sanity "${XXHASH_DIR}/tests/sanity_test.c")
++  target_compile_definitions(xxhash_sanity PRIVATE XXH_TEST_LINK_LIBRARY=1)
++  target_compile_options(xxhash_sanity PRIVATE
++    "SHELL:-include stdlib.h" "SHELL:-include string.h")
++  target_include_directories(xxhash_sanity PRIVATE "${XXHASH_DIR}" "${XXHASH_DIR}/cli")
++  target_link_libraries(xxhash_sanity PRIVATE xxhash)
++  add_test(NAME xxhash_sanity COMMAND xxhash_sanity)
++  install(TARGETS xxhash_sanity
++    RUNTIME DESTINATION tools/xxhash/upstream-tests)
++endif()
+ 
+ # Extra warning flags
+ include (CheckCCompilerFlag)
+diff --git a/tests/sanity_test.c b/tests/sanity_test.c
+index 5ba314d..0f7c8fa 100644
+--- a/tests/sanity_test.c
++++ b/tests/sanity_test.c
+@@ -22,3 +22,5 @@
+ #define XXH_STATIC_LINKING_ONLY
++#ifndef XXH_TEST_LINK_LIBRARY
+ #define XXH_IMPLEMENTATION   /* access definitions */
++#endif
+ #include "../cli/xsum_arch.h"

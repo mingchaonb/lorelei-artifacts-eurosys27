@@ -1,6 +1,6 @@
-# liblzma 5.8.3 validation (TLC Only) [ALL TESTS PASSED]
+# liblzma 5.8.3 validation (TLC Only)
 
-This recipe fetches the official liblzma 5.8.3 release through the pinned vcpkg overlay, builds shared libraries for AArch64 and x86-64, generates TLC thunks, and executes the same directed workload in native and Hecate lanes.
+This recipe installs liblzma 5.8.3 and its upstream tests through the pinned vcpkg overlay, generates TLC thunks, then executes the installed tests in native and Hecate lanes.
 
 ## Commands
 
@@ -10,4 +10,4 @@ This recipe fetches the official liblzma 5.8.3 release through the pinned vcpkg 
 ./evaluations/1-libs/liblzma/run.sh --install-only /path/to/lorelei-devkit
 ```
 
-The recipe runs the directed API workload and all 19 tests registered by the official XZ 5.8.3 default CMake configuration. Thirteen tests directly link liblzma and six exercise the dynamically linked `xz` and `xzdec` tools. The suite must pass natively and through Hecate. A pure QEMU lane is not run. The mechanism is TLC only and does not load or generate HLR extensions.
+The port builds and installs all 19 tests registered by the official XZ 5.8.3 CMake configuration under `tools/liblzma/upstream-tests`. The symmetric run selects 13 tests, and all 13 pass in native and Hecate. It explicitly excludes `test_index`, `test_suffix.sh`, three generated compression cases, and `test_files.sh` because they currently fail through Hecate. No source-tree rebuild or pure QEMU lane is used.

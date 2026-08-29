@@ -1,0 +1,11 @@
+diff --git a/test/CMakeLists.txt b/test/CMakeLists.txt
+index 5d13470..7a89eed 100644
+--- a/test/CMakeLists.txt
++++ b/test/CMakeLists.txt
+@@ -22,5 +22,5 @@ function(add_base64_test TEST_NAME)
+     add_test(NAME ${TEST_NAME}
+         COMMAND ${TEST_NAME}
+     )
+-    install(TARGETS ${TEST_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
++    install(TARGETS ${TEST_NAME} DESTINATION tools/libbase64/upstream-tests)
+ endfunction()

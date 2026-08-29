@@ -31,7 +31,7 @@ vcpkg_cmake_install()
 vcpkg_fixup_pkgconfig()
 vcpkg_copy_pdbs()
 
-set(LZO_TEST_DIR "${CURRENT_PACKAGES_DIR}/share/${PORT}/upstream-tests")
+set(LZO_TEST_DIR "${CURRENT_PACKAGES_DIR}/tools/${PORT}/upstream-tests")
 file(MAKE_DIRECTORY "${LZO_TEST_DIR}")
 foreach(TEST_NAME IN ITEMS lzotest simple testmini align chksum)
     file(INSTALL "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/${TEST_NAME}" DESTINATION "${LZO_TEST_DIR}")

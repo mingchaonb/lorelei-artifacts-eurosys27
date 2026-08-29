@@ -5,3 +5,8 @@ target_include_directories(crc PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_
 set_target_properties(crc PROPERTIES OUTPUT_NAME crc SOVERSION 2 VERSION 2.0)
 install(TARGETS crc LIBRARY DESTINATION lib)
 install(DIRECTORY include/ DESTINATION include)
+add_executable(libcrc_testall test/testall.c test/testcrc.c test/testnmea.c)
+target_compile_options(libcrc_testall PRIVATE -funsigned-char)
+target_include_directories(libcrc_testall PRIVATE include test)
+target_link_libraries(libcrc_testall PRIVATE crc)
+install(TARGETS libcrc_testall RUNTIME DESTINATION tools/libcrc/upstream-tests)

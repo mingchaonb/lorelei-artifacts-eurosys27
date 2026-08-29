@@ -1,6 +1,6 @@
 # libcrc 2.0 validation (TLC Only) [ALL TESTS PASSED]
 
-This recipe fetches the official libcrc 2.0 release through the pinned vcpkg overlay, builds shared libraries for AArch64 and x86-64, generates TLC thunks, and executes the same directed workload in native and Hecate lanes.
+This recipe installs libcrc 2.0 and its upstream test through the pinned vcpkg overlay, generates TLC thunks, then executes the installed test in native and Hecate lanes.
 
 ## Commands
 
@@ -10,4 +10,4 @@ This recipe fetches the official libcrc 2.0 release through the pinned vcpkg ove
 ./evaluations/1-libs/libcrc/run.sh --install-only /path/to/lorelei-devkit
 ```
 
-The workload dynamically links and runs the complete upstream `testall` program, including its CRC and NMEA test translation units. The evaluation CMake configuration exposes one registration per lane to CTest. Success requires the upstream `All tests succeeded` result, identical normalized output, and exit status zero in both lanes. The mechanism is TLC only. It does not load or generate HLR extensions.
+The port builds the complete upstream `testall` program, including its CRC and NMEA translation units, and installs it under `tools/libcrc/upstream-tests`. The installed test reports `All tests succeeded` in both lanes with matching output. No source-tree rebuild or pure QEMU lane is used.

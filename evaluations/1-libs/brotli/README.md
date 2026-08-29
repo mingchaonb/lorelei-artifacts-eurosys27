@@ -1,6 +1,6 @@
 # brotli 1.2.0 validation (TLC Only) [ALL TESTS PASSED]
 
-This recipe fetches the official brotli 1.2.0 release through the pinned vcpkg overlay, builds shared libraries for AArch64 and x86-64, generates TLC thunks, and executes the same directed workload in native and Hecate lanes.
+This recipe installs brotli 1.2.0 and its upstream tests through the pinned vcpkg overlay, generates TLC thunks, then executes the installed tests in native and Hecate lanes.
 
 ## Commands
 
@@ -10,4 +10,4 @@ This recipe fetches the official brotli 1.2.0 release through the pinned vcpkg o
 ./evaluations/1-libs/brotli/run.sh --install-only /path/to/lorelei-devkit
 ```
 
-The recipe runs the directed API workload, all 28 upstream roundtrip registrations, and two additional valid compatibility vectors. The evaluation CMake configuration exposes all 30 cases per lane to CTest, for 60 nonempty registrations across native and Hecate. The four Canterbury inputs are fetched from the verified official v1.2.0 `testdata.txz` release asset. The CLI path dynamically exercises the common, encoder, and decoder DSOs in native and Hecate lanes. Fuzzers and benchmarks are excluded. The mechanism is TLC only and does not load or generate HLR extensions.
+The port installs the upstream CLI and official release test data under `tools/brotli/upstream-tests`. The runner executes all 28 upstream roundtrip registrations and two compatibility-vector registrations in both lanes. All 30 tests pass in native and Hecate. The common DSO is exercised as the encoder and decoder dependency. No source-tree rebuild or pure QEMU lane is used.

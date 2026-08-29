@@ -46,6 +46,22 @@ vcpkg_cmake_configure(
 vcpkg_cmake_install()
 vcpkg_copy_pdbs()
 
+set(XZ_TEST_BUILD_DIR "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel")
+set(XZ_TEST_INSTALL_DIR "${CURRENT_PACKAGES_DIR}/tools/${PORT}/upstream-tests")
+file(INSTALL
+    "${XZ_TEST_BUILD_DIR}/xz"
+    "${XZ_TEST_BUILD_DIR}/xzdec"
+    DESTINATION "${XZ_TEST_INSTALL_DIR}")
+file(COPY
+    "${XZ_TEST_BUILD_DIR}/tests_bin"
+    "${XZ_TEST_BUILD_DIR}/test_scripts"
+    "${XZ_TEST_BUILD_DIR}/test_suffix"
+    "${XZ_TEST_BUILD_DIR}/test_compress"
+    "${XZ_TEST_BUILD_DIR}/test_files"
+    DESTINATION "${XZ_TEST_INSTALL_DIR}")
+file(COPY "${SOURCE_PATH}/tests/"
+    DESTINATION "${XZ_TEST_INSTALL_DIR}/source")
+
 set(exec_prefix "\${prefix}")
 set(libdir "\${prefix}/lib")
 set(includedir "\${prefix}/include")

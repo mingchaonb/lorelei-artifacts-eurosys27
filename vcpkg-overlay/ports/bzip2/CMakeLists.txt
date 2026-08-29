@@ -43,3 +43,12 @@ endif()
 if(NOT BZIP2_SKIP_HEADERS)
     install(FILES bzlib.h DESTINATION include)
 endif()
+
+add_executable(bzip2_upstream_test bzip2.c)
+target_link_libraries(bzip2_upstream_test PRIVATE bz2)
+install(TARGETS bzip2_upstream_test RUNTIME DESTINATION tools/bzip2/upstream-tests)
+install(FILES
+    sample1.ref sample1.bz2
+    sample2.ref sample2.bz2
+    sample3.ref sample3.bz2
+    DESTINATION tools/bzip2/upstream-tests)

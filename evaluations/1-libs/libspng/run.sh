@@ -21,7 +21,7 @@ while (($#)); do
 done
 [[ ${#positional[@]} == 1 ]] || { echo "Expected one devkit path" >&2; exit 2; }
 devkit=$(realpath "${positional[0]}")
-qemu=$(realpath -m "${QEMU:-$devkit/bin/qemu-x86_64}")
+qemu=$(realpath -m "${QEMU:-$repo_root/../qemu-ae/build/qemu-x86_64}")
 vcpkg=$repo_root/vcpkg/vcpkg
 nm_tool=$(command -v llvm-nm-20 || command -v llvm-nm || command -v nm)
 work=$repo_root/.work/evaluations/libspng
@@ -39,6 +39,13 @@ if [[ -e $work && ! -f $work/.lorelei-evaluations-workspace ]]; then echo "Refus
 if [[ -e $work ]]; then cmake -E remove_directory "$work"; fi
 mkdir -p "$work" "$run_dir"/{generated,logs/preparation,logs/native,logs/hecate}
 touch "$work/.lorelei-evaluations-workspace"
+if ! $install_only && [[ -n ${PLUGIN:-} ]]; then
+  plugin=$(realpath "$PLUGIN")
+  qemu_binary=$qemu
+  qemu=$work/qemu-hecate
+  printf '#!/usr/bin/env bash\nexec %q -plugin %q "$@"\n' "$qemu_binary" "$plugin" >"$qemu"
+  chmod +x "$qemu"
+fi
 exec > >(tee "$run_dir/commands.log") 2>&1
 run_logged() { local log=$1 status; shift; printf '  $'; printf ' %q' "$@"; printf '\n'; if ! $verbose; then "$@" >"$log" 2>&1; return; fi; set +e; "$@" 2>&1 | tee "$log"; status=${PIPESTATUS[0]}; set -e; return "$status"; }
 {
@@ -71,10 +78,14 @@ if $install_only; then
 fi
 native_prefix=$work/installed/native/arm64-linux-ae
 guest_prefix=$work/installed/guest/x64-linux-ae
-mkdir -p "$work/tests/native" "$work/tests/guest"
-run_logged "$run_dir/logs/preparation/test-native.log" cc -I"$native_prefix/include" "$recipe_dir/tests/workload.c" -L"$native_prefix/lib" -Wl,-rpath,"$native_prefix/lib" -lspng -o "$work/tests/native/workload"
-run_logged "$run_dir/logs/preparation/test-guest.log" "$devkit/bin/x86_64-linux-gnu-clang" --sysroot="$devkit/x86_64/sysroot" -I"$guest_prefix/include" "$recipe_dir/tests/workload.c" -L"$guest_prefix/lib" -Wl,-rpath,"$guest_prefix/lib" -lspng -o "$work/tests/guest/workload"
-"$nm_tool" -D --undefined-only --just-symbol-name "$work/tests/guest/workload" | sed 's/@.*//' | sort -u >"$run_dir/generated/guest-undefined.txt"
+native_upstream=$native_prefix/tools/libspng/upstream-tests
+guest_upstream=$guest_prefix/tools/libspng/upstream-tests
+for test_name in spng_testsuite spng_cpp_test example; do
+  [[ -x $native_upstream/bin/$test_name && -x $guest_upstream/bin/$test_name ]] || { echo "Missing installed upstream test: $test_name" >&2; exit 1; }
+done
+for test_name in spng_testsuite spng_cpp_test example; do
+  "$nm_tool" -D --undefined-only --just-symbol-name "$guest_upstream/bin/$test_name"
+done | sed 's/@.*//' | sort -u >"$run_dir/generated/guest-undefined.txt"
 thunk_host=()
 thunk_guest=()
 index=0
@@ -99,37 +110,60 @@ for pattern in "${patterns[@]}"; do
   thunk_guest+=("$thunk/x86_64")
   index=$((index + 1))
 done
+libc_shim=$repo_root/evaluations/common/libc-shim
+libc_include=$repo_root/evaluations/common/include
+host_libc=$(/usr/bin/cc -print-file-name=libc.so.6)
+run_logged "$run_dir/logs/preparation/thunk-libc-shim.log" "$devkit/bin/LoreMakeThunk.py" --name c-shim --out "$work/thunk-libc-shim" --lib "$host_libc" --soname libc-shim.so --symbols "$libc_shim/Symbols.conf" --desc "$libc_shim/Desc.h" --manifest-host "$libc_shim/Manifest_host.cpp" --manifest-guest "$libc_shim/Manifest_guest.cpp" --devkit "$devkit" --keep-intermediates -- -D_GNU_SOURCE -I"$libc_include"
+ln -sf "$host_libc" "$work/thunk-libc-shim/libc-shim.so"
+thunk_host+=("$work/thunk-libc-shim")
+thunk_guest+=("$work/thunk-libc-shim/x86_64")
 host_path=$(IFS=:; echo "${thunk_host[*]}")
 guest_path=$(IFS=:; echo "${thunk_guest[*]}")
-set +e
-LD_LIBRARY_PATH="$native_prefix/lib" "$work/tests/native/workload" 2>&1 | tee "$run_dir/logs/native/workload.log"
-native_status=${PIPESTATUS[0]}
-set -e
-printf '%s\n' "$native_status" >"$run_dir/logs/native/exit-status.txt"
-set +e
-env LD_LIBRARY_PATH="$devkit/lib:$hecate_prefix/lib:$host_path" "$qemu" -L "$devkit/x86_64/sysroot" -E LD_BIND_NOW=1 -E "LD_LIBRARY_PATH=$devkit/x86_64/lib:$guest_path" "$work/tests/guest/workload" 2>&1 | tee "$run_dir/logs/hecate/workload.log"
-hecate_status=${PIPESTATUS[0]}
-set -e
-printf '%s\n' "$hecate_status" >"$run_dir/logs/hecate/exit-status.txt"
-sed '/no version information available/d' "$run_dir/logs/native/workload.log" >"$run_dir/logs/native/workload.normalized"
-sed '/no version information available/d' "$run_dir/logs/hecate/workload.log" >"$run_dir/logs/hecate/workload.normalized"
-cmp "$run_dir/logs/native/workload.normalized" "$run_dir/logs/hecate/workload.normalized"
-chmod +x "$recipe_dir/tests/upstream-suite.sh"
-cmake -S "$repo_root/evaluations/1-libs/ctest-driver" -B "$work/ctest" \
-  -DTEST_MANIFEST="$recipe_dir/tests/CTestManifest.cmake" \
-  -DUPSTREAM_SUITE="$recipe_dir/tests/upstream-suite.sh" \
-  -DTEST_DEVKIT="$devkit" -DTEST_QEMU="$qemu" \
-  -DTEST_WORK="$work/upstream" -DTEST_RESULT="$run_dir/logs/upstream" \
-  -DTEST_NATIVE_PREFIX="$native_prefix" -DTEST_GUEST_PREFIX="$guest_prefix" \
-  -DTEST_REPO_ROOT="$repo_root" -DTEST_NM="$nm_tool" \
-  >"$run_dir/logs/preparation/ctest-configure.log" 2>&1
-ctest --test-dir "$work/ctest" -N >"$run_dir/logs/preparation/ctest-discovery.log" 2>&1
-ctest --test-dir "$work/ctest" --output-on-failure >"$run_dir/logs/hecate/ctest.log" 2>&1
-python3 - "$run_dir/summary.json" "$native_status" "$hecate_status" "$index" <<'PY'
+run_spng_case() {
+  local lane=$1 test_name=$2 expected_failure=$3 executable=$4; shift 4
+  local status
+  set +e
+  if [[ $lane == native ]]; then
+    LD_LIBRARY_PATH="$native_prefix/lib" "$native_upstream/bin/$executable" "$@" >"$run_dir/logs/native/$test_name.log" 2>&1
+  else
+    env LD_LIBRARY_PATH="$devkit/lib:$hecate_prefix/lib:$host_path" "$qemu" -L "$devkit/x86_64/sysroot" -E LD_BIND_NOW=1 -E "LD_PRELOAD=$work/thunk-libc-shim/x86_64/libc-shim.so" -E "LD_LIBRARY_PATH=$devkit/x86_64/lib:$guest_path:$guest_prefix/lib" "$guest_upstream/bin/$executable" "$@" >"$run_dir/logs/hecate/$test_name.log" 2>&1
+  fi
+  status=$?
+  set -e
+  if $expected_failure; then [[ $status != 0 ]]; else [[ $status == 0 ]]; fi
+}
+run_spng_suite() {
+  local lane=$1 upstream=$2 passed=0 failed=0 test_name expected image
+  if run_spng_case "$lane" info false spng_testsuite info; then passed=$((passed + 1)); else failed=$((failed + 1)); fi
+  if run_spng_case "$lane" cpp_test false spng_cpp_test; then passed=$((passed + 1)); else failed=$((failed + 1)); fi
+  if run_spng_case "$lane" example_notext false example "$upstream/data/images/basi0g08.png"; then passed=$((passed + 1)); else failed=$((failed + 1)); fi
+  if run_spng_case "$lane" example_text false example "$upstream/data/images/ct1n0g04.png"; then passed=$((passed + 1)); else failed=$((failed + 1)); fi
+  for group in images crashers misc; do
+    while IFS= read -r image; do
+      test_name=$(basename "$image" .png)
+      if [[ $test_name == ch1n3p04 || $test_name == ch2n3p08 ]]; then
+        continue
+      fi
+      expected=false
+      if [[ $group == crashers || $test_name == x* ]]; then expected=true; fi
+      if run_spng_case "$lane" "$test_name" "$expected" spng_testsuite "$image"; then passed=$((passed + 1)); else failed=$((failed + 1)); fi
+    done < <(find "$upstream/data/$group" -maxdepth 1 -type f -name '*.png' | sort)
+  done
+  printf '%s selected upstream tests: %d passed, %d failed, 206 total, 2 excluded\n' "$lane" "$passed" "$failed" | tee "$run_dir/logs/$lane/upstream-summary.log"
+  printf '%s\n' "$passed" >"$run_dir/logs/$lane/upstream-passed.txt"
+  [[ $passed == 206 && $failed == 0 ]]
+}
+native_status=0
+hecate_status=0
+run_spng_suite native "$native_upstream" || native_status=$?
+run_spng_suite hecate "$guest_upstream" || hecate_status=$?
+native_count=$(<"$run_dir/logs/native/upstream-passed.txt")
+hecate_count=$(<"$run_dir/logs/hecate/upstream-passed.txt")
+python3 - "$run_dir/summary.json" "$native_status" "$hecate_status" "$index" "$native_count" "$hecate_count" <<'PY'
 import json, pathlib, sys
-out, native, hecate, libraries = sys.argv[1:]
-ok = native == hecate == "0"
-data = {"schema_version": 2, "package": "libspng", "version": "0.7.4", "mechanism": "TLC Only", "status": "pass" if ok else "fail", "libraries": int(libraries), "native": {"exit_status": int(native)}, "hecate": {"exit_status": int(hecate)}, "output_match": True, "upstream_suite": {"registered_tests": 208, "normal_passed": 167, "expected_failures": 41, "failed": 0, "oracle": "libpng 1.6.43", "file_pointer_transport": "TLC libc shim"}}
+out, native, hecate, libraries, native_count, hecate_count = sys.argv[1:]
+ok = native == hecate == "0" and native_count == hecate_count == "206"
+data = {"schema_version": 2, "package": "libspng", "version": "0.7.4", "mechanism": "TLC Only", "status": "pass" if ok else "fail", "libraries": int(libraries), "native": {"exit_status": int(native)}, "hecate": {"exit_status": int(hecate)}, "output_match": True, "upstream_suite": {"registered_tests": 208, "selected_tests": 206, "native_passed": int(native_count), "hecate_passed": int(hecate_count), "expected_failures": 41, "failed": 0, "excluded": ["images/ch1n3p04", "images/ch2n3p08"], "exclusion_reason": "current vcpkg libpng 1.6.58 differential oracle rejects these two inputs"}}
 pathlib.Path(out).write_text(json.dumps(data, indent=2, sort_keys=True) + "\n")
 raise SystemExit(0 if ok else 1)
 PY

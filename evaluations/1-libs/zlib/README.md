@@ -1,6 +1,6 @@
-# zlib 1.3.2 validation (TLC Only) [ALL TESTS PASSED]
+# zlib 1.3.2 validation (TLC Only)
 
-This recipe fetches the official zlib 1.3.2 release through the pinned vcpkg overlay, builds shared libraries for AArch64 and x86-64, generates TLC thunks, and executes the same directed workload in native and Hecate lanes.
+This recipe installs zlib 1.3.2 and its upstream runtime tests through the pinned vcpkg overlay, generates TLC thunks, then executes the installed tests in native and Hecate lanes.
 
 ## Commands
 
@@ -10,6 +10,4 @@ This recipe fetches the official zlib 1.3.2 release through the pinned vcpkg ove
 ./evaluations/1-libs/zlib/run.sh --install-only /path/to/lorelei-devkit
 ```
 
-The recipe runs the directed public-API roundtrip, both upstream CTest registrations that link the shared library (`zlib_example` and `zlib_example64`), and bidirectional `minigzip` coverage. The evaluation CMake configuration exposes these three dynamic-ABI cases per lane to CTest, for six registrations. Success requires zero exit status in both lanes, identical normalized example output, and successful native and Hecate minigzip roundtrips.
-
-The upstream static-library duplicates, coverage instrumentation, and CMake install/package-consumer checks are excluded because they do not execute across the installed shared-library ABI. The mechanism is TLC only. It does not load or generate HLR extensions.
+The port installs `zlib_example`, `zlib_example64`, and `minigzip` under `tools/zlib/upstream-tests`. All three runtime cases pass in native and Hecate. Upstream CMake discovers 14 tests in this configuration. The remaining 12 are install and package-consumer build-system checks that invoke CMake to build new programs, so the installed-only runner explicitly excludes them. No source-tree rebuild or pure QEMU lane is used.

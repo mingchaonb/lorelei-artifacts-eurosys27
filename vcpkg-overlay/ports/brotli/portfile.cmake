@@ -48,17 +48,17 @@ file(INSTALL
     "${SOURCE_PATH}/c/enc/encode.c"
     "${SOURCE_PATH}/c/common/dictionary.h"
     "${SOURCE_PATH}/c/dec/decode.c"
-    DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}/upstream-tests/roundtrip")
+    DESTINATION "${CURRENT_PACKAGES_DIR}/tools/${PORT}/upstream-tests/roundtrip")
 file(INSTALL
     "${BROTLI_TESTDATA_DIR}/tests/testdata/alice29.txt"
     "${BROTLI_TESTDATA_DIR}/tests/testdata/asyoulik.txt"
     "${BROTLI_TESTDATA_DIR}/tests/testdata/lcet10.txt"
     "${BROTLI_TESTDATA_DIR}/tests/testdata/plrabn12.txt"
-    DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}/upstream-tests/roundtrip")
+    DESTINATION "${CURRENT_PACKAGES_DIR}/tools/${PORT}/upstream-tests/roundtrip")
 file(INSTALL
     "${SOURCE_PATH}/tests/testdata/empty"
     "${SOURCE_PATH}/tests/testdata/empty.compressed"
     "${SOURCE_PATH}/tests/testdata/ukkonooa"
     "${SOURCE_PATH}/tests/testdata/ukkonooa.compressed"
-    DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}/upstream-tests/compatibility")
+    DESTINATION "${CURRENT_PACKAGES_DIR}/tools/${PORT}/upstream-tests/compatibility")
 vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")

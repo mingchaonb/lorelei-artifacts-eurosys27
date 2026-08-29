@@ -1,0 +1,30 @@
+diff --git a/build/cmake/CMakeLists.txt b/build/cmake/CMakeLists.txt
+index 65a05c5..8bd670e 100644
+--- a/build/cmake/CMakeLists.txt
++++ b/build/cmake/CMakeLists.txt
+@@ -34,2 +34,3 @@ option(LZ4_BUILD_CLI "Build lz4 program" ON)
+ option(LZ4_BUILD_CLI "Build lz4 program" ON)
++option(LZ4_BUILD_TESTS "Build upstream tests" OFF)
+ 
+@@ -140,7 +141,20 @@ endif()
+ # lz4
+ if (LZ4_BUILD_CLI)
+   set(LZ4_PROGRAMS_BUILT lz4cli)
+   add_executable(lz4cli ${LZ4_CLI_SOURCES})
+   set_target_properties(lz4cli PROPERTIES OUTPUT_NAME lz4)
+ endif()
++if (LZ4_BUILD_TESTS)
++  enable_testing()
++  add_executable(lz4_fuzzer
++    "${LZ4_TOP_SOURCE_DIR}/tests/fuzzer.c"
++    "${LZ4_LIB_SOURCE_DIR}/xxhash.c")
++  target_include_directories(lz4_fuzzer PRIVATE
++    "${LZ4_LIB_SOURCE_DIR}"
++    "${LZ4_PROG_SOURCE_DIR}")
++  target_link_libraries(lz4_fuzzer PRIVATE lz4)
++  add_test(NAME lz4_fuzzer COMMAND lz4_fuzzer -s12345 -i150)
++  install(TARGETS lz4_fuzzer
++    RUNTIME DESTINATION tools/lz4/upstream-tests)
++endif()
+ 
+ # Extra warning flags

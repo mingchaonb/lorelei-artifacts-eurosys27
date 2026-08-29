@@ -21,7 +21,7 @@ while (($#)); do
 done
 [[ ${#positional[@]} == 1 ]] || { echo "Expected one devkit path" >&2; exit 2; }
 devkit=$(realpath "${positional[0]}")
-qemu=$(realpath -m "${QEMU:-$devkit/bin/qemu-x86_64}")
+qemu=$(realpath -m "${QEMU:-$repo_root/../qemu-ae/build/qemu-x86_64}")
 vcpkg=$repo_root/vcpkg/vcpkg
 nm_tool=$(command -v llvm-nm-20 || command -v llvm-nm || command -v nm)
 work=$repo_root/.work/evaluations/libbase64
@@ -39,6 +39,13 @@ if [[ -e $work && ! -f $work/.lorelei-evaluations-workspace ]]; then echo "Refus
 if [[ -e $work ]]; then cmake -E remove_directory "$work"; fi
 mkdir -p "$work" "$run_dir"/{generated,logs/preparation,logs/native,logs/hecate}
 touch "$work/.lorelei-evaluations-workspace"
+if ! $install_only && [[ -n ${PLUGIN:-} ]]; then
+  plugin=$(realpath "$PLUGIN")
+  qemu_binary=$qemu
+  qemu=$work/qemu-hecate
+  printf '#!/usr/bin/env bash\nexec %q -plugin %q "$@"\n' "$qemu_binary" "$plugin" >"$qemu"
+  chmod +x "$qemu"
+fi
 exec > >(tee "$run_dir/commands.log") 2>&1
 run_logged() { local log=$1 status; shift; printf '  $'; printf ' %q' "$@"; printf '\n'; if ! $verbose; then "$@" >"$log" 2>&1; return; fi; set +e; "$@" 2>&1 | tee "$log"; status=${PIPESTATUS[0]}; set -e; return "$status"; }
 {
@@ -71,14 +78,17 @@ if $install_only; then
 fi
 native_prefix=$work/installed/native/arm64-linux-ae
 guest_prefix=$work/installed/guest/x64-linux-ae
-mkdir -p "$work/tests/native" "$work/tests/guest"
-native_tests=$native_prefix/share/libbase64/upstream-tests
-guest_tests=$guest_prefix/share/libbase64/upstream-tests
-run_logged "$run_dir/logs/preparation/test-native.log" cc -I"$native_prefix/include" -I"$native_tests" "$native_tests/test_base64.c" "$native_tests/codec_supported.c" -L"$native_prefix/lib" -Wl,-rpath,"$native_prefix/lib" -lbase64 -o "$work/tests/native/workload"
-run_logged "$run_dir/logs/preparation/test-guest.log" "$devkit/bin/x86_64-linux-gnu-clang" --sysroot="$devkit/x86_64/sysroot" -I"$guest_prefix/include" -I"$guest_tests" "$guest_tests/test_base64.c" "$guest_tests/codec_supported.c" -L"$guest_prefix/lib" -Wl,-rpath,"$guest_prefix/lib" -lbase64 -o "$work/tests/guest/workload"
-run_logged "$run_dir/logs/preparation/benchmark-native.log" cc -I"$native_prefix/include" -I"$native_tests" "$native_tests/benchmark.c" "$native_tests/codec_supported.c" -L"$native_prefix/lib" -Wl,-rpath,"$native_prefix/lib" -lbase64 -lrt -o "$work/tests/native/benchmark"
-run_logged "$run_dir/logs/preparation/benchmark-guest.log" "$devkit/bin/x86_64-linux-gnu-clang" --sysroot="$devkit/x86_64/sysroot" -I"$guest_prefix/include" -I"$guest_tests" "$guest_tests/benchmark.c" "$guest_tests/codec_supported.c" -L"$guest_prefix/lib" -Wl,-rpath,"$guest_prefix/lib" -lbase64 -lrt -o "$work/tests/guest/benchmark"
-"$nm_tool" -D --undefined-only --just-symbol-name "$work/tests/guest/workload" | sed 's/@.*//' | sort -u >"$run_dir/generated/guest-undefined.txt"
+native_tests=$native_prefix/tools/libbase64/upstream-tests
+guest_tests=$guest_prefix/tools/libbase64/upstream-tests
+native_test=$native_tests/test_base64
+guest_test=$guest_tests/test_base64
+native_benchmark=$native_tests/benchmark
+guest_benchmark=$guest_tests/benchmark
+chmod +x "$native_test" "$guest_test" "$native_benchmark" "$guest_benchmark"
+{
+  "$nm_tool" -D --undefined-only --just-symbol-name "$guest_test"
+  "$nm_tool" -D --undefined-only --just-symbol-name "$guest_benchmark"
+} | sed 's/@.*//' | sort -u >"$run_dir/generated/guest-undefined.txt"
 thunk_host=()
 thunk_guest=()
 index=0
@@ -105,28 +115,20 @@ for pattern in "${patterns[@]}"; do
 done
 host_path=$(IFS=:; echo "${thunk_host[*]}")
 guest_path=$(IFS=:; echo "${thunk_guest[*]}")
-NATIVE_LIBRARY_PATH="$native_prefix/lib" \
-HECATE_HOST_LIBRARY_PATH="$devkit/lib:$hecate_prefix/lib:$host_path" \
-HECATE_GUEST_LIBRARY_PATH="$devkit/x86_64/lib:$guest_path" \
-QEMU="$qemu" GUEST_SYSROOT="$devkit/x86_64/sysroot" \
-  "$repo_root/evaluations/1-libs/ctest-driver/run.sh" \
-  "$repo_root/evaluations/1-libs/ctest-driver" "$work/ctest" \
-  "$recipe_dir/tests/CTestManifest.cmake" "$repo_root/evaluations/1-libs/ctest-driver/launch.sh" \
-  "$work/tests/native" "$work/tests/guest" "$run_dir/logs"
 set +e
-LD_LIBRARY_PATH="$native_prefix/lib" "$work/tests/native/workload" 2>&1 | tee "$run_dir/logs/native/workload.log"
+LD_LIBRARY_PATH="$native_prefix/lib" "$native_test" 2>&1 | tee "$run_dir/logs/native/test_base64.log"
 native_status=${PIPESTATUS[0]}
 set -e
 printf '%s\n' "$native_status" >"$run_dir/logs/native/exit-status.txt"
 set +e
-env LD_LIBRARY_PATH="$devkit/lib:$hecate_prefix/lib:$host_path" "$qemu" -L "$devkit/x86_64/sysroot" -E LD_BIND_NOW=1 -E "LD_LIBRARY_PATH=$devkit/x86_64/lib:$guest_path" "$work/tests/guest/workload" 2>&1 | tee "$run_dir/logs/hecate/workload.log"
+env LD_LIBRARY_PATH="$devkit/lib:$hecate_prefix/lib:$host_path" "$qemu" -L "$devkit/x86_64/sysroot" -E LD_BIND_NOW=1 -E "LD_LIBRARY_PATH=$devkit/x86_64/lib:$guest_path" "$guest_test" 2>&1 | tee "$run_dir/logs/hecate/test_base64.log"
 hecate_status=${PIPESTATUS[0]}
 set -e
 printf '%s\n' "$hecate_status" >"$run_dir/logs/hecate/exit-status.txt"
 set +e
-LD_LIBRARY_PATH="$native_prefix/lib" "$work/tests/native/benchmark" >"$run_dir/logs/native/benchmark.log" 2>&1
+LD_LIBRARY_PATH="$native_prefix/lib" "$native_benchmark" >"$run_dir/logs/native/benchmark.log" 2>&1
 native_benchmark_status=$?
-env LD_LIBRARY_PATH="$devkit/lib:$hecate_prefix/lib:$host_path" "$qemu" -L "$devkit/x86_64/sysroot" -E LD_BIND_NOW=1 -E "LD_LIBRARY_PATH=$devkit/x86_64/lib:$guest_path" "$work/tests/guest/benchmark" >"$run_dir/logs/hecate/benchmark.log" 2>&1
+env LD_LIBRARY_PATH="$devkit/lib:$hecate_prefix/lib:$host_path" "$qemu" -L "$devkit/x86_64/sysroot" -E LD_BIND_NOW=1 -E "LD_LIBRARY_PATH=$devkit/x86_64/lib:$guest_path" "$guest_benchmark" >"$run_dir/logs/hecate/benchmark.log" 2>&1
 hecate_benchmark_status=$?
 set -e
 printf '%s\n' "$native_benchmark_status" >"$run_dir/logs/native/benchmark-exit-status.txt"
@@ -136,9 +138,9 @@ grep -q '^plain[[:space:]]*decode' "$run_dir/logs/native/benchmark.log"
 grep -q '^plain[[:space:]]*encode' "$run_dir/logs/hecate/benchmark.log"
 grep -q '^plain[[:space:]]*decode' "$run_dir/logs/hecate/benchmark.log"
 [[ $native_benchmark_status == 0 && $hecate_benchmark_status == 0 ]]
-sed '/no version information available/d' "$run_dir/logs/native/workload.log" >"$run_dir/logs/native/workload.normalized"
-sed '/no version information available/d' "$run_dir/logs/hecate/workload.log" >"$run_dir/logs/hecate/workload.normalized"
-cmp "$run_dir/logs/native/workload.normalized" "$run_dir/logs/hecate/workload.normalized"
+sed '/no version information available/d' "$run_dir/logs/native/test_base64.log" >"$run_dir/logs/native/test_base64.normalized"
+sed '/no version information available/d' "$run_dir/logs/hecate/test_base64.log" >"$run_dir/logs/hecate/test_base64.normalized"
+cmp "$run_dir/logs/native/test_base64.normalized" "$run_dir/logs/hecate/test_base64.normalized"
 python3 - "$run_dir/summary.json" "$native_status" "$hecate_status" "$index" <<'PY'
 import json, pathlib, sys
 out, native, hecate, libraries = sys.argv[1:]

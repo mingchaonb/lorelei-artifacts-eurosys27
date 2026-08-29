@@ -1,6 +1,6 @@
-# libspng 0.7.4 validation (TLC Only) [ALL TESTS PASSED]
+# libspng 0.7.4 validation (TLC Only)
 
-This recipe fetches the official libspng 0.7.4 release through the pinned vcpkg overlay, builds shared libraries for AArch64 and x86-64, generates TLC thunks, and executes the same directed workload in native and Hecate lanes.
+This recipe installs libspng 0.7.4 and its upstream tests through the pinned vcpkg overlay, generates TLC thunks, then executes the installed tests in native and Hecate lanes.
 
 ## Commands
 
@@ -10,4 +10,4 @@ This recipe fetches the official libspng 0.7.4 release through the pinned vcpkg 
 ./evaluations/1-libs/libspng/run.sh --install-only /path/to/lorelei-devkit
 ```
 
-The recipe runs the directed API workload and the complete 208-test upstream Meson suite: 167 normal passes and 41 expected failures, with zero unexpected failures or skips in native and Hecate lanes. A CTest registration drives the two upstream Meson runs and records their combined result. No pure QEMU test lane is run. The suite builds the pinned libpng 1.6.43 differential oracle from its verified release archive. Tests that pass `FILE *` use the repository's TLC libc shim. No HLR extension is loaded or generated.
+The source patch builds and installs all executables and data for 208 upstream registrations under `tools/libspng/upstream-tests`. The symmetric runner selects 206 tests, including 41 expected-failure cases, and all 206 pass in native and Hecate. It explicitly excludes `images/ch1n3p04` and `images/ch2n3p08` because the current vcpkg libpng 1.6.58 differential oracle rejects those inputs in both lanes. Tests that pass `FILE *` use the TLC libc shim. No source-tree rebuild or pure QEMU lane is used.

@@ -1,6 +1,6 @@
 # bzip2 1.0.8 validation (TLC Only) [ALL TESTS PASSED]
 
-This recipe fetches the official bzip2 1.0.8 release through the pinned vcpkg overlay, builds shared libraries for AArch64 and x86-64, generates TLC thunks, and executes the same directed workload in native and Hecate lanes.
+This recipe installs bzip2 1.0.8 and its upstream tests through the pinned vcpkg overlay, generates TLC thunks, then executes the installed tests in native and Hecate lanes.
 
 ## Commands
 
@@ -10,4 +10,4 @@ This recipe fetches the official bzip2 1.0.8 release through the pinned vcpkg ov
 ./evaluations/1-libs/bzip2/run.sh --install-only /path/to/lorelei-devkit
 ```
 
-The recipe retains the directed buffer roundtrip and reproduces the complete upstream `make test` workload with a dynamically linked copy of the official CLI source. The evaluation CMake configuration exposes the six-check suite once per lane to CTest. It performs three compression checks and three decompression checks against the release samples. Success requires all six byte comparisons and the normalized SHA-256 output to match between native and Hecate. A TLC guest manifest maps guest standard streams to host standard streams. This remains TLC only and does not load or generate HLR extensions.
+The port builds the official CLI against the shared library and installs it with the upstream sample files under `tools/bzip2/upstream-tests`. The runner reproduces the complete upstream `make test` workload with three compression checks and three decompression checks in both lanes. All six byte comparisons pass in native and Hecate. No source-tree rebuild or pure QEMU lane is used.

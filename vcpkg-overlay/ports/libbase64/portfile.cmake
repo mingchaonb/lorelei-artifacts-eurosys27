@@ -4,21 +4,14 @@ vcpkg_from_github(
     REF "v${VERSION}"
     SHA512 9f8ca8a6e9feb8ad98158d675ec3331e83c77401d2633de0e43b62e794682a9d63c03e1c2599981ad3cdb249e263964f6a79084dbdf2ca19a1e1eed6195a98f4
     HEAD_REF master
+    PATCHES patches/install-tests.patch
 )
 vcpkg_cmake_configure(SOURCE_PATH "${SOURCE_PATH}" OPTIONS
-    -DBUILD_SHARED_LIBS=ON -DBASE64_BUILD_TESTS=OFF -DBASE64_BUILD_CLI=OFF
+    -DBUILD_SHARED_LIBS=ON -DBASE64_BUILD_TESTS=ON -DBASE64_BUILD_CLI=OFF
     -DBASE64_WERROR=OFF -DBASE64_WITH_OpenMP=OFF -DBASE64_WITH_SSSE3=OFF
     -DBASE64_WITH_SSE41=OFF -DBASE64_WITH_SSE42=OFF -DBASE64_WITH_AVX=OFF
     -DBASE64_WITH_AVX2=OFF -DBASE64_WITH_AVX512=OFF -DBASE64_WITH_NEON32=OFF
     -DBASE64_WITH_NEON64=OFF)
 vcpkg_cmake_install()
-file(INSTALL
-    "${SOURCE_PATH}/test/codec_supported.c"
-    "${SOURCE_PATH}/test/codec_supported.h"
-    "${SOURCE_PATH}/test/test_base64.c"
-    "${SOURCE_PATH}/test/benchmark.c"
-    "${SOURCE_PATH}/test/moby_dick.h"
-    DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}/upstream-tests"
-)
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include" "${CURRENT_PACKAGES_DIR}/debug/share")
 vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")

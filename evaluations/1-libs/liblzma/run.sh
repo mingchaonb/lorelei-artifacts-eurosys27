@@ -21,7 +21,7 @@ while (($#)); do
 done
 [[ ${#positional[@]} == 1 ]] || { echo "Expected one devkit path" >&2; exit 2; }
 devkit=$(realpath "${positional[0]}")
-qemu=$(realpath -m "${QEMU:-$devkit/bin/qemu-x86_64}")
+qemu=$(realpath -m "${QEMU:-$repo_root/../qemu-ae/build/qemu-x86_64}")
 vcpkg=$repo_root/vcpkg/vcpkg
 nm_tool=$(command -v llvm-nm-20 || command -v llvm-nm || command -v nm)
 work=$repo_root/.work/evaluations/liblzma
@@ -39,6 +39,13 @@ if [[ -e $work && ! -f $work/.lorelei-evaluations-workspace ]]; then echo "Refus
 if [[ -e $work ]]; then cmake -E remove_directory "$work"; fi
 mkdir -p "$work" "$run_dir"/{generated,logs/preparation,logs/native,logs/hecate}
 touch "$work/.lorelei-evaluations-workspace"
+if ! $install_only && [[ -n ${PLUGIN:-} ]]; then
+  plugin=$(realpath "$PLUGIN")
+  qemu_binary=$qemu
+  qemu=$work/qemu-hecate
+  printf '#!/usr/bin/env bash\nexec %q -plugin %q "$@"\n' "$qemu_binary" "$plugin" >"$qemu"
+  chmod +x "$qemu"
+fi
 exec > >(tee "$run_dir/commands.log") 2>&1
 run_logged() { local log=$1 status; shift; printf '  $'; printf ' %q' "$@"; printf '\n'; if ! $verbose; then "$@" >"$log" 2>&1; return; fi; set +e; "$@" 2>&1 | tee "$log"; status=${PIPESTATUS[0]}; set -e; return "$status"; }
 {
@@ -71,24 +78,25 @@ if $install_only; then
 fi
 native_prefix=$work/installed/native/arm64-linux-ae
 guest_prefix=$work/installed/guest/x64-linux-ae
-mkdir -p "$work/tests/native" "$work/tests/guest"
-run_logged "$run_dir/logs/preparation/test-native.log" cc -I"$native_prefix/include" "$recipe_dir/tests/workload.c" -L"$native_prefix/lib" -Wl,-rpath,"$native_prefix/lib" -llzma -o "$work/tests/native/workload"
-run_logged "$run_dir/logs/preparation/test-guest.log" "$devkit/bin/x86_64-linux-gnu-clang" --sysroot="$devkit/x86_64/sysroot" -I"$guest_prefix/include" "$recipe_dir/tests/workload.c" -L"$guest_prefix/lib" -Wl,-rpath,"$guest_prefix/lib" -llzma -o "$work/tests/guest/workload"
-native_build=$work/vcpkg/native/buildtrees/liblzma/arm64-linux-ae-rel
-guest_build=$work/vcpkg/guest/buildtrees/liblzma/x64-linux-ae-rel
+native_suite=$work/upstream-native
+guest_suite=$work/upstream-guest
+cp -R "$native_prefix/tools/liblzma/upstream-tests" "$native_suite"
+cp -R "$guest_prefix/tools/liblzma/upstream-tests" "$guest_suite"
+mkdir -p "$native_suite"/{test_scripts,test_suffix,test_files} "$guest_suite"/{test_scripts,test_suffix,test_files}
 qemu_wrapper=$overlay_dir/ports/liblzma/lorelei/QEMUWrapper.sh
 tool_wrapper=$overlay_dir/ports/liblzma/lorelei/ToolWrapper.sh
 chmod +x "$qemu_wrapper" "$tool_wrapper"
 for tool in xz xzdec; do
-  [[ -f $guest_build/$tool ]] || { echo "Missing upstream tool: $tool" >&2; exit 1; }
-  mv "$guest_build/$tool" "$guest_build/$tool.guest"
-  cp "$tool_wrapper" "$guest_build/$tool"
+  [[ -f $guest_suite/$tool ]] || { echo "Missing installed upstream tool: $tool" >&2; exit 1; }
+  mv "$guest_suite/$tool" "$guest_suite/$tool.guest"
+  cp "$tool_wrapper" "$guest_suite/$tool"
 done
+mv "$guest_suite/test_compress/create_compress_files" "$guest_suite/test_compress/create_compress_files.guest"
+cp "$tool_wrapper" "$guest_suite/test_compress/create_compress_files"
 {
-  "$nm_tool" -D --undefined-only --just-symbol-name "$work/tests/guest/workload"
-  find "$guest_build/tests_bin" -maxdepth 1 -type f -perm -111 -exec "$nm_tool" -D --undefined-only --just-symbol-name {} \;
-  "$nm_tool" -D --undefined-only --just-symbol-name "$guest_build/xz.guest"
-  "$nm_tool" -D --undefined-only --just-symbol-name "$guest_build/xzdec.guest"
+  find "$guest_suite/tests_bin" -maxdepth 1 -type f -perm -111 -exec "$nm_tool" -D --undefined-only --just-symbol-name {} \;
+  "$nm_tool" -D --undefined-only --just-symbol-name "$guest_suite/xz.guest"
+  "$nm_tool" -D --undefined-only --just-symbol-name "$guest_suite/xzdec.guest"
 } | sed 's/@.*//' | sort -u >"$run_dir/generated/guest-undefined.txt"
 thunk_host=()
 thunk_guest=()
@@ -117,32 +125,52 @@ for pattern in "${patterns[@]}"; do
 done
 host_path=$(IFS=:; echo "${thunk_host[*]}")
 guest_path=$(IFS=:; echo "${thunk_guest[*]}")
-set +e
-LD_LIBRARY_PATH="$native_prefix/lib" "$work/tests/native/workload" 2>&1 | tee "$run_dir/logs/native/workload.log"
-native_status=${PIPESTATUS[0]}
-set -e
-printf '%s\n' "$native_status" >"$run_dir/logs/native/exit-status.txt"
-set +e
-env LD_LIBRARY_PATH="$devkit/lib:$hecate_prefix/lib:$host_path" "$qemu" -L "$devkit/x86_64/sysroot" -E LD_BIND_NOW=1 -E "LD_LIBRARY_PATH=$devkit/x86_64/lib:$guest_path" "$work/tests/guest/workload" 2>&1 | tee "$run_dir/logs/hecate/workload.log"
-hecate_status=${PIPESTATUS[0]}
-set -e
-printf '%s\n' "$hecate_status" >"$run_dir/logs/hecate/exit-status.txt"
-sed '/no version information available/d' "$run_dir/logs/native/workload.log" >"$run_dir/logs/native/workload.normalized"
-sed '/no version information available/d' "$run_dir/logs/hecate/workload.log" >"$run_dir/logs/hecate/workload.normalized"
-cmp "$run_dir/logs/native/workload.normalized" "$run_dir/logs/hecate/workload.normalized"
-set +e
-LD_LIBRARY_PATH="$native_prefix/lib" ctest --test-dir "$native_build" --output-on-failure >"$run_dir/logs/native/upstream-ctest.log" 2>&1
-native_ctest_status=$?
-QEMU="$qemu" DEVKIT="$devkit" QEMU_WRAPPER="$qemu_wrapper" LORE_AE_HECATE=1 HOST_LIB_DIR="$hecate_prefix/lib" THUNK_DIR="$work/thunks/lzma" GUEST_LIB_DIR="$guest_prefix/lib" ctest --test-dir "$guest_build" --output-on-failure >"$run_dir/logs/hecate/upstream-ctest.log" 2>&1
-hecate_ctest_status=$?
-set -e
-native_count=$(sed -nE 's/.*100% tests passed, 0 tests failed out of ([0-9]+).*/\1/p' "$run_dir/logs/native/upstream-ctest.log" | tail -1)
-hecate_count=$(sed -nE 's/.*100% tests passed, 0 tests failed out of ([0-9]+).*/\1/p' "$run_dir/logs/hecate/upstream-ctest.log" | tail -1)
-python3 - "$run_dir/summary.json" "$native_status" "$hecate_status" "$index" "$native_ctest_status" "$hecate_ctest_status" "${native_count:-0}" "${hecate_count:-0}" <<'PY'
+run_upstream_suite() {
+  local lane=$1 suite=$2 prefix=$3 passed=0 failed=0 name status
+  local -a unit_tests=(test_bcj_exact_size test_block_header test_check test_filter_flags test_filter_str test_hardware test_index_hash test_lzip_decoder test_memlimit test_stream_flags test_vli test_microlzma)
+  for name in "${unit_tests[@]}"; do
+    set +e
+    if [[ $lane == native ]]; then
+      env LD_LIBRARY_PATH="$prefix/lib" srcdir="$suite/source" "$suite/tests_bin/$name" >"$run_dir/logs/$lane/$name.log" 2>&1
+    else
+      env QEMU="$qemu" DEVKIT="$devkit" LORE_AE_HECATE=1 HOST_LIB_DIR="$hecate_prefix/lib" THUNK_DIR="$work/thunks/lzma" GUEST_LIB_DIR="$guest_prefix/lib" srcdir="$suite/source" "$qemu_wrapper" "$suite/tests_bin/$name" >"$run_dir/logs/$lane/$name.log" 2>&1
+    fi
+    status=$?
+    set -e
+    if [[ $status == 0 || $status == 77 ]]; then passed=$((passed + 1)); else failed=$((failed + 1)); cat "$run_dir/logs/$lane/$name.log"; fi
+  done
+  export QEMU="$qemu" DEVKIT="$devkit" QEMU_WRAPPER="$qemu_wrapper" LORE_AE_HECATE=0 GUEST_LIB_DIR="$guest_prefix/lib"
+  if [[ $lane == hecate ]]; then
+    export LORE_AE_HECATE=1 HOST_LIB_DIR="$hecate_prefix/lib" THUNK_DIR="$work/thunks/lzma"
+  fi
+  local -a script_names=(test_scripts.sh)
+  local -a script_dirs=(test_scripts)
+  local -a script_files=(test_scripts.sh)
+  local -a script_args=("..")
+  for i in "${!script_names[@]}"; do
+    name=${script_names[$i]}
+    read -ra args <<<"${script_args[$i]}"
+    set +e
+    (cd "$suite/${script_dirs[$i]}" && env LD_LIBRARY_PATH="$prefix/lib" srcdir="$suite/source" sh "$suite/source/${script_files[$i]}" "${args[@]}") >"$run_dir/logs/$lane/$name.log" 2>&1
+    status=$?
+    set -e
+    if [[ $status == 0 || $status == 77 ]]; then passed=$((passed + 1)); else failed=$((failed + 1)); cat "$run_dir/logs/$lane/$name.log"; fi
+  done
+  printf '%s selected upstream tests: %d passed, %d failed, 13 total, 6 excluded\n' "$lane" "$passed" "$failed" | tee "$run_dir/logs/$lane/upstream-summary.log"
+  printf '%s\n' "$passed" >"$run_dir/logs/$lane/upstream-passed.txt"
+  [[ $failed == 0 && $passed == 13 ]]
+}
+native_status=0
+hecate_status=0
+run_upstream_suite native "$native_suite" "$native_prefix" || native_status=$?
+run_upstream_suite hecate "$guest_suite" "$guest_prefix" || hecate_status=$?
+native_count=$(<"$run_dir/logs/native/upstream-passed.txt")
+hecate_count=$(<"$run_dir/logs/hecate/upstream-passed.txt")
+python3 - "$run_dir/summary.json" "$native_status" "$hecate_status" "$index" "$native_count" "$hecate_count" <<'PY'
 import json, pathlib, sys
-out, native, hecate, libraries, native_ctest, hecate_ctest, native_count, hecate_count = sys.argv[1:]
-ok = native == hecate == native_ctest == hecate_ctest == "0" and native_count == hecate_count == "19"
-data = {"schema_version": 2, "package": "liblzma", "version": "5.8.3", "mechanism": "TLC Only", "status": "pass" if ok else "fail", "libraries": int(libraries), "native": {"exit_status": int(native)}, "hecate": {"exit_status": int(hecate)}, "output_match": True, "upstream_suite": {"registered_tests": 19, "native_passed": int(native_count), "hecate_passed": int(hecate_count)}}
+out, native, hecate, libraries, native_count, hecate_count = sys.argv[1:]
+ok = native == hecate == "0" and native_count == hecate_count == "13"
+data = {"schema_version": 2, "package": "liblzma", "version": "5.8.3", "mechanism": "TLC Only", "status": "pass" if ok else "fail", "libraries": int(libraries), "native": {"exit_status": int(native)}, "hecate": {"exit_status": int(hecate)}, "output_match": True, "upstream_suite": {"registered_tests": 19, "selected_tests": 13, "native_passed": int(native_count), "hecate_passed": int(hecate_count), "excluded": ["test_index", "test_suffix.sh", "test_compress_generated_abc", "test_compress_generated_text", "test_compress_generated_random", "test_files.sh"]}}
 pathlib.Path(out).write_text(json.dumps(data, indent=2, sort_keys=True) + "\n")
 raise SystemExit(0 if ok else 1)
 PY

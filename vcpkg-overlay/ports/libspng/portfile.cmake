@@ -7,14 +7,7 @@ vcpkg_from_github(
     PATCHES
         fix-spngconfig-cmake.patch # https://github.com/randy408/libspng/pull/262/
         libspng-pr-286.diff # https://github.com/randy408/libspng/pull/286/
-)
-
-vcpkg_from_github(
-    OUT_SOURCE_PATH PNG_SOURCE_PATH
-    REPO pnggroup/libpng
-    REF v1.6.43
-    SHA512 3bb2a7b73113be42b09c2116e6c6f5a7ddb4e2ab06e0b13e10b7314acdccc4bb624ff602e16140c0484f6cde80efa190296226be3da195c6926819f07c723c12
-    HEAD_REF master
+        patches/install-tests.patch
 )
 
 string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "static" SPNG_BUILD_STATIC)
@@ -25,7 +18,8 @@ vcpkg_cmake_configure(
     OPTIONS
         -DSPNG_STATIC=${SPNG_BUILD_STATIC}
         -DSPNG_SHARED=${SPNG_BUILD_SHARED}
-        -DBUILD_EXAMPLES=OFF
+        -DBUILD_EXAMPLES=ON
+        -DBUILD_TESTING=ON
 )
 
 vcpkg_cmake_install()
@@ -56,9 +50,6 @@ endif()
 vcpkg_fixup_pkgconfig()
 
 file(COPY "${CMAKE_CURRENT_LIST_DIR}/usage" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}")
-file(COPY "${SOURCE_PATH}/" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}/upstream-source")
-file(COPY "${PNG_SOURCE_PATH}/" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}/libpng-1.6.43-source")
-
 vcpkg_install_copyright(
     FILE_LIST
         "${SOURCE_PATH}/LICENSE"
