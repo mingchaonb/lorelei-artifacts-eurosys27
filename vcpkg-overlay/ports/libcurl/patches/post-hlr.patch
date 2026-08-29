@@ -1,0 +1,37 @@
+diff --git a/LoreFileContext.c b/LoreFileContext.c
+index bcf2def81e..b5a8ac7a7a 100644
+--- a/LoreFileContext.c
++++ b/LoreFileContext.c
+@@ -1,4 +1,10 @@
+ LORE_CCG_IMPL(1)
++
++__LORE_EXPORT__ void lore_curl_write_callback_signature(
++    unsigned long (*callback)(char *, unsigned long, unsigned long, void *)) {
++    (void) callback;
++}
++
+ static struct LoreStaticCallCheckGuardInfo LoreFileContext_CCGs[] = {
+     {"unsigned long (*)(char *, unsigned long, unsigned long, void *)", &LoreFileContext_CCG_Tramp_1},
+ };
+@@ -13,9 +19,6 @@ static struct LoreStaticFunctionDecayGuardInfo LoreFileContext_FDGs[] = {
+     {"unsigned long (*)(char *, unsigned long, unsigned long, void *)", 3, LoreFileContext_FDG_Proc_1_instances},
+ };
+ 
+-static void *LoreFileContext_initializers[] = {
+-};
+-
+ __LORE_PRIV__ struct LoreFileContext LoreFileContext_instance = {
+     .abiVersion = LORE_HLR_ABI_VERSION,
+     .structSize = sizeof(struct LoreFileContext),
+@@ -32,10 +35,9 @@ __LORE_PRIV__ struct LoreFileContext LoreFileContext_instance = {
+     .FDGs = LoreFileContext_FDGs,
+ #endif
+     .numInitializers = 0,
+-    .initializers = LoreFileContext_initializers,
++    .initializers = 0,
+ };
+ 
+ __LORE_EXPORT__ struct LoreFileContext *LoreGetFileContext() {
+     return &LoreFileContext_instance;
+ }
+-

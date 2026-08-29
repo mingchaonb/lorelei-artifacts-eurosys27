@@ -1,0 +1,13 @@
+diff --git a/LoreFileContext.h b/LoreFileContext.h
+index 7a0518a..74ef8b9 100644
+--- a/LoreFileContext.h
++++ b/LoreFileContext.h
+@@ -4,7 +4,7 @@
+ // File Context Declarations
+ 
+ // Uncomment to disable function decay guards
+-// #define LORE_DISABLE_FDG
++#define LORE_DISABLE_FDG
+ 
+ #include <lorelei/RuntimeExtension/HLRExtension.h>
+ 

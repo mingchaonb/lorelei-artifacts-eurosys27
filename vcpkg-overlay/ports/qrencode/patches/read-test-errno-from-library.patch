@@ -1,0 +1,42 @@
+--- a/qrencode_inner.h
++++ b/qrencode_inner.h
+@@ -85,4 +85,5 @@ extern QRcode *QRcode_encodeMask(QRinput *input, int mask);
+ extern QRcode *QRcode_encodeMaskMQR(QRinput *input, int mask);
+ extern QRcode *QRcode_new(int version, int width, unsigned char *data);
++extern int QRcode_errno(void);
+ 
+ #endif /* QRENCODE_INNER_H */
+--- a/qrencode.c
++++ b/qrencode.c
+@@ -936,2 +936,7 @@ void QRcode_clearCache(void)
+ 	return;
+ }
++
++int QRcode_errno(void)
++{
++	return errno;
++}
+--- a/tests/test_qrinput.c
++++ b/tests/test_qrinput.c
+@@ -4,6 +4,9 @@
+ #include "common.h"
+ #include "../qrinput.h"
+ #include "../qrencode_inner.h"
+ #include "../split.h"
+ #include "decoder.h"
++
++#undef errno
++#define errno QRcode_errno()
+ 
+--- a/tests/test_qrencode.c
++++ b/tests/test_qrencode.c
+@@ -10,6 +10,9 @@
+ #include "../rsecc.h"
+ #include "../split.h"
+ #include "decoder.h"
++
++#undef errno
++#define errno QRcode_errno()
+ 
+ static const char decodeAnTable[45] = {
+ 	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',

@@ -1,0 +1,36 @@
+diff --git a/LoreFileContext.h b/LoreFileContext.h
+index b30c1e6..0cc18e1 100644
+--- a/LoreFileContext.h
++++ b/LoreFileContext.h
+@@ -3,8 +3,8 @@
+ //===----------------------------------------------------------------------===//
+ // File Context Declarations
+ 
+-// Uncomment to disable function decay guards
+-// #define LORE_DISABLE_FDG
++// Keep SQLite's internal static function tables at their raw host addresses.
++#define LORE_DISABLE_FDG
+ 
+ #include <lorelei/RuntimeExtension/HLRExtension.h>
+ 
+diff --git a/sqlite3.c b/sqlite3.c
+index 476f271..dd50e01 100644
+--- a/sqlite3.c
++++ b/sqlite3.c
+@@ -6,7 +6,6 @@
+ ** WARNING! All changes made in this file will be lost!
+ *****************************************************************************/
+ 
+-#include "./LoreFileContext.h"
+ /******************************************************************************
+ ** This file is an amalgamation of many separate C source files from SQLite
+ ** version 3.53.4.  By combining all the individual C code files into this
+@@ -267,6 +266,8 @@
+ # define _BSD_SOURCE
+ #endif
+ 
++#include "./LoreFileContext.h"
++
+ /*
+ ** Macro to disable warnings about missing "break" at the end of a "case".
+ */

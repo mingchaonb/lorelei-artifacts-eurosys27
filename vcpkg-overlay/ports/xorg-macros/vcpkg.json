@@ -1,0 +1,14 @@
+{
+  "name": "xorg-macros",
+  "version": "1.20.2",
+  "description": "X.Org build macros packaged without evaluator-host autoreconf dependencies",
+  "homepage": "https://xorg.freedesktop.org/",
+  "license": "MIT-open-group",
+  "supports": "linux",
+  "dependencies": [
+    {
+      "name": "vcpkg-make",
+      "host": true
+    }
+  ]
+}

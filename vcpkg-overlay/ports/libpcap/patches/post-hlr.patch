@@ -1,0 +1,91 @@
+diff --git a/pcap-linux.c b/pcap-linux.c
+index 48fa5e9b..452a8fe3 100644
+--- a/pcap-linux.c
++++ b/pcap-linux.c
+@@ -6,7 +6,6 @@
+ ** WARNING! All changes made in this file will be lost!
+ *****************************************************************************/
+ 
+-#include "./LoreFileContext.h"
+ /*
+  *  pcap-linux.c: Packet capture interface to the Linux kernel
+  *
+@@ -80,6 +79,7 @@
+ #define _GNU_SOURCE
+ 
+ #include <config.h>
++#include "./LoreFileContext.h"
+ 
+ #include <errno.h>
+ #include <stdio.h>
+diff --git a/pcap-netfilter-linux.c b/pcap-netfilter-linux.c
+index 85f33722..a4935f9a 100644
+--- a/pcap-netfilter-linux.c
++++ b/pcap-netfilter-linux.c
+@@ -6,7 +6,6 @@
+ ** WARNING! All changes made in this file will be lost!
+ *****************************************************************************/
+ 
+-#include "./LoreFileContext.h"
+ /*
+  * Copyright (c) 2011 Jakub Zawadzki
+  * All rights reserved.
+@@ -38,6 +37,7 @@
+  */
+ 
+ #include <config.h>
++#include "./LoreFileContext.h"
+ 
+ #include "pcap-int.h"
+ #include "diag-control.h"
+diff --git a/pcap.c b/pcap.c
+index 20f975b1..ff640136 100644
+--- a/pcap.c
++++ b/pcap.c
+@@ -6,7 +6,6 @@
+ ** WARNING! All changes made in this file will be lost!
+ *****************************************************************************/
+ 
+-#include "./LoreFileContext.h"
+ /*
+  * Copyright (c) 1993, 1994, 1995, 1996, 1997, 1998
+  *	The Regents of the University of California.  All rights reserved.
+@@ -41,6 +40,7 @@
+  */
+ 
+ #include <config.h>
++#include "./LoreFileContext.h"
+ 
+ /* Get the same variety of strerror_r() as Autoconf/CMake has detected. */
+ #include "ftmacros.h"
+@@ -4649,4 +4649,3 @@ pcap_set_parser_debug(int value)
+ #endif
+ 
+ LORE_FDG_IMPL(1, 3, pcapint_oneshot)
+-
+diff --git a/savefile.c b/savefile.c
+index fef1cd1a..f045c70f 100644
+--- a/savefile.c
++++ b/savefile.c
+@@ -6,7 +6,6 @@
+ ** WARNING! All changes made in this file will be lost!
+ *****************************************************************************/
+ 
+-#include "./LoreFileContext.h"
+ /*
+  * Copyright (c) 1993, 1994, 1995, 1996, 1997
+  *	The Regents of the University of California.  All rights reserved.
+@@ -38,6 +37,7 @@
+  */
+ 
+ #include <config.h>
++#include "./LoreFileContext.h"
+ 
+ #include <pcap-types.h>
+ #ifdef _WIN32
+@@ -706,4 +706,3 @@ pcapint_offline_read(pcap_t *p, int cnt, pcap_handler callback, u_char *user)
+ }
+ 
+ LORE_FDG_IMPL(1, 1, pcapint_oneshot)
+-
+

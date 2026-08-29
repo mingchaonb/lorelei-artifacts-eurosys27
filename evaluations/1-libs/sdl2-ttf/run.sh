@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+set -euo pipefail
+exec "$(dirname "$0")/../libmaxminddb/run-tlc-only.sh" sdl2-ttf SDL2_ttf libSDL2_ttf-2.0.so.0 "$@"

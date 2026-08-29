@@ -1,0 +1,32 @@
+diff --git a/LoreFileContext.c b/LoreFileContext.c
+index c436efe..84437e4 100644
+--- a/LoreFileContext.c
++++ b/LoreFileContext.c
+@@ -271,6 +271,7 @@ static struct LoreStaticFunctionDecayGuardInfo LoreFileContext_FDGs[] = {
+ };
+ 
+ static void *LoreFileContext_initializers[] = {
++    0,
+ };
+ 
+ __LORE_PRIV__ struct LoreFileContext LoreFileContext_instance = {
+@@ -295,4 +296,3 @@ __LORE_PRIV__ struct LoreFileContext LoreFileContext_instance = {
+ __LORE_EXPORT__ struct LoreFileContext *LoreGetFileContext() {
+     return &LoreFileContext_instance;
+ }
+-
+diff --git a/LoreFileContext.h b/LoreFileContext.h
+index 5f65fce..8166ea3 100644
+--- a/LoreFileContext.h
++++ b/LoreFileContext.h
+@@ -3,8 +3,8 @@
+ //===----------------------------------------------------------------------===//
+ // File Context Declarations
+ 
+-// Uncomment to disable function decay guards
+-// #define LORE_DISABLE_FDG
++// Keep libxml2's internal static callback tables at their raw host addresses.
++#define LORE_DISABLE_FDG
+ 
+ #include <lorelei/RuntimeExtension/HLRExtension.h>
+ 

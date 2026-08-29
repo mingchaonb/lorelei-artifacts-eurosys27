@@ -1,0 +1,19 @@
+{
+  "name": "sqlite3",
+  "version": "3.53.4",
+  "description": "Official SQLite amalgamation used by the Lorelei AE library evaluation",
+  "homepage": "https://www.sqlite.org/",
+  "license": "blessing",
+  "supports": "linux",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    }
+  ],
+  "features": {
+    "hlr": {
+      "description": "Rewrite the SQLite amalgamation with Lorelei HLR"
+    }
+  }
+}

@@ -184,3 +184,40 @@ index 5d1c7ef94..bcdc54bba 100644
  
  /* vi: set ts=4 sw=4 expandtab: */
 -
+diff --git a/src/audio/SDL_audiocvt.c b/src/audio/SDL_audiocvt.c
+index ae4c05e85..9d60a1bc0 100644
+--- a/src/audio/SDL_audiocvt.c
++++ b/src/audio/SDL_audiocvt.c
+@@ -6,6 +6,7 @@
+ ** WARNING! All changes made in this file will be lost!
+ *****************************************************************************/
+ 
++#define LORE_DISABLE_FDG
+ #include "../../LoreFileContext.h"
+ /*
+   Simple DirectMedia Layer
+diff --git a/src/audio/SDL_audiotypecvt.c b/src/audio/SDL_audiotypecvt.c
+index f5d47d62c..30d11fcc7 100644
+--- a/src/audio/SDL_audiotypecvt.c
++++ b/src/audio/SDL_audiotypecvt.c
+@@ -6,6 +6,7 @@
+ ** WARNING! All changes made in this file will be lost!
+ *****************************************************************************/
+ 
++#define LORE_DISABLE_FDG
+ #include "../../LoreFileContext.h"
+ /*
+   Simple DirectMedia Layer
+diff --git a/LoreFileContext.h b/LoreFileContext.h
+index f9488bac1..4a209b64c 100644
+--- a/LoreFileContext.h
++++ b/LoreFileContext.h
+@@ -291,7 +291,7 @@ LORE_FDG_DECL(17, 5)
+ #define LORE_CCG_12(X) LORE_CCG_GET(12, (X))
+ #define LORE_CCG_13(X) LORE_CCG_GET(13, (X))
+ #define LORE_CCG_14(X) LORE_CCG_GET(14, (X))
+-#define LORE_CCG_15(X) LORE_CCG_GET(15, (X))
++#define LORE_CCG_15(X) (X)
+ #define LORE_CCG_16(X) LORE_CCG_GET(16, (X))
+ #define LORE_CCG_17(X) LORE_CCG_GET(17, (X))
+ #define LORE_CCG_18(X) LORE_CCG_GET(18, (X))

@@ -1,0 +1,25 @@
+{
+  "name": "libxscrnsaver",
+  "version": "1.2.5",
+  "port-version": 1,
+  "description": "HLR-enabled X screen saver extension library",
+  "homepage": "https://gitlab.freedesktop.org/xorg/lib/libxscrnsaver",
+  "license": "MIT",
+  "supports": "linux",
+  "dependencies": [
+    "libx11",
+    "libxext",
+    {"name": "vcpkg-make", "host": true},
+    "xorg-macros",
+    "xproto"
+  ],
+  "features": {
+    "hlr": {
+      "description": "Rewrite libXss.so.1 with Lorelei HLR",
+      "dependencies": [
+        {"name": "libx11", "features": ["hlr"]},
+        {"name": "libxext", "features": ["hlr"]}
+      ]
+    }
+  }
+}

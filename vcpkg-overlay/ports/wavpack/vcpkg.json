@@ -1,0 +1,23 @@
+{
+  "name": "wavpack",
+  "version": "5.9.0",
+  "description": "WavPack shared-library and wvtest build used by the Lorelei AE evaluation",
+  "homepage": "https://github.com/dbry/WavPack",
+  "license": "BSD-3-Clause",
+  "supports": "linux",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    }
+  ],
+  "features": {
+    "hlr": {
+      "description": "Rewrite the WavPack shared library with Lorelei HLR"
+    }
+  }
+}

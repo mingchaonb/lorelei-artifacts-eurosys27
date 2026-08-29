@@ -1,0 +1,10 @@
+--- a/tests/CMakeLists.txt
++++ b/tests/CMakeLists.txt
+@@ -57,6 +57,6 @@ if(TARGET ICONV::ICONV)
+     MAKE_TEST(test_qrinput decoder)
+     MAKE_TEST(test_qrspec decoder)
+-    target_compile_definitions(test_qrspec PRIVATE -DSRCDIR="${CMAKE_CURRENT_SOURCE_DIR}/")
++    target_compile_definitions(test_qrspec PRIVATE -DSRCDIR="./")
+     MAKE_TEST(test_mqrspec decoder)
+     MAKE_TEST(test_qrencode decoder)
+     MAKE_TEST(test_split_urls decoder)

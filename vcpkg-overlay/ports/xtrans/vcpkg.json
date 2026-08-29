@@ -1,0 +1,14 @@
+{
+  "name": "xtrans",
+  "version": "1.6.0",
+  "description": "X Network Transport layer shared source built reproducibly for the AE",
+  "homepage": "https://xorg.freedesktop.org/",
+  "license": "MIT-open-group",
+  "supports": "linux",
+  "dependencies": [
+    {
+      "name": "vcpkg-make",
+      "host": true
+    }
+  ]
+}

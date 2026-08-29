@@ -30,9 +30,8 @@ if("hlr" IN_LIST FEATURES)
     endif()
 endif()
 # Build a shared SDL library because Lorelei replaces its dynamic dependency at
-# runtime. Only dummy audio and video backends are enabled for the claimed AE
-# scope. Real devices, display servers, and nondeterministic system services are
-# intentionally excluded.
+# runtime. Keep the dummy drivers for deterministic tests, and add the X11 video
+# backend to the HLR package used by graphical applications.
 set(SDL_OPTIONS
     -DSDL_SHARED=ON
     -DSDL_STATIC=OFF
@@ -50,7 +49,7 @@ set(SDL_OPTIONS
     -DSDL_PULSEAUDIO=OFF
     -DSDL_SNDIO=OFF
     -DSDL_DUMMYAUDIO=ON
-    -DSDL_X11=OFF
+    -DSDL_X11=${RUN_HLR}
     -DSDL_WAYLAND=OFF
     -DSDL_KMSDRM=OFF
     -DSDL_RPI=OFF

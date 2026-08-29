@@ -1,0 +1,19 @@
+{
+  "name": "libthai",
+  "version": "0.1.30",
+  "description": "Pinned libthai shared library for the Lorelei AE",
+  "homepage": "https://github.com/tlwg/libthai",
+  "license": "LGPL-2.1-or-later",
+  "supports": "linux",
+  "dependencies": [
+    "libdatrie",
+    {
+      "name": "libdatrie",
+      "host": true
+    },
+    {
+      "name": "vcpkg-make",
+      "host": true
+    }
+  ]
+}

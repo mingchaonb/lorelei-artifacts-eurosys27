@@ -1,0 +1,19 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -386,6 +386,16 @@
+     endforeach()
+ endif()
+ 
++option(LORELEI_INSTALL_TEST "Build and install the Lorelei directed test" OFF)
++if(LORELEI_INSTALL_TEST)
++    add_executable(lorelei-sdl2-ttf-test lorelei-test-text.c)
++    target_link_libraries(lorelei-sdl2-ttf-test PRIVATE
++        SDL2_ttf::${sdl2_ttf_export_name}
++        ${sdl2_target_name})
++    install(TARGETS lorelei-sdl2-ttf-test
++        RUNTIME DESTINATION "tools/sdl2-ttf/upstream-tests/bin")
++endif()
++
+ add_library(SDL2::ttf INTERFACE IMPORTED GLOBAL)
+ set_target_properties(SDL2::ttf PROPERTIES
+     INTERFACE_LINK_LIBRARIES "SDL2_ttf"

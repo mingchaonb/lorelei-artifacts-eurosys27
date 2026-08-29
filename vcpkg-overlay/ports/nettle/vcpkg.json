@@ -1,0 +1,8 @@
+{
+  "name": "nettle",
+  "version-string": "3.10.2",
+  "description": "Pinned shared build for the nettle TLC Only evaluation",
+  "homepage": "https://ftp.gnu.org/gnu/nettle/nettle-3.10.2.tar.gz",
+  "supports": "linux & (arm64 | x64)"
+}
+

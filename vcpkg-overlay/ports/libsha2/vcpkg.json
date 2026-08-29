@@ -1,0 +1,13 @@
+{
+  "name": "libsha2",
+  "version-string": "snapshot-565f650",
+  "description": "Pinned shared build for the libsha2 TLC Only evaluation",
+  "homepage": "https://github.com/amosnier/sha-2",
+  "supports": "linux & (arm64 | x64)",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake-get-vars",
+      "host": true
+    }
+  ]
+}

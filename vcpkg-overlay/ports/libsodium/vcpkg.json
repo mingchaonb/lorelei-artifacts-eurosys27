@@ -1,0 +1,8 @@
+{
+  "name": "libsodium",
+  "version-string": "1.0.20",
+  "description": "Pinned shared build for the libsodium TLC Only evaluation",
+  "homepage": "https://github.com/jedisct1/libsodium",
+  "supports": "linux & (arm64 | x64)"
+}
+

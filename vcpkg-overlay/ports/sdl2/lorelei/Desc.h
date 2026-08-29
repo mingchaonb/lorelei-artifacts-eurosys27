@@ -18,4 +18,9 @@ struct ProcFnDesc<::SDL_LogMessageV> {
     _DESC pass::vprintf<> builder_pass = {};
 };
 
+template <>
+struct ProcFnDesc<::SDL_GL_GetProcAddress> {
+    _DESC pass::GetProcAddress<1> proc_address_pass = {};
+};
+
 }

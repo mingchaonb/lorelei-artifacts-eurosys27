@@ -1,0 +1,8 @@
+{
+  "name": "libb2",
+  "version-string": "0.98.1",
+  "description": "Pinned shared build for the libb2 TLC Only evaluation",
+  "homepage": "https://github.com/BLAKE2/libb2",
+  "supports": "linux & (arm64 | x64)"
+}
+

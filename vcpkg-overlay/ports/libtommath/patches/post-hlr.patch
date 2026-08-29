@@ -1,0 +1,15 @@
+diff --git a/LoreFileContext.h b/LoreFileContext.h
+index 4f66a84..bb5cd71 100644
+--- a/LoreFileContext.h
++++ b/LoreFileContext.h
+@@ -3,8 +3,8 @@
+ //===----------------------------------------------------------------------===//
+ // File Context Declarations
+ 
+-// Uncomment to disable function decay guards
+-// #define LORE_DISABLE_FDG
++// Keep internal function pointers raw. CCG handles callbacks installed by the guest.
++#define LORE_DISABLE_FDG
+ 
+ #include <lorelei/RuntimeExtension/HLRExtension.h>
+ 

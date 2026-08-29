@@ -1,0 +1,32 @@
+diff --git a/LoreFileContext.c b/LoreFileContext.c
+index 4911ba9..975c613 100644
+--- a/LoreFileContext.c
++++ b/LoreFileContext.c
+@@ -65,6 +65,7 @@ static struct LoreStaticFunctionDecayGuardInfo LoreFileContext_FDGs[] = {
+ };
+ 
+ static void *LoreFileContext_initializers[] = {
++    0,
+ };
+ 
+ __LORE_PRIV__ struct LoreFileContext LoreFileContext_instance = {
+@@ -89,4 +90,3 @@ __LORE_PRIV__ struct LoreFileContext LoreFileContext_instance = {
+ __LORE_EXPORT__ struct LoreFileContext *LoreGetFileContext() {
+     return &LoreFileContext_instance;
+ }
+-
+diff --git a/LoreFileContext.h b/LoreFileContext.h
+index e69a9ab..2137693 100644
+--- a/LoreFileContext.h
++++ b/LoreFileContext.h
+@@ -3,8 +3,8 @@
+ //===----------------------------------------------------------------------===//
+ // File Context Declarations
+ 
+-// Uncomment to disable function decay guards
+-// #define LORE_DISABLE_FDG
++// Keep libuv's internal static worker functions at their raw host addresses.
++#define LORE_DISABLE_FDG
+ 
+ #include <lorelei/RuntimeExtension/HLRExtension.h>
+ 

@@ -1,0 +1,28 @@
+{
+  "name": "sdl2-ttf",
+  "version": "2.24.0",
+  "description": "Pinned SDL2_ttf shared library for the Lorelei AE",
+  "homepage": "https://github.com/libsdl-org/SDL_ttf",
+  "license": "Zlib",
+  "supports": "linux",
+  "dependencies": [
+    {
+      "name": "freetype",
+      "default-features": false
+    },
+    "sdl2",
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    }
+  ],
+  "features": {
+    "hlr": {
+      "description": "Audit SDL2_ttf with Lorelei HLR and preserve its zero-hit result"
+    }
+  }
+}

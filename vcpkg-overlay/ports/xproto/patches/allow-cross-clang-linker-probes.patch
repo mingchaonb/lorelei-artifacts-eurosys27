@@ -1,0 +1,21 @@
+diff --git a/include/X11/meson.build b/include/X11/meson.build
+index 9da4854..f8a4ed1 100644
+--- a/include/X11/meson.build
++++ b/include/X11/meson.build
+@@ -9,9 +9,14 @@ foreach h : fd_set_maybe_headers
+ endforeach
+ 
+ # generated headers. try not to make more of these, please.
+-if cc.has_member('fd_set', 'fds_bits', prefix: fd_set_headers)
++fd_set_probe_args = []
++if cc.get_id() == 'clang'
++    # Meson passes the selected linker during compile-only cross probes.
++    fd_set_probe_args = ['-Qunused-arguments']
++endif
++if cc.has_member('fd_set', 'fds_bits', prefix: fd_set_headers, args: fd_set_probe_args)
+     fds_bits = 'fds_bits'
+-elif cc.has_member('fd_set', '__fds_bits', prefix: fd_set_headers)
++elif cc.has_member('fd_set', '__fds_bits', prefix: fd_set_headers, args: fd_set_probe_args)
+     fds_bits = '__fds_bits'
+ else
+     error('Your fd_set is too weird.')

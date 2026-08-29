@@ -1,0 +1,13 @@
+diff --git a/Makefile.in b/Makefile.in
+index b98bb5c..8fd6924 100644
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -315,7 +315,7 @@ top_builddir = @top_builddir@
+ top_srcdir = @top_srcdir@
+ xcbincludedir = @xcbincludedir@
+ SUBDIRS = src xcbgen
+-pkgconfigdir = $(libdir)/pkgconfig
++pkgconfigdir = $(prefix)/share/pkgconfig
+ pkgconfig_DATA = xcb-proto.pc
+ EXTRA_DIST = doc xcb-proto.pc.in autogen.sh README.md
+ all: all-recursive

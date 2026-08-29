@@ -1,0 +1,27 @@
+{
+  "name": "libxcursor",
+  "version": "1.2.3",
+  "port-version": 1,
+  "description": "HLR-enabled X cursor management library",
+  "homepage": "https://gitlab.freedesktop.org/xorg/lib/libxcursor",
+  "license": "MIT",
+  "supports": "linux",
+  "dependencies": [
+    "libx11",
+    "libxfixes",
+    "libxrender",
+    {"name": "vcpkg-make", "host": true},
+    "xorg-macros",
+    "xproto"
+  ],
+  "features": {
+    "hlr": {
+      "description": "Rewrite libXcursor.so.1 with Lorelei HLR",
+      "dependencies": [
+        {"name": "libx11", "features": ["hlr"]},
+        {"name": "libxfixes", "features": ["hlr"]},
+        {"name": "libxrender", "features": ["hlr"]}
+      ]
+    }
+  }
+}

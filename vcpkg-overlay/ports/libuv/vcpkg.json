@@ -1,0 +1,23 @@
+{
+  "name": "libuv",
+  "version-semver": "1.52.1",
+  "description": "libuv shared-library build used by the Lorelei AE evaluation",
+  "homepage": "https://github.com/libuv/libuv",
+  "license": "BSD-3-Clause",
+  "supports": "linux",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    }
+  ],
+  "features": {
+    "hlr": {
+      "description": "Rewrite the libuv shared library with Lorelei HLR"
+    }
+  }
+}

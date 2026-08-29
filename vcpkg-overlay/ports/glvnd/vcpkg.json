@@ -1,0 +1,24 @@
+{
+  "name": "glvnd",
+  "version": "1.7.0-system",
+  "description": "Lorelei thunk and validation binaries for the Ubuntu system libglvnd DSO",
+  "homepage": "https://gitlab.freedesktop.org/glvnd/libglvnd",
+  "license": "MIT",
+  "supports": "linux & arm64",
+  "dependencies": [
+    {
+      "name": "libx11",
+      "features": [
+        "hlr"
+      ]
+    },
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    }
+  ]
+}

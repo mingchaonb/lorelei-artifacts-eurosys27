@@ -45,7 +45,10 @@ if [[ ${#positional[@]} != 1 ]]; then
 fi
 devkit=$(realpath "${positional[0]}")
 qemu=$(realpath -m "${QEMU:-$devkit/bin/qemu-x86_64}")
-work_dir=$repo_root/.work/evaluations/sdl2
+# Keep the documented default stable. Developers may select another disposable
+# marked workspace to avoid colliding with a concurrent graphics evaluation.
+work_dir=${LORELEI_EVALUATION_WORK_DIR:-$repo_root/.work/evaluations/sdl2}
+work_dir=$(realpath -m "$work_dir")
 results_root=$recipe_dir/results
 result_kind=evaluator
 if $reference; then

@@ -1,0 +1,24 @@
+--- a/src/extutil.c
++++ b/src/extutil.c
+@@ -268,7 +268,7 @@
+     XextErrorHandler oldhandler = _XExtensionErrorFunction;
+ 
+     _XExtensionErrorFunction = (handler ? handler :
+-				LORE_FDG_1_1(_default_exterror));
++				_default_exterror);
+     return oldhandler;
+ }
+ 
+@@ -279,11 +279,11 @@
+ int XMissingExtension (Display *dpy, _Xconst char *ext_name)
+ {
+     XextErrorHandler func = (_XExtensionErrorFunction ?
+-			     _XExtensionErrorFunction : LORE_FDG_1_1(_default_exterror));
++			     _XExtensionErrorFunction : _default_exterror);
+ 
+     if (!ext_name) ext_name = X_EXTENSION_UNKNOWN;
+     return LORE_CCG_1((*func)) (dpy, ext_name, X_EXTENSION_MISSING);
+ }
+ 
+ LORE_FDG_IMPL(1, 1, _default_exterror)
+ 

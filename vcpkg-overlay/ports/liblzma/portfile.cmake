@@ -61,6 +61,8 @@ file(COPY
     DESTINATION "${XZ_TEST_INSTALL_DIR}")
 file(COPY "${SOURCE_PATH}/tests/"
     DESTINATION "${XZ_TEST_INSTALL_DIR}/source")
+file(INSTALL "${SOURCE_PATH}/src/liblzma/liblzma_linux.map"
+    DESTINATION "${XZ_TEST_INSTALL_DIR}/metadata")
 
 set(exec_prefix "\${prefix}")
 set(libdir "\${prefix}/lib")

@@ -1,0 +1,27 @@
+{
+  "name": "libxi",
+  "version": "1.8.2",
+  "port-version": 1,
+  "description": "HLR-enabled X Input extension library",
+  "homepage": "https://gitlab.freedesktop.org/xorg/lib/libxi",
+  "license": "MIT",
+  "supports": "linux",
+  "dependencies": [
+    "libx11",
+    "libxext",
+    "libxfixes",
+    {"name": "vcpkg-make", "host": true},
+    "xorg-macros",
+    "xproto"
+  ],
+  "features": {
+    "hlr": {
+      "description": "Rewrite libXi.so.6 with Lorelei HLR",
+      "dependencies": [
+        {"name": "libx11", "features": ["hlr"]},
+        {"name": "libxext", "features": ["hlr"]},
+        {"name": "libxfixes", "features": ["hlr"]}
+      ]
+    }
+  }
+}

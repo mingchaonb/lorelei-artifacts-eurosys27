@@ -1,0 +1,9 @@
+# libxcb 1.15 validation
+
+`tests/TestXcb.c` is a directed native and Hecate smoke workload for the Ubuntu 24.04 libxcb core port. It connects to a real X server, reads the setup record, allocates an XID, creates and maps a window, performs a checked request, obtains a reply, and destroys the window.
+
+Run it with `./evaluations/1-libs/libxcb/run.sh /path/to/lorelei-devkit`. The recipe keeps packages, vcpkg build trees, generated thunks, and test executables below `.work/evaluations/libxcb`. Set `GUI_ENV=/path/to/gui-env.txt` when the X11 session environment is not stored at `~/Desktop/spark-gui-env.txt`.
+
+The workload also transfers socket ownership with `xcb_take_socket`. Its next request forces libxcb to return the socket through a guest callback. Success requires both the callback closure counter and the guest-global callback counter to equal one.
+
+The first Spark development smoke run used `DISPLAY=:1` and `/run/user/1004/gdm/Xauthority`. Native and Hecate lanes both printed `xcb:11:0:1:1:3` and exited with status zero. Formal recipe runs record their own environment and summary below `results` or `reference-results`.

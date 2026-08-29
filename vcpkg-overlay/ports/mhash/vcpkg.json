@@ -1,0 +1,8 @@
+{
+  "name": "mhash",
+  "version-string": "0.9.9.9",
+  "description": "Pinned shared build for the mhash TLC Only evaluation",
+  "homepage": "https://downloads.sourceforge.net/project/mhash/mhash/0.9.9.9/mhash-0.9.9.9.tar.bz2",
+  "supports": "linux & (arm64 | x64)"
+}
+

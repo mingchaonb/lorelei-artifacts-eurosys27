@@ -1,0 +1,23 @@
+{
+  "name": "libcurl",
+  "version": "8.20.0",
+  "description": "Minimal HTTP-only libcurl build used by the Lorelei AE library evaluation",
+  "homepage": "https://curl.se/",
+  "license": "curl",
+  "supports": "linux",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    }
+  ],
+  "features": {
+    "hlr": {
+      "description": "Rewrite the libcurl shared library with Lorelei HLR"
+    }
+  }
+}

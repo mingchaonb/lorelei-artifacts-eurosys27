@@ -1,0 +1,21 @@
+--- a/tests/CMakeLists.txt
++++ b/tests/CMakeLists.txt
+@@ -1,15 +1,18 @@
+ add_library(common
+     common.c common.h)
+ target_link_libraries(common qrencode)
++target_compile_options(common PRIVATE -O0)
+ 
+ add_library(rscode
+     rscode.c rscode.h)
+ target_link_libraries(rscode common)
++target_compile_options(rscode PRIVATE -O0)
+ 
+ macro(MAKE_TEST test_name)
+     set(ADDITIONAL_LIBS "${ARGN}")
+     add_executable(${test_name} ${test_name}.c)
+     target_link_libraries(${test_name} common ${ADDITIONAL_LIBS})
++    target_compile_options(${test_name} PRIVATE -O0)
+     add_test(${test_name} ${test_name})
+ endmacro(MAKE_TEST)
+ 

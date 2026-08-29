@@ -1,0 +1,13 @@
+{
+  "name": "rhash",
+  "version-string": "1.4.6",
+  "description": "Pinned shared build for the rhash TLC Only evaluation",
+  "homepage": "https://github.com/rhash/RHash",
+  "supports": "linux & (arm64 | x64)",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake-get-vars",
+      "host": true
+    }
+  ]
+}

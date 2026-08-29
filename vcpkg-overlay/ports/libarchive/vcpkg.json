@@ -1,0 +1,19 @@
+{
+  "name": "libarchive",
+  "version": "3.8.9",
+  "description": "libarchive shared-library build used by the Lorelei AE evaluation",
+  "homepage": "https://www.libarchive.org",
+  "license": "BSD-2-Clause",
+  "supports": "linux",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    }
+  ],
+  "features": {
+    "hlr": {
+      "description": "Rewrite the libarchive shared library with Lorelei HLR"
+    }
+  }
+}

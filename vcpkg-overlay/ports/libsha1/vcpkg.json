@@ -1,0 +1,14 @@
+{
+  "name": "libsha1",
+  "version-string": "0.1.0",
+  "description": "Pinned shared build for the libsha1 TLC Only evaluation",
+  "homepage": "https://github.com/clibs/sha1",
+  "supports": "linux & (arm64 | x64)",
+  "dependencies": [
+    "cunit",
+    {
+      "name": "vcpkg-cmake-get-vars",
+      "host": true
+    }
+  ]
+}

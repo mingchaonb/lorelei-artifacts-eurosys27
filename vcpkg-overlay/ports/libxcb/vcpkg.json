@@ -1,0 +1,30 @@
+{
+  "name": "libxcb",
+  "version": "1.15",
+  "description": "libxcb core build used by the Lorelei AE X11 evaluation",
+  "homepage": "https://xcb.freedesktop.org/",
+  "license": "X11-distribute-modifications-variant",
+  "supports": "linux",
+  "dependencies": [
+    "libxau",
+    "libxdmcp",
+    {
+      "name": "libxslt",
+      "host": true,
+      "default-features": false,
+      "features": [
+        "tools"
+      ]
+    },
+    {
+      "name": "vcpkg-make",
+      "host": true
+    },
+    "xcb-proto"
+  ],
+  "features": {
+    "hlr": {
+      "description": "Rewrite libxcb.so.1 core with Lorelei HLR"
+    }
+  }
+}

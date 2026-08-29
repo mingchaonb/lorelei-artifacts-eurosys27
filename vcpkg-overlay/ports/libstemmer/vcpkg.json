@@ -1,0 +1,14 @@
+{
+  "name": "libstemmer",
+  "version": "3.1.1",
+  "description": "Pinned Snowball libstemmer shared library for the Lorelei AE",
+  "homepage": "https://github.com/snowballstem/snowball",
+  "license": "BSD-3-Clause",
+  "supports": "linux",
+  "dependencies": [
+    {
+      "name": "vcpkg-make",
+      "host": true
+    }
+  ]
+}

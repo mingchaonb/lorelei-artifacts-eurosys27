@@ -1,0 +1,29 @@
+{
+  "name": "libxrender",
+  "version": "0.9.12",
+  "port-version": 1,
+  "description": "HLR-enabled X Render extension library",
+  "homepage": "https://gitlab.freedesktop.org/xorg/lib/libxrender",
+  "license": "MIT",
+  "supports": "linux",
+  "dependencies": [
+    "libx11",
+    {
+      "name": "vcpkg-make",
+      "host": true
+    },
+    "xorg-macros",
+    "xproto"
+  ],
+  "features": {
+    "hlr": {
+      "description": "Rewrite libXrender.so.1 with Lorelei HLR",
+      "dependencies": [
+        {
+          "name": "libx11",
+          "features": ["hlr"]
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "libxau",
+  "version": "1.0.12",
+  "description": "X Authorization library built from the release archive for reproducible AE cross builds",
+  "homepage": "https://xorg.freedesktop.org/",
+  "license": "MIT-open-group",
+  "supports": "linux",
+  "dependencies": [
+    {
+      "name": "vcpkg-make",
+      "host": true
+    },
+    "xproto"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "name": "murmurhash",
+  "version-string": "0.2.0",
+  "description": "Pinned shared build for the murmurhash TLC Only evaluation",
+  "homepage": "https://github.com/jwerle/murmurhash.c",
+  "supports": "linux & (arm64 | x64)",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake-get-vars",
+      "host": true
+    }
+  ]
+}

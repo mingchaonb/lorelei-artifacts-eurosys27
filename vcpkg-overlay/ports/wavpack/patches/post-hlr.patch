@@ -1,0 +1,55 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 0b5d26d..081e7b8 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -236,6 +236,8 @@ endif()
+ # Symbols files
+ 
+ set(WAVPACK_EXPORT_SYMBOLS
++    LoreGetFileContext
++    lore_wavpack_block_output_signature
+     WavpackAddWrapper
+     WavpackAppendBinaryTagItem
+     WavpackAppendTagItem
+diff --git a/LoreFileContext.h b/LoreFileContext.h
+index a084317..473fc4b 100644
+--- a/LoreFileContext.h
++++ b/LoreFileContext.h
+@@ -4,7 +4,7 @@
+ // File Context Declarations
+ 
+ // Uncomment to disable function decay guards
+-// #define LORE_DISABLE_FDG
++#define LORE_DISABLE_FDG
+ 
+ #include <lorelei/RuntimeExtension/HLRExtension.h>
+ 
+diff --git a/include/wavpack.h b/include/wavpack.h
+index 24ccfb1..ab34312 100644
+--- a/include/wavpack.h
++++ b/include/wavpack.h
+@@ -292,6 +292,8 @@ typedef struct {
+ 
+ typedef int (*WavpackBlockOutput)(void *id, void *data, int32_t bcount);
+ 
++void lore_wavpack_block_output_signature (WavpackBlockOutput callback);
++
+ //////////////////////////// function prototypes /////////////////////////////
+ 
+ typedef struct WavpackContext WavpackContext;
+diff --git a/src/pack_utils.c b/src/pack_utils.c
+index 15cd7cc..92de906 100644
+--- a/src/pack_utils.c
++++ b/src/pack_utils.c
+@@ -37,6 +37,11 @@ static int write_completed_blocks (WavpackContext *wpc, int write_all_blocks, in
+ static int worker_available (WavpackContext *wpc);
+ #endif
+ 
++void lore_wavpack_block_output_signature (WavpackBlockOutput callback)
++{
++    (void) callback;
++}
++
+ ///////////////////////////// executable code ////////////////////////////////
+ 
+ // Open context for writing WavPack files. The returned context pointer is used

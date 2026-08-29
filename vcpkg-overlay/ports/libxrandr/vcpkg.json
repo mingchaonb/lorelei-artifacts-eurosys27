@@ -1,0 +1,27 @@
+{
+  "name": "libxrandr",
+  "version": "1.5.5",
+  "port-version": 1,
+  "description": "HLR-enabled XRandR extension library",
+  "homepage": "https://gitlab.freedesktop.org/xorg/lib/libxrandr",
+  "license": "MIT",
+  "supports": "linux",
+  "dependencies": [
+    "libx11",
+    "libxext",
+    "libxrender",
+    {"name": "vcpkg-make", "host": true},
+    "xorg-macros",
+    "xproto"
+  ],
+  "features": {
+    "hlr": {
+      "description": "Rewrite libXrandr.so.2 with Lorelei HLR",
+      "dependencies": [
+        {"name": "libx11", "features": ["hlr"]},
+        {"name": "libxext", "features": ["hlr"]},
+        {"name": "libxrender", "features": ["hlr"]}
+      ]
+    }
+  }
+}

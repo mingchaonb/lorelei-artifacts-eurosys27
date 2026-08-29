@@ -1,0 +1,37 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 46f899d..dad242a 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -75,3 +75,3 @@
+ add_library(correct SHARED ${correct_obj_files})
+-add_library(correct_static ${correct_obj_files})
++add_library(correct_static STATIC ${correct_obj_files})
+ set_target_properties(correct_static PROPERTIES OUTPUT_NAME "correct")
+@@ -92,2 +92,2 @@
+-add_library(fec_shim_static EXCLUDE_FROM_ALL src/fec_shim.c ${correct_obj_files})
++add_library(fec_shim_static STATIC EXCLUDE_FROM_ALL src/fec_shim.c ${correct_obj_files})
+ set_target_properties(fec_shim_static PROPERTIES OUTPUT_NAME "fec")
+diff --git a/tests/CMakeLists.txt b/tests/CMakeLists.txt
+index f36519d..a5840d2 100644
+--- a/tests/CMakeLists.txt
++++ b/tests/CMakeLists.txt
+@@ -4,3 +4,3 @@
+ add_executable(convolutional_test_runner EXCLUDE_FROM_ALL convolutional.c $<TARGET_OBJECTS:error_sim>)
+-target_link_libraries(convolutional_test_runner correct_static "${LIBM}")
++target_link_libraries(convolutional_test_runner correct "${LIBM}")
+ set_target_properties(convolutional_test_runner PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/tests")
+@@ -26,3 +26,3 @@
+ add_executable(convolutional_shim_test_runner EXCLUDE_FROM_ALL convolutional-shim.c $<TARGET_OBJECTS:error_sim_shim>)
+-target_link_libraries(convolutional_shim_test_runner correct_static fec_shim_static "${LIBM}")
++target_link_libraries(convolutional_shim_test_runner correct fec_shim_shared "${LIBM}")
+ set_target_properties(convolutional_shim_test_runner PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/tests")
+@@ -32,3 +32,3 @@
+ add_executable(reed_solomon_test_runner EXCLUDE_FROM_ALL reed-solomon.c rs_tester.c)
+-target_link_libraries(reed_solomon_test_runner correct_static "${LIBM}")
++target_link_libraries(reed_solomon_test_runner correct "${LIBM}")
+ set_target_properties(reed_solomon_test_runner PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/tests")
+@@ -46,3 +46,3 @@
+ add_executable(reed_solomon_shim_interop_test_runner EXCLUDE_FROM_ALL reed-solomon-shim-interop.c rs_tester.c rs_tester_fec_shim.c)
+-target_link_libraries(reed_solomon_shim_interop_test_runner correct_static fec_shim_static "${LIBM}")
++target_link_libraries(reed_solomon_shim_interop_test_runner correct fec_shim_shared "${LIBM}")
+ set_target_properties(reed_solomon_shim_interop_test_runner PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/tests")

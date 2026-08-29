@@ -1,0 +1,32 @@
+{
+    "forwardThunks": [
+        {
+            "name": "libGL",
+            "guestThunk": "${GLVND_PREFIX}/share/glvnd/thunk/x86_64/libGL.so",
+            "hostThunk": "${GLVND_PREFIX}/share/glvnd/thunk/libGL_HTL.so",
+            "hostLibrary": "/usr/lib/aarch64-linux-gnu/libGL.so.1"
+        }
+    ],
+    "reversedThunks": [
+        {
+            "name": "libGLX",
+            "fileName": "libGLX.so.0",
+            "thunks": ["libGL"]
+        },
+        {
+            "name": "libGLdispatch",
+            "fileName": "libGLdispatch.so",
+            "thunks": ["libGL"]
+        },
+        {
+            "name": "libGLX_mesa",
+            "fileName": "libGLX_mesa.so.0",
+            "thunks": ["libGL"]
+        },
+        {
+            "name": "libGLX_nvidia",
+            "fileName": "libGLX_nvidia.so.0",
+            "thunks": ["libGL", "libvulkan"]
+        }
+    ]
+}

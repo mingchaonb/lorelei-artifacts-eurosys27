@@ -1,0 +1,14 @@
+--- a/src/file.c
++++ b/src/file.c
+@@ -1111,8 +1111,8 @@ _XcursorStdioFileInitialize (FILE *stdfile, XcursorFile *file)
+ {
+     file->closure = stdfile;
+-    file->read = LORE_FDG_2_1(_XcursorStdioFileRead);
+-    file->write = LORE_FDG_2_2(_XcursorStdioFileWrite);
+-    file->seek = LORE_FDG_1_1(_XcursorStdioFileSeek);
++    file->read = _XcursorStdioFileRead;
++    file->write = _XcursorStdioFileWrite;
++    file->seek = _XcursorStdioFileSeek;
+ }
+ 
+ XcursorImage *

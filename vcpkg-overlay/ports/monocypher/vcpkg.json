@@ -1,0 +1,13 @@
+{
+  "name": "monocypher",
+  "version-string": "4.0.3",
+  "description": "Pinned shared build for the monocypher TLC Only evaluation",
+  "homepage": "https://github.com/LoupVaillant/Monocypher",
+  "supports": "linux & (arm64 | x64)",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake-get-vars",
+      "host": true
+    }
+  ]
+}

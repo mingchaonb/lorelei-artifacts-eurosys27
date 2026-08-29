@@ -1,0 +1,12 @@
+diff --git a/tests/CMakeLists.txt b/tests/CMakeLists.txt
+index b7e65dc..58b544a 100644
+--- a/tests/CMakeLists.txt
++++ b/tests/CMakeLists.txt
+@@ -2,6 +2,7 @@
+ function(add_yaml_executable name)
+   add_executable(${name} ${name}.c)
+   target_link_libraries(${name} yaml)
++  target_compile_options(${name} PRIVATE -O0)
+ endfunction()
+ 
+ foreach(name IN ITEMS

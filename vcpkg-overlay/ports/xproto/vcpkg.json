@@ -1,0 +1,14 @@
+{
+  "name": "xproto",
+  "version": "2023.2",
+  "description": "Ubuntu 24.04 X Window System protocol headers",
+  "homepage": "https://www.x.org/wiki/",
+  "license": "MIT AND MIT-open-group",
+  "supports": "linux",
+  "dependencies": [
+    {
+      "name": "vcpkg-tool-meson",
+      "host": true
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "name": "libevent",
+  "version": "2.1.12-stable",
+  "description": "libevent_core build used by the Lorelei AE library evaluation",
+  "homepage": "https://github.com/libevent/libevent",
+  "license": "BSD-3-Clause",
+  "supports": "linux",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    }
+  ],
+  "features": {
+    "hlr": {
+      "description": "Rewrite libevent_core with Lorelei HLR"
+    }
+  }
+}

@@ -17,7 +17,41 @@
   ],
   "features": {
     "hlr": {
-      "description": "Rewrite the host source closure with Lorelei HLR"
+      "description": "Rewrite the host source closure with Lorelei HLR",
+      "dependencies": [
+        {
+          "name": "libx11",
+          "features": ["hlr"]
+        },
+        {
+          "name": "libxext",
+          "features": ["hlr"]
+        },
+        {
+          "name": "libxrender",
+          "features": ["hlr"]
+        },
+        {
+          "name": "libxrandr",
+          "features": ["hlr"]
+        },
+        {
+          "name": "libxfixes",
+          "features": ["hlr"]
+        },
+        {
+          "name": "libxi",
+          "features": ["hlr"]
+        },
+        {
+          "name": "libxcursor",
+          "features": ["hlr"]
+        },
+        {
+          "name": "libxscrnsaver",
+          "features": ["hlr"]
+        }
+      ]
     },
     "tests": {
       "description": "Build and install the upstream SDL tests"

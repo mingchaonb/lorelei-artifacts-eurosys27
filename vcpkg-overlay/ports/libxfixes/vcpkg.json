@@ -1,0 +1,23 @@
+{
+  "name": "libxfixes",
+  "version": "6.0.2",
+  "port-version": 1,
+  "description": "HLR-enabled XFixes extension library",
+  "homepage": "https://gitlab.freedesktop.org/xorg/lib/libxfixes",
+  "license": "MIT",
+  "supports": "linux",
+  "dependencies": [
+    "libx11",
+    {"name": "vcpkg-make", "host": true},
+    "xorg-macros",
+    "xproto"
+  ],
+  "features": {
+    "hlr": {
+      "description": "Rewrite libXfixes.so.3 with Lorelei HLR",
+      "dependencies": [
+        {"name": "libx11", "features": ["hlr"]}
+      ]
+    }
+  }
+}

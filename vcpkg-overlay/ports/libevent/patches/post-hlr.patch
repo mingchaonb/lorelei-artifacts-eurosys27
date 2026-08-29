@@ -1,0 +1,28 @@
+diff --git a/LoreFileContext.c b/LoreFileContext.c
+index 7a0b6f96..b4345cb7 100644
+--- a/LoreFileContext.c
++++ b/LoreFileContext.c
+@@ -11,16 +11,12 @@ static struct LoreStaticFunctionDecayGuardPair *LoreFileContext_FDG_Proc_1_insta
+     &LoreFileContext_FDG_Proc_1_5,
+     &LoreFileContext_FDG_Proc_1_6,
+     &LoreFileContext_FDG_Proc_1_7,
+-    &LoreFileContext_FDG_Proc_1_8,
+-    &LoreFileContext_FDG_Proc_1_9,
+-    &LoreFileContext_FDG_Proc_1_10,
+-    &LoreFileContext_FDG_Proc_1_11,
+     &LoreFileContext_FDG_Proc_1_12,
+     &LoreFileContext_FDG_Proc_1_13,
+ };
+ 
+ static struct LoreStaticFunctionDecayGuardInfo LoreFileContext_FDGs[] = {
+-    {"void (*)(int, short, void *)", 13, LoreFileContext_FDG_Proc_1_instances},
++    {"void (*)(int, short, void *)", 9, LoreFileContext_FDG_Proc_1_instances},
+ };
+ 
+ static void *LoreFileContext_initializers[] = {
+@@ -48,4 +44,3 @@ __LORE_PRIV__ struct LoreFileContext LoreFileContext_instance = {
+ __LORE_EXPORT__ struct LoreFileContext *LoreGetFileContext() {
+     return &LoreFileContext_instance;
+ }
+-
+

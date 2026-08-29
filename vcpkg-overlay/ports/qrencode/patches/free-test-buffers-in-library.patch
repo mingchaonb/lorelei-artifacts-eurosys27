@@ -1,0 +1,125 @@
+--- a/mask.h
++++ b/mask.h
+@@ -24,6 +24,7 @@
+ 
+ extern unsigned char *Mask_makeMask(int width, unsigned char *frame, int mask, QRecLevel level);
+ extern unsigned char *Mask_mask(int width, unsigned char *frame, QRecLevel level);
++extern void Mask_free(unsigned char *frame);
+ 
+ #ifdef WITH_TESTS
+ extern int Mask_calcN2(int width, unsigned char *frame);
+--- a/mmask.h
++++ b/mmask.h
+@@ -24,6 +24,7 @@
+ 
+ extern unsigned char *MMask_makeMask(int version, unsigned char *frame, int mask, QRecLevel level);
+ extern unsigned char *MMask_mask(int version, unsigned char *frame, QRecLevel level);
++extern void Mask_free(unsigned char *frame);
+ 
+ #ifdef WITH_TESTS
+ extern int MMask_evaluateSymbol(int width, unsigned char *frame);
+--- a/mask.c
++++ b/mask.c
+@@ -631,3 +631,8 @@ unsigned char *Mask_mask(int width, unsigned char *frame, QRecLevel level)
+ 	free(mask);
+ 	return bestMask;
+ }
++
++void Mask_free(unsigned char *frame)
++{
++	free(frame);
++}
+--- a/tests/test_mask.c
++++ b/tests/test_mask.c
+@@ -83,7 +83,7 @@ static void print_mask(int mask)
+ 	}
+ 	printf("\n");
+ 
+-	free(masked);
++	Mask_free(masked);
+ }
+ 
+ static void print_masks(void)
+@@ -118,7 +118,7 @@ static int test_mask(int mask)
+ 		}
+ 	}
+ 
+-	free(masked);
++	Mask_free(masked);
+ 	return err;
+ }
+ 
+@@ -308,7 +308,7 @@ static void test_format(void)
+ 				QRcode_free(code);
+ 			}
+ 		}
+-		free(frame);
++		Mask_free(frame);
+ 	}
+ 	testFinish();
+ }
+
+--- a/tests/test_qrencode.c
++++ b/tests/test_qrencode.c
+@@ -152,7 +152,7 @@ static void print_filler(void)
+ 	if(frame == NULL) abort();
+ 
+ 	printFrame(width, frame);
+-	free(frame);
++	Mask_free(frame);
+ }
+ 
+ static void test_filler(void)
+@@ -178,6 +178,6 @@ static void test_filler(void)
+ 			assert_equal(frame[e], (unsigned char)((length - 1) & 127) | 0x80,
+ 			"Number of cell does not match.\n");
+-			free(frame);
++			Mask_free(frame);
+ 		}
+ 	}
+ 	testFinish();
+@@ -226,6 +226,6 @@ static void test_fillerMQR(void)
+ 			assert_equal(frame[e], (unsigned char)((length - 1) & 127) | 0x80,
+ 			"Number of cell does not match in version %d.\n", i);
+-			free(frame);
++			Mask_free(frame);
+ 		}
+ 	}
+ 	testFinish();
+@@ -292,7 +292,7 @@ static void test_format(void)
+ 		return;
+ 	}
+ 
+-	free(frame);
++	Mask_free(frame);
+ 
+ ABORT:
+ 	testEnd(0);
+@@ -990,6 +990,6 @@ static void test_mqrencode(void)
+ 
+ 	QRdata_free(qrdata);
+-	free(frame);
++	Mask_free(frame);
+ 
+ 	testFinish();
+ }
+--- a/tests/test_mmask.c
++++ b/tests/test_mmask.c
+@@ -54,7 +54,7 @@ static void print_mask(int mask)
+ 	}
+ 	printf("\n");
+ 
+-	free(masked);
++	Mask_free(masked);
+ }
+ 
+ static void print_masks(void)
+@@ -89,7 +89,7 @@ static int test_mask(int mask)
+ 		}
+ 	}
+ 
+-	free(masked);
++	Mask_free(masked);
+ 	return err;
+ }
+ 

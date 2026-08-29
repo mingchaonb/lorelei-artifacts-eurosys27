@@ -1,0 +1,8 @@
+{
+  "name": "libmd",
+  "version-string": "1.2.0",
+  "description": "Pinned shared build for the libmd TLC Only evaluation",
+  "homepage": "https://gitlab.freedesktop.org/libbsd/libmd/-/archive/90c4f432134c608c7e2b4dd0a1d7ca5c40b92c7a/libmd-90c4f432134c608c7e2b4dd0a1d7ca5c40b92c7a.tar.gz",
+  "supports": "linux & (arm64 | x64)"
+}
+

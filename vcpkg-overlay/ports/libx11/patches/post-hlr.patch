@@ -1,0 +1,409 @@
+diff --git a/src/OpenDis.c b/src/OpenDis.c
+index 8a004c2..66cb6ab 100644
+--- a/src/OpenDis.c
++++ b/src/OpenDis.c
+@@ -155,17 +155,17 @@ XOpenDisplay (
+ 	dpy->ext_procs		= (_XExtension *)NULL;
+ 	dpy->ext_data		= (XExtData *)NULL;
+ 	dpy->ext_number 	= 0;
+-	dpy->event_vec[X_Error] = LORE_FDG_10_1(_XUnknownWireEvent);
+-	dpy->event_vec[X_Reply] = LORE_FDG_10_1(_XUnknownWireEvent);
+-	dpy->wire_vec[X_Error]  = LORE_FDG_10_2(_XUnknownNativeEvent);
+-	dpy->wire_vec[X_Reply]  = LORE_FDG_10_2(_XUnknownNativeEvent);
++	dpy->event_vec[X_Error] = _XUnknownWireEvent;
++	dpy->event_vec[X_Reply] = _XUnknownWireEvent;
++	dpy->wire_vec[X_Error]  = _XUnknownNativeEvent;
++	dpy->wire_vec[X_Reply]  = _XUnknownNativeEvent;
+ 	for (i = KeyPress; i < LASTEvent; i++) {
+-	    dpy->event_vec[i] 	= LORE_FDG_10_3(_XWireToEvent);
++	    dpy->event_vec[i] 	= _XWireToEvent;
+ 	    dpy->wire_vec[i] 	= NULL;
+ 	}
+ 	for (i = LASTEvent; i < 128; i++) {
+-	    dpy->event_vec[i] 	= LORE_FDG_10_1(_XUnknownWireEvent);
+-	    dpy->wire_vec[i] 	= LORE_FDG_10_2(_XUnknownNativeEvent);
++	    dpy->event_vec[i] 	= _XUnknownWireEvent;
++	    dpy->wire_vec[i] 	= _XUnknownNativeEvent;
+ 	}
+ 	dpy->resource_id	= 0;
+ 	dpy->db 		= (struct _XrmHashBucketRec *)NULL;
+@@ -204,8 +204,8 @@ XOpenDisplay (
+  * Setup other information in this display structure.
+  */
+ 	dpy->vnumber = X_PROTOCOL;
+-	dpy->resource_alloc = LORE_FDG_21_1(_XAllocID);
+-	dpy->idlist_alloc = LORE_FDG_26_1(_XAllocIDs);
++	dpy->resource_alloc = _XAllocID;
++	dpy->idlist_alloc = _XAllocIDs;
+ 	dpy->synchandler = NULL;
+ 	dpy->savedsynchandler = NULL;
+ 	X_DPY_SET_REQUEST(dpy, 0);
+@@ -213,7 +213,7 @@ XOpenDisplay (
+ 	dpy->default_screen = iscreen;  /* Value returned by ConnectDisplay */
+ 	dpy->last_req = (char *)&_dummy_request;
+ 	dpy->error_threads = NULL;
+-	dpy->exit_handler = LORE_FDG_27_1(_XDefaultIOErrorExit);
++	dpy->exit_handler = _XDefaultIOErrorExit;
+ 
+ 	/* Initialize the display lock */
+ 	if ((_XInitDisplayLock_fn ? LORE_CCG_4((*_XInitDisplayLock_fn))(dpy) : 0) != 0) {
+@@ -726,4 +726,3 @@ static void OutOfMemory(Display *dpy)
+ LORE_FDG_IMPL(10, 3, _XWireToEvent)
+ LORE_FDG_IMPL(21, 1, _XAllocID)
+ LORE_FDG_IMPL(26, 1, _XAllocIDs)
+-
+diff --git a/src/Xrm.c b/src/Xrm.c
+index 5e16c64..62c6247 100644
+--- a/src/Xrm.c
++++ b/src/Xrm.c
+@@ -492,11 +492,11 @@ c_lcname(
+ }
+ 
+ static const XrmMethodsRec mb_methods = {
+-    LORE_FDG_24_1(c_mbnoop),	/* mbinit */
++    c_mbnoop,	/* mbinit */
+     c_mbchar,	/* mbchar */
+-    LORE_FDG_24_1(c_mbnoop),	/* mbfinish */
++    c_mbnoop,	/* mbfinish */
+     c_lcname,	/* lcname */
+-    LORE_FDG_24_1(c_mbnoop)	/* destroy */
++    c_mbnoop	/* destroy */
+ };
+ 
+ 
+diff --git a/src/locking.c b/src/locking.c
+index da657fa..5a01cb9 100644
+--- a/src/locking.c
++++ b/src/locking.c
+@@ -522,7 +522,7 @@ static void _XUserLockDisplay(
+     _XDisplayLockWait(dpy);
+ 
+     if (++dpy->lock->locking_level == 1) {
+-	dpy->lock->lock_wait = LORE_FDG_25_7(_XDisplayLockWait);
++	dpy->lock->lock_wait = _XDisplayLockWait;
+ 	dpy->lock->locking_thread = xthread_self();
+     }
+ }
+@@ -580,11 +580,11 @@ static int _XInitDisplayLock(
+     xcondition_set_name(dpy->lock->cv, "XLockDisplay");
+     xcondition_init(dpy->lock->writers);
+     xcondition_set_name(dpy->lock->writers, "Xlib wait for writable");
+-    dpy->lock_fns->lock_display = LORE_FDG_25_8(_XLockDisplay);
++    dpy->lock_fns->lock_display = _XLockDisplay;
+     dpy->lock->internal_lock_display = _XInternalLockDisplay;
+-    dpy->lock_fns->unlock_display = LORE_FDG_25_5(_XUnlockDisplay);
+-    dpy->lock->user_lock_display = LORE_FDG_25_9(_XUserLockDisplay);
+-    dpy->lock->user_unlock_display = LORE_FDG_25_10(_XUserUnlockDisplay);
++    dpy->lock_fns->unlock_display = _XUnlockDisplay;
++    dpy->lock->user_lock_display = _XUserLockDisplay;
++    dpy->lock->user_unlock_display = _XUserUnlockDisplay;
+     dpy->lock->pop_reader = _XPopReader;
+     dpy->lock->push_reader = _XPushReader;
+     dpy->lock->condition_wait = _XConditionWait;
+@@ -647,8 +647,8 @@ Status XInitThreads(void)
+     _XUnlockMutex_fn = _XUnlockMutex;
+     _XCreateMutex_fn = _XCreateMutex;
+     _XFreeMutex_fn = _XFreeMutex;
+-    _XInitDisplayLock_fn = LORE_FDG_4_4(_XInitDisplayLock);
+-    _XFreeDisplayLock_fn = LORE_FDG_25_6(_XFreeDisplayLock);
++    _XInitDisplayLock_fn = _XInitDisplayLock;
++    _XFreeDisplayLock_fn = _XFreeDisplayLock;
+     _Xthread_self_fn = _Xthread_self;
+ 
+ #ifdef XTHREADS_WARN
+@@ -697,4 +697,3 @@ LORE_FDG_IMPL(25, 7, _XDisplayLockWait)
+ LORE_FDG_IMPL(25, 8, _XLockDisplay)
+ LORE_FDG_IMPL(25, 9, _XUserLockDisplay)
+ LORE_FDG_IMPL(25, 10, _XUserUnlockDisplay)
+-
+diff --git a/src/xcms/HVC.c b/src/xcms/HVC.c
+index 0b7d61e..464ee9e 100644
+--- a/src/xcms/HVC.c
++++ b/src/xcms/HVC.c
+@@ -117,8 +117,8 @@ static Status XcmsTekHVC_ValidSpec(XcmsColor *pColor);
+      * NULL terminated list of functions applied to get from TekHVC to CIEXYZ
+      */
+ static XcmsConversionProc Fl_TekHVC_to_CIEXYZ[] = {
+-    LORE_FDG_16_10(XcmsTekHVCToCIEuvY),
+-    LORE_FDG_16_7(XcmsCIEuvYToCIEXYZ),
++    XcmsTekHVCToCIEuvY,
++    XcmsCIEuvYToCIEXYZ,
+     NULL
+ };
+ 
+@@ -126,8 +126,8 @@ static XcmsConversionProc Fl_TekHVC_to_CIEXYZ[] = {
+      * NULL terminated list of functions applied to get from CIEXYZ to TekHVC
+      */
+ static XcmsConversionProc Fl_CIEXYZ_to_TekHVC[] = {
+-    LORE_FDG_16_4(XcmsCIEXYZToCIEuvY),
+-    LORE_FDG_16_8(XcmsCIEuvYToTekHVC),
++    XcmsCIEXYZToCIEuvY,
++    XcmsCIEuvYToTekHVC,
+     NULL
+ };
+ 
+@@ -142,7 +142,7 @@ XcmsColorSpace	XcmsTekHVCColorSpace =
+     {
+ 	_XcmsTekHVC_prefix,	/* prefix */
+ 	XcmsTekHVCFormat,		/* id */
+-	LORE_FDG_3_1(TekHVC_ParseString),	/* parseString */
++	TekHVC_ParseString,	/* parseString */
+ 	Fl_TekHVC_to_CIEXYZ,	/* to_CIEXYZ */
+ 	Fl_CIEXYZ_to_TekHVC,	/* from_CIEXYZ */
+ 	1
+diff --git a/src/xcms/LRGB.c b/src/xcms/LRGB.c
+index ddcddf9..64aece9 100644
+--- a/src/xcms/LRGB.c
++++ b/src/xcms/LRGB.c
+@@ -176,7 +176,7 @@ XcmsColorSpace	XcmsRGBiColorSpace =
+     {
+ 	_XcmsRGBi_prefix,	/* prefix */
+ 	XcmsRGBiFormat,		/* id */
+-	LORE_FDG_3_3(XcmsLRGB_RGBi_ParseString),	/* parseString */
++	XcmsLRGB_RGBi_ParseString,	/* parseString */
+ 	Fl_RGBi_to_CIEXYZ,	/* to_CIEXYZ */
+ 	Fl_CIEXYZ_to_RGBi,	/* from_CIEXYZ */
+ 	1
+@@ -189,7 +189,7 @@ XcmsColorSpace	XcmsRGBColorSpace =
+     {
+ 	_XcmsRGB_prefix,		/* prefix */
+ 	XcmsRGBFormat,		/* id */
+-	LORE_FDG_3_2(XcmsLRGB_RGB_ParseString),	/* parseString */
++	XcmsLRGB_RGB_ParseString,	/* parseString */
+ 	Fl_RGB_to_CIEXYZ,	/* to_CIEXYZ */
+ 	Fl_CIEXYZ_to_RGB,	/* from_CIEXYZ */
+ 	1
+@@ -218,8 +218,8 @@ static XcmsColorSpace	*DDColorSpaces[] = {
+ XcmsFunctionSet	XcmsLinearRGBFunctionSet =
+     {
+ 	&DDColorSpaces[0],	/* pDDColorSpaces */
+-	LORE_FDG_9_1(LINEAR_RGB_InitSCCData),	/* pInitScrnFunc */
+-	LORE_FDG_24_2(LINEAR_RGB_FreeSCCData)	/* pFreeSCCData */
++	LINEAR_RGB_InitSCCData,	/* pInitScrnFunc */
++	LINEAR_RGB_FreeSCCData	/* pFreeSCCData */
+     };
+ 
+ /*
+diff --git a/src/xcms/Lab.c b/src/xcms/Lab.c
+index 2a55dbc..57d599a 100644
+--- a/src/xcms/Lab.c
++++ b/src/xcms/Lab.c
+@@ -84,7 +84,7 @@ static Status XcmsCIELab_ValidSpec(XcmsColor *pColor);
+      * NULL terminated list of functions applied to get from CIELab to CIEXYZ
+      */
+ static XcmsConversionProc Fl_CIELab_to_CIEXYZ[] = {
+-    LORE_FDG_16_1(XcmsCIELabToCIEXYZ),
++    XcmsCIELabToCIEXYZ,
+     NULL
+ };
+ 
+@@ -92,7 +92,7 @@ static XcmsConversionProc Fl_CIELab_to_CIEXYZ[] = {
+      * NULL terminated list of functions applied to get from CIEXYZ to CIELab
+      */
+ static XcmsConversionProc Fl_CIEXYZ_to_CIELab[] = {
+-    LORE_FDG_16_3(XcmsCIEXYZToCIELab),
++    XcmsCIEXYZToCIELab,
+     NULL
+ };
+ 
+@@ -107,7 +107,7 @@ XcmsColorSpace	XcmsCIELabColorSpace =
+     {
+ 	_XcmsCIELab_prefix,	/* prefix */
+ 	XcmsCIELabFormat,		/* id */
+-	LORE_FDG_3_4(CIELab_ParseString),	/* parseString */
++	CIELab_ParseString,	/* parseString */
+ 	Fl_CIELab_to_CIEXYZ,	/* to_CIEXYZ */
+ 	Fl_CIEXYZ_to_CIELab,	/* from_CIEXYZ */
+ 	1
+diff --git a/src/xcms/Luv.c b/src/xcms/Luv.c
+index aeeca78..e47f783 100644
+--- a/src/xcms/Luv.c
++++ b/src/xcms/Luv.c
+@@ -85,8 +85,8 @@ static Status XcmsCIELuv_ValidSpec(XcmsColor *pColor);
+      * NULL terminated list of functions applied to get from CIELuv to CIEXYZ
+      */
+ static XcmsConversionProc Fl_CIELuv_to_CIEXYZ[] = {
+-    LORE_FDG_16_2(XcmsCIELuvToCIEuvY),
+-    LORE_FDG_16_7(XcmsCIEuvYToCIEXYZ),
++    XcmsCIELuvToCIEuvY,
++    XcmsCIEuvYToCIEXYZ,
+     NULL
+ };
+ 
+@@ -94,8 +94,8 @@ static XcmsConversionProc Fl_CIELuv_to_CIEXYZ[] = {
+      * NULL terminated list of functions applied to get from CIEXYZ to CIELuv
+      */
+ static XcmsConversionProc Fl_CIEXYZ_to_CIELuv[] = {
+-    LORE_FDG_16_4(XcmsCIEXYZToCIEuvY),
+-    LORE_FDG_16_6(XcmsCIEuvYToCIELuv),
++    XcmsCIEXYZToCIEuvY,
++    XcmsCIEuvYToCIELuv,
+     NULL
+ };
+ 
+@@ -110,7 +110,7 @@ XcmsColorSpace	XcmsCIELuvColorSpace =
+     {
+ 	_XcmsCIELuv_prefix,	/* prefix */
+ 	XcmsCIELuvFormat,		/* id */
+-	LORE_FDG_3_5(CIELuv_ParseString),	/* parseString */
++	CIELuv_ParseString,	/* parseString */
+ 	Fl_CIELuv_to_CIEXYZ,	/* to_CIEXYZ */
+ 	Fl_CIEXYZ_to_CIELuv,	/* from_CIEXYZ */
+ 	1
+diff --git a/src/xcms/UNDEFINED.c b/src/xcms/UNDEFINED.c
+index 61f89eb..a1670a7 100644
+--- a/src/xcms/UNDEFINED.c
++++ b/src/xcms/UNDEFINED.c
+@@ -73,7 +73,7 @@ static Status (*(Fl_ReturnZero[]))(
+     XcmsColor*          /* colors */,
+     unsigned int        /* ncolors */
+     ) = {
+-    LORE_FDG_16_11(ReturnZero),
++    ReturnZero,
+     NULL
+ };
+ 
+@@ -90,7 +90,7 @@ XcmsColorSpace	XcmsUNDEFINEDColorSpace =
+     {
+ 	"undefined",		/* prefix */
+ 	XcmsUndefinedFormat,	/* id */
+-	&LORE_FDG_3_6(DummyParseStringProc),	/* parseString */
++	&DummyParseStringProc,	/* parseString */
+ 	Fl_ReturnZero,		/* to_CIEXYZ */
+ 	Fl_ReturnZero		/* from_CIEXYZ */
+     };
+diff --git a/src/xcms/XYZ.c b/src/xcms/XYZ.c
+index 8340b73..45636f5 100644
+--- a/src/xcms/XYZ.c
++++ b/src/xcms/XYZ.c
+@@ -90,7 +90,7 @@ XcmsColorSpace	XcmsCIEXYZColorSpace =
+     {
+ 	_XcmsCIEXYZ_prefix,		/* prefix */
+ 	XcmsCIEXYZFormat,		/* id */
+-	LORE_FDG_3_7(CIEXYZ_ParseString),	/* parseString */
++	CIEXYZ_ParseString,	/* parseString */
+ 	Fl_CIEXYZ_to_CIEXYZ,	/* to_CIEXYZ */
+ 	Fl_CIEXYZ_to_CIEXYZ,	/* from_CIEXYZ */
+ 	1
+diff --git a/src/xcms/uvY.c b/src/xcms/uvY.c
+index a3a3f2c..0d8441e 100644
+--- a/src/xcms/uvY.c
++++ b/src/xcms/uvY.c
+@@ -79,7 +79,7 @@ static int CIEuvY_ParseString(register char *spec, XcmsColor *pColor);
+      * NULL terminated list of functions applied to get from CIEuvY to CIEXYZ
+      */
+ static XcmsConversionProc Fl_CIEuvY_to_CIEXYZ[] = {
+-    LORE_FDG_16_7(XcmsCIEuvYToCIEXYZ),
++    XcmsCIEuvYToCIEXYZ,
+     NULL
+ };
+ 
+@@ -87,7 +87,7 @@ static XcmsConversionProc Fl_CIEuvY_to_CIEXYZ[] = {
+      * NULL terminated list of functions applied to get from CIEXYZ to CIEuvY
+      */
+ static XcmsConversionProc Fl_CIEXYZ_to_CIEuvY[] = {
+-    LORE_FDG_16_4(XcmsCIEXYZToCIEuvY),
++    XcmsCIEXYZToCIEuvY,
+     NULL
+ };
+ 
+@@ -103,7 +103,7 @@ XcmsColorSpace	XcmsCIEuvYColorSpace =
+     {
+ 	_XcmsCIEuvY_prefix,		/* prefix */
+ 	XcmsCIEuvYFormat,		/* id */
+-	LORE_FDG_3_8(CIEuvY_ParseString),	/* parseString */
++	CIEuvY_ParseString,	/* parseString */
+ 	Fl_CIEuvY_to_CIEXYZ,	/* to_CIEXYZ */
+ 	Fl_CIEXYZ_to_CIEuvY,	/* from_CIEXYZ */
+ 	1
+diff --git a/src/xcms/xyY.c b/src/xcms/xyY.c
+index 6718dfd..2a45e3a 100644
+--- a/src/xcms/xyY.c
++++ b/src/xcms/xyY.c
+@@ -78,7 +78,7 @@ static Status XcmsCIExyY_ValidSpec(XcmsColor *pColor);
+      * NULL terminated list of functions applied to get from CIExyY to CIEXYZ
+      */
+ static XcmsConversionProc Fl_CIExyY_to_CIEXYZ[] = {
+-    LORE_FDG_16_9(XcmsCIExyYToCIEXYZ),
++    XcmsCIExyYToCIEXYZ,
+     NULL
+ };
+ 
+@@ -86,7 +86,7 @@ static XcmsConversionProc Fl_CIExyY_to_CIEXYZ[] = {
+      * NULL terminated list of functions applied to get from CIEXYZ to CIExyY
+      */
+ static XcmsConversionProc Fl_CIEXYZ_to_CIExyY[] = {
+-    LORE_FDG_16_5(XcmsCIEXYZToCIExyY),
++    XcmsCIEXYZToCIExyY,
+     NULL
+ };
+ 
+@@ -102,7 +102,7 @@ XcmsColorSpace	XcmsCIExyYColorSpace =
+     {
+ 	_XcmsCIExyY_prefix,	/* prefix */
+ 	XcmsCIExyYFormat,		/* id */
+-	LORE_FDG_3_9(CIExyY_ParseString),	/* parseString */
++	CIExyY_ParseString,	/* parseString */
+ 	Fl_CIExyY_to_CIEXYZ,	/* to_CIEXYZ */
+ 	Fl_CIEXYZ_to_CIExyY,	/* from_CIEXYZ */
+ 	1
+diff --git a/src/xkb/XKB.c b/src/xkb/XKB.c
+index ffd4a59..88b5426 100644
+--- a/src/xkb/XKB.c
++++ b/src/xkb/XKB.c
+@@ -41,8 +41,8 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ #include <X11/extensions/XKBproto.h>
+ #include "XKBlibint.h"
+ 
+-XkbInternAtomFunc       _XkbInternAtomFunc  = LORE_FDG_22_1(XInternAtom);
+-XkbGetAtomNameFunc      _XkbGetAtomNameFunc = LORE_FDG_1_1(XGetAtomName);
++XkbInternAtomFunc       _XkbInternAtomFunc  = XInternAtom;
++XkbGetAtomNameFunc      _XkbGetAtomNameFunc = XGetAtomName;
+ 
+ Bool
+ XkbQueryExtension(Display *dpy,
+@@ -778,8 +778,8 @@ XkbOpenDisplay(_Xconst char *name,
+ void
+ XkbSetAtomFuncs(XkbInternAtomFunc getAtom, XkbGetAtomNameFunc getName)
+ {
+-    _XkbInternAtomFunc = (getAtom ? getAtom : LORE_FDG_22_1(XInternAtom));
+-    _XkbGetAtomNameFunc = (getName ? getName : LORE_FDG_1_1(XGetAtomName));
++    _XkbInternAtomFunc = (getAtom ? getAtom : XInternAtom);
++    _XkbGetAtomNameFunc = (getName ? getName : XGetAtomName);
+     return;
+ }
+ 
+diff --git a/src/xlibi18n/lcRM.c b/src/xlibi18n/lcRM.c
+index 499d392..5e14c1a 100644
+--- a/src/xlibi18n/lcRM.c
++++ b/src/xlibi18n/lcRM.c
+@@ -98,11 +98,11 @@ ub_destroy(
+ }
+ 
+ static const XrmMethodsRec ub_methods = {
+-    LORE_FDG_24_14(ub_mbinit),
++    ub_mbinit,
+     ub_mbchar,
+-    LORE_FDG_24_15(ub_mbfinish),
++    ub_mbfinish,
+     ub_lcname,
+-    LORE_FDG_24_16(ub_destroy)
++    ub_destroy
+ };
+ 
+ /* ======================= Multibyte implementation ======================= */
+@@ -190,11 +190,11 @@ mb_destroy(
+ }
+ 
+ static const XrmMethodsRec mb_methods = {
+-    LORE_FDG_24_11(mb_mbinit),
++    mb_mbinit,
+     mb_mbchar,
+-    LORE_FDG_24_12(mb_mbfinish),
++    mb_mbfinish,
+     mb_lcname,
+-    LORE_FDG_24_13(mb_destroy)
++    mb_destroy
+ };
+ 
+ /* ======================= Exported function ======================= */

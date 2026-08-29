@@ -1,0 +1,30 @@
+{
+  "name": "libx11",
+  "version": "1.8.7",
+  "description": "libX11 build used by the Lorelei AE X11 evaluation",
+  "homepage": "https://www.x.org/wiki/",
+  "license": "MIT",
+  "supports": "linux",
+  "dependencies": [
+    "libxcb",
+    {
+      "name": "libxslt",
+      "host": true,
+      "default-features": false,
+      "features": [
+        "tools"
+      ]
+    },
+    {
+      "name": "vcpkg-make",
+      "host": true
+    },
+    "xtrans",
+    "xproto"
+  ],
+  "features": {
+    "hlr": {
+      "description": "Rewrite libX11.so.6 with Lorelei HLR"
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "libunibreak",
+  "version": "7.0",
+  "description": "Pinned libunibreak shared library for the Lorelei AE",
+  "homepage": "https://github.com/adah1972/libunibreak",
+  "license": "Zlib",
+  "supports": "linux",
+  "dependencies": [
+    {
+      "name": "vcpkg-make",
+      "host": true
+    }
+  ]
+}

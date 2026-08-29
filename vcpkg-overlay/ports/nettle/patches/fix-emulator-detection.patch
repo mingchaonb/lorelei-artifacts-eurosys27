@@ -1,0 +1,12 @@
+diff --git a/run-tests b/run-tests
+index f72fcdb..7149c30 100755
+--- a/run-tests
++++ b/run-tests
+@@ -75,6 +75,6 @@ test_program () {
+   testname=$(basename "$1" .exe)
+   testname=$(basename "$testname" -test)
+-  if [ -z "$EMULATOR" ] || head -1 "$1" | grep '^#!' > /dev/null; then
++  if [ -z "$EMULATOR" ] || [ "$(head -c 2 "$1")" = '#!' ]; then
+     "$1" $testflags
+   else
+     $EMULATOR "$1" $testflags

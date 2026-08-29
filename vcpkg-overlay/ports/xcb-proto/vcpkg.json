@@ -1,0 +1,14 @@
+{
+  "name": "xcb-proto",
+  "version": "1.15",
+  "description": "Protocol descriptions matching the Ubuntu 24.04 libxcb source release",
+  "homepage": "https://xcb.freedesktop.org/",
+  "license": "MIT AND MIT-open-group AND X11-distribute-modifications-variant",
+  "supports": "linux",
+  "dependencies": [
+    {
+      "name": "vcpkg-make",
+      "host": true
+    }
+  ]
+}

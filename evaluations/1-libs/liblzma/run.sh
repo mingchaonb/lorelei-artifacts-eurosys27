@@ -116,7 +116,8 @@ for pattern in "${patterns[@]}"; do
   { echo '[Function]'; cat "$audit/used-functions.txt"; } >"$audit/Symbols.conf"
   [[ -s $audit/used-functions.txt ]] || { echo "No tested functions found for $lib_name" >&2; exit 1; }
   thunk="$work/thunks/$lib_name"
-  version_map=$(find "$work/vcpkg/native/buildtrees/liblzma/src" -path '*/src/liblzma/liblzma_linux.map' | head -1)
+  version_map=$native_suite/metadata/liblzma_linux.map
+  [[ -f $version_map ]] || { echo "Installed liblzma version map not found: $version_map" >&2; exit 1; }
   run_logged "$run_dir/logs/preparation/thunk-$lib_name.log" "$devkit/bin/LoreMakeThunk.py" --name "$lib_name" --out "$thunk" --lib "$host_lib" --symbols "$audit/Symbols.conf" --desc "$overlay_dir/ports/liblzma/lorelei/Desc.h" --gtl-alias "$(basename "$host_lib")" --gtl-arg="-Wl,--version-script=$version_map" --gtl-arg=-Wl,--undefined-version --devkit "$devkit" --keep-intermediates -- -I"$hecate_prefix/include"
   cp "$thunk/.gen/$lib_name/ThunkStat.json" "$audit/ThunkStat.json"
   thunk_host+=("$thunk")
