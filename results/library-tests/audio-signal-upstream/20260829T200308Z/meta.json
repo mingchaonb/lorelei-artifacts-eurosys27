@@ -1,0 +1,8 @@
+{
+  "created_utc": "2026-08-29T20:03:08Z",
+  "mechanism": "TLC Only",
+  "qemu": "/home/functioner/Documents/rover2024/qemu-ae/build/qemu-x86_64",
+  "scope": "audio-and-signal-upstream-tests",
+  "schema_version": 1,
+  "test_gate": "x64 upstream test executable calls an ARM64 shared DSO through a Hecate guest thunk"
+}

@@ -1,0 +1,69 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 74fdbe7..ab1e0db 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -185,6 +185,10 @@ if(BUILD_TESTING)
+         include
+         ${CMAKE_CURRENT_BINARY_DIR}/include
+     )
++    if(BUILD_SHARED_LIBS)
++        target_compile_definitions(test_bitwise PRIVATE OGG_SELFTEST_EXTERNAL)
++        target_link_libraries(test_bitwise PRIVATE ogg)
++    endif()
+     add_test(NAME test_bitwise COMMAND $<TARGET_FILE:test_bitwise>)
+ 
+     add_executable(test_framing src/framing.c ${OGG_HEADERS})
+@@ -193,6 +197,10 @@ if(BUILD_TESTING)
+         include
+         ${CMAKE_CURRENT_BINARY_DIR}/include
+     )
++    if(BUILD_SHARED_LIBS)
++        target_compile_definitions(test_framing PRIVATE OGG_SELFTEST_EXTERNAL)
++        target_link_libraries(test_framing PRIVATE ogg)
++    endif()
+     add_test(NAME test_framing COMMAND $<TARGET_FILE:test_framing>)
+ endif()
+ 
+diff --git a/src/bitwise.c b/src/bitwise.c
+index dd798f7..4ef36fd 100644
+--- a/src/bitwise.c
++++ b/src/bitwise.c
+@@ -37,5 +37,7 @@ static const unsigned int mask8B[]=
+ {0x00,0x80,0xc0,0xe0,0xf0,0xf8,0xfc,0xfe,0xff};
+ 
++#ifndef OGG_SELFTEST_EXTERNAL
++
+ void oggpack_writeinit(oggpack_buffer *b){
+   memset(b,0,sizeof(*b));
+   b->ptr=b->buffer=_ogg_malloc(BUFFER_INCREMENT);
+@@ -528,6 +530,8 @@ unsigned char *oggpackB_get_buffer(oggpack_buffer *b){
+   return oggpack_get_buffer(b);
+ }
+ 
++#endif
++
+ /* Self test of the bitwise routines; everything else is based on
+    them, so they damned well better be solid. */
+ 
+diff --git a/src/framing.c b/src/framing.c
+index 2462727..9fe9ace 100644
+--- a/src/framing.c
++++ b/src/framing.c
+@@ -29,6 +29,8 @@
+ 
+ /* A complete description of Ogg framing exists in docs/framing.html */
+ 
++#ifndef OGG_SELFTEST_EXTERNAL
++
+ int ogg_page_version(const ogg_page *og){
+   return((int)(og->header[4]));
+ }
+@@ -1010,6 +1012,8 @@ void ogg_packet_clear(ogg_packet *op) {
+   memset(op, 0, sizeof(*op));
+ }
+ 
++#endif
++
+ #ifdef _V_SELFTEST
+ #include <stdio.h>
+ 

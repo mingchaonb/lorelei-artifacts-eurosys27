@@ -1,0 +1,109 @@
+--- a/tests/stdio_test.c
++++ b/tests/stdio_test.c
+@@ -84,13 +84,17 @@
+ 
+ static void
+ stdio_test (const char *filetype)
+-{	static char buffer [256] ;
++{	static char buffer [4096] ;
++	const char *runner = getenv ("SNDFILE_TEST_RUNNER") ;
+ 
+ 	int file_size, retval ;
+ 
++	if (runner == NULL)
++		runner = "" ;
++
+ 	print_test_name ("stdio_test", filetype) ;
+ 
+-	snprintf (buffer, sizeof (buffer), "./tests/stdout_test %s > stdio.%s", filetype, filetype) ;
++	snprintf (buffer, sizeof (buffer), "%s ./tests/stdout_test %s > stdio.%s", runner, filetype, filetype) ;
+ 	if ((retval = system (buffer)))
+ 	{	retval = WIFEXITED (retval) ? WEXITSTATUS (retval) : 1 ;
+ 		printf ("%s : %s", buffer, (strerror (retval))) ;
+@@ -103,7 +107,7 @@
+ 		exit (1) ;
+ 		} ;
+ 
+-	snprintf (buffer, sizeof (buffer), "./tests/stdin_test %s < stdio.%s", filetype, filetype) ;
++	snprintf (buffer, sizeof (buffer), "%s ./tests/stdin_test %s < stdio.%s", runner, filetype, filetype) ;
+ 	if ((retval = system (buffer)))
+ 	{	retval = WIFEXITED (retval) ? WEXITSTATUS (retval) : 1 ;
+ 		printf ("%s : %s", buffer, (strerror (retval))) ;
+--- a/tests/pipe_test.c
++++ b/tests/pipe_test.c
+@@ -114,13 +114,17 @@
+ static void
+ pipe_read_test (int filetype, const char *ext)
+ {	static short data [PIPE_TEST_LEN] ;
+-	static char buffer [256] ;
++	static char buffer [4096] ;
+ 	static char filename [256] ;
++	const char *runner = getenv ("SNDFILE_TEST_RUNNER") ;
+ 
+ 	SNDFILE	*outfile ;
+ 	SF_INFO sfinfo ;
+ 	int k, retval ;
+ 
++	if (runner == NULL)
++		runner = "" ;
++
+ 	snprintf (filename, sizeof (filename), "pipe_in.%s", ext) ;
+ 	print_test_name ("pipe_read_test", filename) ;
+ 
+@@ -136,7 +140,7 @@
+ 	test_writef_short_or_die (outfile, 0, data, PIPE_TEST_LEN, __LINE__) ;
+ 	sf_close (outfile) ;
+ 
+-	snprintf (buffer, sizeof (buffer), "cat %s | ./tests/stdin_test %s ", filename, ext) ;
++	snprintf (buffer, sizeof (buffer), "cat %s | %s ./tests/stdin_test %s ", filename, runner, ext) ;
+ 	if ((retval = system (buffer)) != 0)
+ 	{	retval = WEXITSTATUS (retval) ;
+ 		printf ("\n\n    Line %d : pipe test returned error for file type \"%s\".\n\n", __LINE__, ext) ;
+@@ -151,13 +155,17 @@
+ 
+ static void
+ pipe_write_test (const char *ext)
+-{	static char buffer [256] ;
++{	static char buffer [4096] ;
++	const char *runner = getenv ("SNDFILE_TEST_RUNNER") ;
+ 
+ 	int retval ;
+ 
++	if (runner == NULL)
++		runner = "" ;
++
+ 	print_test_name ("pipe_write_test", ext) ;
+ 
+-	snprintf (buffer, sizeof (buffer), "./tests/stdout_test %s | ./tests/stdin_test %s ", ext, ext) ;
++	snprintf (buffer, sizeof (buffer), "%s ./tests/stdout_test %s | %s ./tests/stdin_test %s ", runner, ext, runner, ext) ;
+ 	if ((retval = system (buffer)))
+ 	{	retval = WEXITSTATUS (retval) ;
+ 		printf ("\n\n     Line %d : pipe test returned error file type \"%s\".\n\n", __LINE__, ext) ;
+@@ -472,13 +480,17 @@
+ 
+ 		if (1)
+ 		{	static short data [PIPE_TEST_LEN] ;
+-			static char buffer [256] ;
++			static char buffer [4096] ;
+ 			static const char *filename = "pipe_in.dat" ;
++			const char *runner = getenv ("SNDFILE_TEST_RUNNER") ;
+ 
+ 			SNDFILE	*outfile ;
+ 			SF_INFO sfinfo ;
+ 			int retval ;
+ 
++			if (runner == NULL)
++				runner = "" ;
++
+ 			memset (&sfinfo, 0, sizeof (sfinfo)) ;
+ 			sfinfo.format = info.format | SF_FORMAT_PCM_16 ;
+ 			sfinfo.channels = 1 ;
+@@ -488,7 +500,7 @@
+ 			test_writef_short_or_die (outfile, 0, data, PIPE_TEST_LEN, __LINE__) ;
+ 			sf_close (outfile) ;
+ 
+-			snprintf (buffer, sizeof (buffer), "cat %s | ./tests/stdin_test %s %d ", filename, info.extension, PIPE_TEST_LEN) ;
++			snprintf (buffer, sizeof (buffer), "cat %s | %s ./tests/stdin_test %s %d ", filename, runner, info.extension, PIPE_TEST_LEN) ;
+ 			if ((retval = system (buffer)) == 0)
+ 			{	retval = WEXITSTATUS (retval) ;
+ 				printf ("\n\n     Line %d : pipe test should have returned error file type \"%s\" but didn't.\n\n", __LINE__, info.name) ;

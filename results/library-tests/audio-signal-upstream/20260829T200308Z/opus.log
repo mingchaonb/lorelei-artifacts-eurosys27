@@ -1,0 +1,287 @@
+RUN test_opus_decode
+Testing libopus unknown decoder. Random seed: 3362929743 (408C)
+  Starting 10 decoders...
+    opus_decoder_create(48000,1) OK. Copy OK.
+    opus_decoder_create(48000,2) OK. Copy OK.
+    opus_decoder_create(24000,1) OK. Copy OK.
+    opus_decoder_create(24000,2) OK. Copy OK.
+    opus_decoder_create(16000,1) OK. Copy OK.
+    opus_decoder_create(16000,2) OK. Copy OK.
+    opus_decoder_create(12000,1) OK. Copy OK.
+    opus_decoder_create(12000,2) OK. Copy OK.
+    opus_decoder_create( 8000,1) OK. Copy OK.
+    opus_decoder_create( 8000,2) OK. Copy OK.
+  dec[all] initial frame PLC OK.
+  dec[all] all 2-byte prefix for length 3 and PLC, all modes (64) OK.
+  dec[  0] all 3-byte prefix for length 4, mode 16 OK.
+  dec[  6] all 3-byte prefix for length 4, mode  4 OK.
+  dec[all] random packets, all modes (64), every 8th size from from 4 bytes to maximum OK.
+  dec[all] random packets, all mode pairs (4096), 86 bytes/frame OK.
+  dec[  3] random packets, all mode pairs (4096)*10, 94 bytes/frame OK.
+  dec[  0] pre-selected random packets OK.
+  Decoders stopped.
+  Testing opus_pcm_soft_clip... OK.
+PASS test_opus_decode
+RUN test_opus_padding
+Testing libopus unknown padding.
+  Checking for padding overflow... OK.
+All padding tests passed.
+PASS test_opus_padding
+RUN test_opus_api
+Testing the libopus unknown API deterministically
+
+  Decoder basic API tests
+  ---------------------------------------------------
+    opus_decoder_get_size(0)=0 ................... OK.
+    opus_decoder_get_size(1)=18260 ............... OK.
+    opus_decoder_get_size(2)=27028 ............... OK.
+    opus_decoder_get_size(3)=0 ................... OK.
+    opus_decoder_create() ........................ OK.
+    opus_decoder_init() .......................... OK.
+    OPUS_GET_FINAL_RANGE ......................... OK.
+    OPUS_UNIMPLEMENTED ........................... OK.
+    OPUS_GET_BANDWIDTH ........................... OK.
+    OPUS_GET_SAMPLE_RATE ......................... OK.
+    OPUS_GET_PITCH ............................... OK.
+    OPUS_GET_LAST_PACKET_DURATION ................ OK.
+    OPUS_SET_GAIN ................................ OK.
+    OPUS_GET_GAIN ................................ OK.
+    OPUS_RESET_STATE ............................. OK.
+    opus_{packet,decoder}_get_nb_samples() ....... OK.
+    opus_packet_get_nb_frames() .................. OK.
+    opus_packet_get_bandwidth() .................. OK.
+    opus_packet_get_samples_per_frame() .......... OK.
+    opus_decode() ................................ OK.
+    opus_decode_float() .......................... OK.
+                   All decoder interface tests passed
+                             (1219433 API invocations)
+
+  Multistream decoder basic API tests
+  ---------------------------------------------------
+    opus_multistream_decoder_get_size(-1,-1)=0 ... OK.
+    opus_multistream_decoder_get_size(-1, 0)=0 ... OK.
+    opus_multistream_decoder_get_size(-1, 1)=0 ... OK.
+    opus_multistream_decoder_get_size(-1, 2)=0 ... OK.
+    opus_multistream_decoder_get_size(-1, 3)=0 ... OK.
+    opus_multistream_decoder_get_size( 0,-1)=0 ... OK.
+    opus_multistream_decoder_get_size( 0, 0)=0 ... OK.
+    opus_multistream_decoder_get_size( 0, 1)=0 ... OK.
+    opus_multistream_decoder_get_size( 0, 2)=0 ... OK.
+    opus_multistream_decoder_get_size( 0, 3)=0 ... OK.
+    opus_multistream_decoder_get_size( 1,-1)=0 ... OK.
+    opus_multistream_decoder_get_size( 1, 0)=18536 OK.
+    opus_multistream_decoder_get_size( 1, 1)=27304 OK.
+    opus_multistream_decoder_get_size( 1, 2)=0 ... OK.
+    opus_multistream_decoder_get_size( 1, 3)=0 ... OK.
+    opus_multistream_decoder_get_size( 2,-1)=0 ... OK.
+    opus_multistream_decoder_get_size( 2, 0)=36800 OK.
+    opus_multistream_decoder_get_size( 2, 1)=45568 OK.
+    opus_multistream_decoder_get_size( 2, 2)=54336 OK.
+    opus_multistream_decoder_get_size( 2, 3)=0 ... OK.
+    opus_multistream_decoder_get_size( 3,-1)=0 ... OK.
+    opus_multistream_decoder_get_size( 3, 0)=55064 OK.
+    opus_multistream_decoder_get_size( 3, 1)=63832 OK.
+    opus_multistream_decoder_get_size( 3, 2)=72600 OK.
+    opus_multistream_decoder_get_size( 3, 3)=81368 OK.
+    opus_multistream_decoder_create() ............ OK.
+    opus_multistream_decoder_init() .............. OK.
+    OPUS_GET_FINAL_RANGE ......................... OK.
+    OPUS_MULTISTREAM_GET_DECODER_STATE ........... OK.
+    OPUS_SET_GAIN ................................ OK.
+    OPUS_GET_GAIN ................................ OK.
+    OPUS_GET_BANDWIDTH ........................... OK.
+    OPUS_UNIMPLEMENTED ........................... OK.
+    OPUS_RESET_STATE ............................. OK.
+    opus_multistream_decode() .................... OK.
+    opus_multistream_decode_float() .............. OK.
+       All multistream decoder interface tests passed
+                             (576106 API invocations)
+
+  Packet header parsing tests
+  ---------------------------------------------------
+    code 0 (65 cases) ............................ OK.
+    code 1 (163456 cases) ........................ OK.
+    code 2 (326528 cases) ........................ OK.
+    code 3 m-truncation (64 cases) ............... OK.
+    code 3 m=0,49-64 (4096 cases) ................ OK.
+    code 3 m=1 CBR (81728 cases) ................. OK.
+    code 3 m=1-48 CBR (103544448 cases) .......... OK.
+    code 3 m=1-48 VBR (120832 cases) ............. OK.
+    code 3 padding (1519448 cases) ..........
+All API tests passed.
+The libopus API was invoked 115421979 times.
+..... OK.
+    opus_packet_parse ............................ OK.
+                      All packet parsing tests passed
+                          (105760666 API invocations)
+
+  Encoder basic API tests
+  ---------------------------------------------------
+    opus_encoder_get_size(0)=0 ................... OK.
+    opus_encoder_get_size(1)=43580 ............... OK.
+    opus_encoder_get_size(2)=48492 ............... OK.
+    opus_encoder_get_size(3)=0 ................... OK.
+    opus_encoder_create() ........................ OK.
+    opus_encoder_init() .......................... OK.
+    OPUS_GET_LOOKAHEAD ........................... OK.
+    OPUS_GET_SAMPLE_RATE ......................... OK.
+    OPUS_UNIMPLEMENTED ........................... OK.
+    OPUS_SET_APPLICATION ......................... OK.
+    OPUS_GET_APPLICATION ......................... OK.
+    OPUS_SET_BITRATE ............................. OK.
+    OPUS_GET_BITRATE ............................. OK.
+    OPUS_SET_FORCE_CHANNELS ...................... OK.
+    OPUS_GET_FORCE_CHANNELS ...................... OK.
+    OPUS_SET_BANDWIDTH ........................... OK.
+    OPUS_GET_BANDWIDTH ........................... OK.
+    OPUS_SET_MAX_BANDWIDTH ....................... OK.
+    OPUS_GET_MAX_BANDWIDTH ....................... OK.
+    OPUS_SET_DTX ................................. OK.
+    OPUS_GET_DTX ................................. OK.
+    OPUS_SET_COMPLEXITY .......................... OK.
+    OPUS_GET_COMPLEXITY .......................... OK.
+    OPUS_SET_INBAND_FEC .......................... OK.
+    OPUS_GET_INBAND_FEC .......................... OK.
+    OPUS_SET_PACKET_LOSS_PERC .................... OK.
+    OPUS_GET_PACKET_LOSS_PERC .................... OK.
+    OPUS_SET_VBR ................................. OK.
+    OPUS_GET_VBR ................................. OK.
+    OPUS_SET_VBR_CONSTRAINT ...................... OK.
+    OPUS_GET_VBR_CONSTRAINT ...................... OK.
+    OPUS_SET_SIGNAL .............................. OK.
+    OPUS_GET_SIGNAL .............................. OK.
+    OPUS_SET_LSB_DEPTH ........................... OK.
+    OPUS_GET_LSB_DEPTH ........................... OK.
+    OPUS_SET_PREDICTION_DISABLED ................. OK.
+    OPUS_GET_PREDICTION_DISABLED ................. OK.
+    OPUS_SET_EXPERT_FRAME_DURATION ............... OK.
+    OPUS_GET_EXPERT_FRAME_DURATION ............... OK.
+    OPUS_GET_FINAL_RANGE ......................... OK.
+    OPUS_RESET_STATE ............................. OK.
+    opus_encode() ................................ OK.
+    opus_encode_float() .......................... OK.
+                   All encoder interface tests passed
+                             (1152209 API invocations)
+
+  Repacketizer tests
+  ---------------------------------------------------
+    opus_repacketizer_get_size()=1072 ............. OK.
+    opus_repacketizer_init ....................... OK.
+    opus_repacketizer_create ..................... OK.
+    opus_repacketizer_get_nb_frames .............. OK.
+    opus_repacketizer_cat ........................ OK.
+    opus_repacketizer_out ........................ OK.
+    opus_repacketizer_out_range .................. OK.
+    opus_packet_pad .............................. OK.
+    opus_packet_unpad ............................ OK.
+    opus_multistream_packet_pad .................. OK.
+    opus_multistream_packet_unpad ................ OK.
+                        All repacketizer tests passed
+                            (6713561 API invocations)
+
+  malloc() failure tests
+  ---------------------------------------------------
+    opus_decoder_create() ................... SKIPPED.
+    opus_encoder_create() ................... SKIPPED.
+    opus_repacketizer_create() .............. SKIPPED.
+    opus_multistream_decoder_create() ....... SKIPPED.
+    opus_multistream_encoder_create() ....... SKIPPED.
+(Test only supported with GLIBC and without valgrind)
+PASS test_opus_api
+RUN test_opus_encode
+Testing libopus unknown encoder. Random seed: 3695393902 (689E)
+Running simple tests for bugs that have been fixed previously
+  Encode+Decode tests.
+    Mode     LP FB encode  VBR,  11490 bps OK.
+    Mode     LP FB encode  VBR,  14069 bps OK.
+    Mode     LP FB encode  VBR,  75677 bps OK.
+    Mode Hybrid FB encode  VBR,  24403 bps OK.
+    Mode Hybrid FB encode  VBR,  44916 bps OK.
+    Mode Hybrid FB encode  VBR,  71284 bps OK.
+    Mode Hybrid FB encode  VBR, 118820 bps OK.
+    Mode   MDCT FB encode  VBR, 519934 bps OK.
+    Mode   MDCT FB encode  VBR,  19832 bps OK.
+    Mode   MDCT FB encode  VBR,  30296 bps OK.
+    Mode   MDCT FB encode  VBR,  48122 bps OK.
+    Mode   MDCT FB encode  VBR, 119189 bps OK.
+    Mode   MDCT FB encode  VBR, 131483 bps OK.
+    Mode     LP FB encode CVBR,   7320 bps OK.
+    Mode     LP FB encode CVBR,  16573 bps OK.
+    Mode     LP FB encode CVBR,  85385 bps OK.
+    Mode Hybrid FB encode CVBR,  31093 bps OK.
+    Mode Hybrid FB encode CVBR,  52702 bps OK.
+    Mode Hybrid FB encode CVBR,  87897 bps OK.
+    Mode Hybrid FB encode CVBR, 100282 bps OK.
+    Mode   MDCT FB encode CVBR, 536533 bps OK.
+    Mode   MDCT FB encode CVBR,  23288 bps OK.
+    Mode   MDCT FB encode CVBR,  40299 bps OK.
+    Mode   MDCT FB encode CVBR,  78735 bps OK.
+    Mode   MDCT FB encode CVBR,  71614 bps OK.
+    Mode   MDCT FB encode CVBR, 139079 bps OK.
+    Mode     LP FB encode  CBR,   7746 bps OK.
+    Mode     LP FB encode  CBR,  20522 bps OK.
+    Mode     LP FB encode  CBR,  90008 bps OK.
+    Mode Hybrid FB encode  CBR,  21446 bps OK.
+    Mode Hybrid FB encode  CBR,  42237 bps OK.
+    Mode Hybrid FB encode  CBR,  50775 bps OK.
+    Mode Hybrid FB encode  CBR, 113804 bps OK.
+    Mode   MDCT FB encode  CBR, 595973 bps OK.
+    Mode   MDCT FB encode  CBR,  21141 bps OK.
+    Mode   MDCT FB encode  CBR,  43630 bps OK.
+    Mode   MDCT FB encode  CBR,  94371 bps OK.
+    Mode   MDCT FB encode  CBR, 115831 bps OK.
+    Mode   MDCT FB encode  CBR, 147071 bps OK.
+    Mode     LP NB dual-mono MS encode  VBR,   5042 bps OK.
+    Mode     LP NB dual-mono MS encode  VBR,  15051 bps OK.
+    Mode     LP NB dual-mono MS encode  VBR,  60579 bps OK.
+    Mode     LP NB dual-mono MS encode  VBR,  14835 bps OK.
+    Mode     LP NB dual-mono MS encode  VBR,  19108 bps OK.
+    Mode     LP NB dual-mono MS encode  VBR,  63641 bps OK.
+    Mode     LP NB dual-mono MS encode  VBR,  87266 bps OK.
+    Mode     LP NB dual-mono MS encode  VBR,  92066 bps OK.
+    Mode   MDCT NB dual-mono MS encode  VBR,   6426 bps OK.
+    Mode   MDCT NB dual-mono MS encode  VBR,  16582 bps OK.
+    Mode   MDCT NB dual-mono MS encode  VBR,  32473 bps OK.
+    Mode   MDCT NB dual-mono MS encode  VBR,  15964 bps OK.
+    Mode   MDCT NB dual-mono MS encode  VBR,  27474 bps OK.
+    Mode   MDCT NB dual-mono MS encode  VBR,  59407 bps OK.
+    Mode   MDCT NB dual-mono MS encode  VBR,  65772 bps OK.
+    Mode   MDCT NB dual-mono MS encode  VBR, 173289 bps OK.
+    Mode     LP NB dual-mono MS encode CVBR,   4615 bps OK.
+    Mode     LP NB dual-mono MS encode CVBR,  16348 bps OK.
+    Mode     LP NB dual-mono MS encode CVBR,  58907 bps OK.
+    Mode     LP NB dual-mono MS encode CVBR,  12375 bps OK.
+    Mode     LP NB dual-mono MS encode CVBR,  23990 bps OK.
+    Mode     LP NB dual-mono MS encode CVBR,  38117 bps OK.
+    Mode     LP NB dual-mono MS encode CVBR,  81322 bps OK.
+    Mode     LP NB dual-mono MS encode CVBR, 125299 bps OK.
+    Mode   MDCT NB dual-mono MS encode CVBR,   7813 bps OK.
+    Mode   MDCT NB dual-mono MS encode CVBR,  19874 bps OK.
+    Mode   MDCT NB dual-mono MS encode CVBR,  62517 bps OK.
+    Mode   MDCT NB dual-mono MS encode CVBR,  12207 bps OK.
+    Mode   MDCT NB dual-mono MS encode CVBR,  27375 bps OK.
+    Mode   MDCT NB dual-mono MS encode CVBR,  55927 bps OK.
+    Mode   MDCT NB dual-mono MS encode CVBR,  88999 bps OK.
+    Mode   MDCT NB dual-mono MS encode CVBR, 153789 bps OK.
+    Mode     LP NB dual-mono MS encode  CBR,   5483 bps OK.
+    Mode     LP NB dual-mono MS encode  CBR,  13314 bps OK.
+    Mode     LP NB dual-mono MS encode  CBR,  58581 bps OK.
+    Mode     LP NB dual-mono MS encode  CBR,  12573 bps OK.
+    Mode     LP NB dual-mono MS encode  CBR,  26472 bps OK.
+    Mode     LP NB dual-mono MS encode  CBR,  38701 bps OK.
+    Mode     LP NB dual-mono MS encode  CBR,  88948 bps OK.
+    Mode     LP NB dual-mono MS encode  CBR, 114307 bps OK.
+    Mode   MDCT NB dual-mono MS encode  CBR,   4547 bps OK.
+    Mode   MDCT NB dual-mono MS encode  CBR,  19743 bps OK.
+    Mode   MDCT NB dual-mono MS encode  CBR,  34655 bps OK.
+    Mode   MDCT NB dual-mono MS encode  CBR,  13538 bps OK.
+    Mode   MDCT NB dual-mono MS encode  CBR,  22803 bps OK.
+    Mode   MDCT NB dual-mono MS encode  CBR,  46804 bps OK.
+    Mode   MDCT NB dual-mono MS encode  CBR,  68307 bps OK.
+    Mode   MDCT NB dual-mono MS encode  CBR, 173824 bps OK.
+    All framesize pairs switching encode, 9495 frames OK.
+Running fuzz_encoder_settings with 5 encoder(s) and 40 setting change(s) each.
+Tests completed successfully.
+PASS test_opus_encode
+SKIP test_opus_extensions internal-only
+SUMMARY pass=4 skip=1

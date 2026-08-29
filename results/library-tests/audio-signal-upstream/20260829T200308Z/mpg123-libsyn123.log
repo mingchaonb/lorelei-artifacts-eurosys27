@@ -1,0 +1,1215 @@
+RUN seek_whence.sh
+End seek without (explicit) scanning: End seek with explicit scanning: length 44100 vs. pos 44100
+PASS
+length 44100 vs. pos 44100
+PASS
+PASS
+PASS seek_whence.sh
+RUN seek_accuracy.sh
+Testing library with preframes set to 10
+Channels: 2
+Collecting samples...
+Estimated length: 46080
+got sample 0 (0)
+got sample 1 (247)
+got sample 2 (494)
+got sample 3 (741)
+got sample 4 (988)
+got sample 5 (1235)
+got sample 6 (1482)
+got sample 7 (1729)
+got sample 8 (1976)
+got sample 9 (2223)
+got sample 10 (2470)
+got sample 11 (2717)
+got sample 12 (2964)
+got sample 13 (3211)
+got sample 14 (3458)
+got sample 15 (3705)
+got sample 16 (3952)
+got sample 17 (4199)
+got sample 18 (4446)
+got sample 19 (4693)
+got sample 20 (4940)
+got sample 21 (5187)
+got sample 22 (5434)
+got sample 23 (5681)
+got sample 24 (5928)
+got sample 25 (6175)
+got sample 26 (6422)
+got sample 27 (6669)
+got sample 28 (6916)
+got sample 29 (7163)
+got sample 30 (7410)
+got sample 31 (7657)
+got sample 32 (7904)
+got sample 33 (8151)
+got sample 34 (8398)
+got sample 35 (8645)
+got sample 36 (8892)
+got sample 37 (9139)
+got sample 38 (9386)
+got sample 39 (9633)
+got sample 40 (9880)
+got sample 41 (10127)
+got sample 42 (10374)
+got sample 43 (10621)
+got sample 44 (10868)
+got sample 45 (11115)
+got sample 46 (11362)
+got sample 47 (11609)
+got sample 48 (11856)
+got sample 49 (12103)
+got sample 50 (12350)
+got sample 51 (12597)
+got sample 52 (12844)
+got sample 53 (13091)
+got sample 54 (13338)
+got sample 55 (13585)
+got sample 56 (13832)
+got sample 57 (14079)
+got sample 58 (14326)
+got sample 59 (14573)
+got sample 60 (14820)
+got sample 61 (15067)
+got sample 62 (15314)
+got sample 63 (15561)
+got sample 64 (15808)
+got sample 65 (16055)
+got sample 66 (16302)
+got sample 67 (16549)
+got sample 68 (16796)
+got sample 69 (17043)
+got sample 70 (17290)
+got sample 71 (17537)
+got sample 72 (17784)
+got sample 73 (18031)
+got sample 74 (18278)
+got sample 75 (18525)
+got sample 76 (18772)
+got sample 77 (19019)
+got sample 78 (19266)
+got sample 79 (19513)
+got sample 80 (19760)
+got sample 81 (20007)
+got sample 82 (20254)
+got sample 83 (20501)
+got sample 84 (20748)
+got sample 85 (20995)
+got sample 86 (21242)
+got sample 87 (21489)
+got sample 88 (21736)
+got sample 89 (21983)
+got sample 90 (22230)
+got sample 91 (22477)
+got sample 92 (22724)
+got sample 93 (22971)
+got sample 94 (23218)
+got sample 95 (23465)
+got sample 96 (23712)
+got sample 97 (23959)
+got sample 98 (24206)
+got sample 99 (24453)
+got sample 100 (24700)
+got sample 101 (24947)
+got sample 102 (25194)
+got sample 103 (25441)
+got sample 104 (25688)
+got sample 105 (25935)
+got sample 106 (26182)
+got sample 107 (26429)
+got sample 108 (26676)
+got sample 109 (26923)
+got sample 110 (27170)
+got sample 111 (27417)
+got sample 112 (27664)
+got sample 113 (27911)
+got sample 114 (28158)
+got sample 115 (28405)
+got sample 116 (28652)
+got sample 117 (28899)
+got sample 118 (29146)
+got sample 119 (29393)
+got sample 120 (29640)
+got sample 121 (29887)
+got sample 122 (30134)
+got sample 123 (30381)
+got sample 124 (30628)
+got sample 125 (30875)
+got sample 126 (31122)
+got sample 127 (31369)
+got sample 128 (31616)
+got sample 129 (31863)
+got sample 130 (32110)
+got sample 131 (32357)
+got sample 132 (32604)
+got sample 133 (32851)
+got sample 134 (33098)
+got sample 135 (33345)
+got sample 136 (33592)
+got sample 137 (33839)
+got sample 138 (34086)
+got sample 139 (34333)
+got sample 140 (34580)
+got sample 141 (34827)
+got sample 142 (35074)
+got sample 143 (35321)
+got sample 144 (35568)
+got sample 145 (35815)
+got sample 146 (36062)
+got sample 147 (36309)
+got sample 148 (36556)
+got sample 149 (36803)
+got sample 150 (37050)
+got sample 151 (37297)
+got sample 152 (37544)
+got sample 153 (37791)
+got sample 154 (38038)
+got sample 155 (38285)
+got sample 156 (38532)
+got sample 157 (38779)
+got sample 158 (39026)
+got sample 159 (39273)
+got sample 160 (39520)
+got sample 161 (39767)
+got sample 162 (40014)
+got sample 163 (40261)
+got sample 164 (40508)
+got sample 165 (40755)
+got sample 166 (41002)
+got sample 167 (41249)
+got sample 168 (41496)
+got sample 169 (41743)
+got sample 170 (41990)
+got sample 171 (42237)
+got sample 172 (42484)
+got sample 173 (42731)
+got sample 174 (42978)
+got sample 175 (43225)
+got sample 176 (43472)
+got sample 177 (43719)
+got sample 178 (43966)
+got sample 179 (44213)
+got sample 180 (44460)
+got sample 181 (44707)
+got sample 182 (44954)
+got sample 183 (45201)
+got sample 184 (45448)
+got sample 185 (45695)
+got sample 186 (46079)
+Seeking and comparing...
+sample 0 PASS
+sample 1 PASS
+sample 2 PASS
+sample 3 PASS
+sample 4 PASS
+sample 5 PASS
+sample 6 PASS
+sample 7 PASS
+sample 8 PASS
+sample 9 PASS
+sample 10 PASS
+sample 11 PASS
+sample 12 PASS
+sample 13 PASS
+sample 14 PASS
+sample 15 PASS
+sample 16 PASS
+sample 17 PASS
+sample 18 PASS
+sample 19 PASS
+sample 20 PASS
+sample 21 PASS
+sample 22 PASS
+sample 23 PASS
+sample 24 PASS
+sample 25 PASS
+sample 26 PASS
+sample 27 PASS
+sample 28 PASS
+sample 29 PASS
+sample 30 PASS
+sample 31 PASS
+sample 32 PASS
+sample 33 PASS
+sample 34 PASS
+sample 35 PASS
+sample 36 PASS
+sample 37 PASS
+sample 38 PASS
+sample 39 PASS
+sample 40 PASS
+sample 41 PASS
+sample 42 PASS
+sample 43 PASS
+sample 44 PASS
+sample 45 PASS
+sample 46 PASS
+sample 47 PASS
+sample 48 PASS
+sample 49 PASS
+sample 50 PASS
+sample 51 PASS
+sample 52 PASS
+sample 53 PASS
+sample 54 PASS
+sample 55 PASS
+sample 56 PASS
+sample 57 PASS
+sample 58 PASS
+sample 59 PASS
+sample 60 PASS
+sample 61 PASS
+sample 62 PASS
+sample 63 PASS
+sample 64 PASS
+sample 65 PASS
+sample 66 PASS
+sample 67 PASS
+sample 68 PASS
+sample 69 PASS
+sample 70 PASS
+sample 71 PASS
+sample 72 PASS
+sample 73 PASS
+sample 74 PASS
+sample 75 PASS
+sample 76 PASS
+sample 77 PASS
+sample 78 PASS
+sample 79 PASS
+sample 80 PASS
+sample 81 PASS
+sample 82 PASS
+sample 83 PASS
+sample 84 PASS
+sample 85 PASS
+sample 86 PASS
+sample 87 PASS
+sample 88 PASS
+sample 89 PASS
+sample 90 PASS
+sample 91 PASS
+sample 92 PASS
+a little scan in between
+sample 93 PASS
+sample 94 PASS
+sample 95 PASS
+sample 96 PASS
+sample 97 PASS
+sample 98 PASS
+sample 99 PASS
+sample 100 PASS
+sample 101 PASS
+sample 102 PASS
+sample 103 PASS
+sample 104 PASS
+sample 105 PASS
+sample 106 PASS
+sample 107 PASS
+sample 108 PASS
+sample 109 PASS
+sample 110 PASS
+sample 111 PASS
+sample 112 PASS
+sample 113 PASS
+sample 114 PASS
+sample 115 PASS
+sample 116 PASS
+sample 117 PASS
+sample 118 PASS
+sample 119 PASS
+sample 120 PASS
+sample 121 PASS
+sample 122 PASS
+sample 123 PASS
+sample 124 PASS
+sample 125 PASS
+sample 126 PASS
+sample 127 PASS
+sample 128 PASS
+sample 129 PASS
+sample 130 PASS
+sample 131 PASS
+sample 132 PASS
+sample 133 PASS
+sample 134 PASS
+sample 135 PASS
+sample 136 PASS
+sample 137 PASS
+sample 138 PASS
+sample 139 PASS
+sample 140 PASS
+sample 141 PASS
+sample 142 PASS
+sample 143 PASS
+sample 144 PASS
+sample 145 PASS
+sample 146 PASS
+sample 147 PASS
+sample 148 PASS
+sample 149 PASS
+sample 150 PASS
+sample 151 PASS
+sample 152 PASS
+sample 153 PASS
+sample 154 PASS
+sample 155 PASS
+sample 156 PASS
+sample 157 PASS
+sample 158 PASS
+sample 159 PASS
+sample 160 PASS
+sample 161 PASS
+sample 162 PASS
+sample 163 PASS
+sample 164 PASS
+sample 165 PASS
+sample 166 PASS
+sample 167 PASS
+sample 168 PASS
+sample 169 PASS
+sample 170 PASS
+sample 171 PASS
+sample 172 PASS
+sample 173 PASS
+sample 174 PASS
+sample 175 PASS
+sample 176 PASS
+sample 177 PASS
+sample 178 PASS
+sample 179 PASS
+sample 180 PASS
+sample 181 PASS
+sample 182 PASS
+sample 183 PASS
+sample 184 PASS
+sample 185 PASS
+sample 186 PASS
+Check the first one again, seeking back from the end.
+sample 0 PASS
+With fresh opening (empty seek index):
+Channels: 2
+Seeking and comparing...
+sample 0 PASS
+sample 1 PASS
+sample 2 PASS
+sample 3 PASS
+sample 4 PASS
+sample 5 PASS
+sample 6 PASS
+sample 7 PASS
+sample 8 PASS
+sample 9 PASS
+sample 10 PASS
+sample 11 PASS
+sample 12 PASS
+sample 13 PASS
+sample 14 PASS
+sample 15 PASS
+sample 16 PASS
+sample 17 PASS
+sample 18 PASS
+sample 19 PASS
+sample 20 PASS
+sample 21 PASS
+sample 22 PASS
+sample 23 PASS
+sample 24 PASS
+sample 25 PASS
+sample 26 PASS
+sample 27 PASS
+sample 28 PASS
+sample 29 PASS
+sample 30 PASS
+sample 31 PASS
+sample 32 PASS
+sample 33 PASS
+sample 34 PASS
+sample 35 PASS
+sample 36 PASS
+sample 37 PASS
+sample 38 PASS
+sample 39 PASS
+sample 40 PASS
+sample 41 PASS
+sample 42 PASS
+sample 43 PASS
+sample 44 PASS
+sample 45 PASS
+sample 46 PASS
+sample 47 PASS
+sample 48 PASS
+sample 49 PASS
+sample 50 PASS
+sample 51 PASS
+sample 52 PASS
+sample 53 PASS
+sample 54 PASS
+sample 55 PASS
+sample 56 PASS
+sample 57 PASS
+sample 58 PASS
+sample 59 PASS
+sample 60 PASS
+sample 61 PASS
+sample 62 PASS
+sample 63 PASS
+sample 64 PASS
+sample 65 PASS
+sample 66 PASS
+sample 67 PASS
+sample 68 PASS
+sample 69 PASS
+sample 70 PASS
+sample 71 PASS
+sample 72 PASS
+sample 73 PASS
+sample 74 PASS
+sample 75 PASS
+sample 76 PASS
+sample 77 PASS
+sample 78 PASS
+sample 79 PASS
+sample 80 PASS
+sample 81 PASS
+sample 82 PASS
+sample 83 PASS
+sample 84 PASS
+sample 85 PASS
+sample 86 PASS
+sample 87 PASS
+sample 88 PASS
+sample 89 PASS
+sample 90 PASS
+sample 91 PASS
+sample 92 PASS
+a little scan in between
+sample 93 PASS
+sample 94 PASS
+sample 95 PASS
+sample 96 PASS
+sample 97 PASS
+sample 98 PASS
+sample 99 PASS
+sample 100 PASS
+sample 101 PASS
+sample 102 PASS
+sample 103 PASS
+sample 104 PASS
+sample 105 PASS
+sample 106 PASS
+sample 107 PASS
+sample 108 PASS
+sample 109 PASS
+sample 110 PASS
+sample 111 PASS
+sample 112 PASS
+sample 113 PASS
+sample 114 PASS
+sample 115 PASS
+sample 116 PASS
+sample 117 PASS
+sample 118 PASS
+sample 119 PASS
+sample 120 PASS
+sample 121 PASS
+sample 122 PASS
+sample 123 PASS
+sample 124 PASS
+sample 125 PASS
+sample 126 PASS
+sample 127 PASS
+sample 128 PASS
+sample 129 PASS
+sample 130 PASS
+sample 131 PASS
+sample 132 PASS
+sample 133 PASS
+sample 134 PASS
+sample 135 PASS
+sample 136 PASS
+sample 137 PASS
+sample 138 PASS
+sample 139 PASS
+sample 140 PASS
+sample 141 PASS
+sample 142 PASS
+sample 143 PASS
+sample 144 PASS
+sample 145 PASS
+sample 146 PASS
+sample 147 PASS
+sample 148 PASS
+sample 149 PASS
+sample 150 PASS
+sample 151 PASS
+sample 152 PASS
+sample 153 PASS
+sample 154 PASS
+sample 155 PASS
+sample 156 PASS
+sample 157 PASS
+sample 158 PASS
+sample 159 PASS
+sample 160 PASS
+sample 161 PASS
+sample 162 PASS
+sample 163 PASS
+sample 164 PASS
+sample 165 PASS
+sample 166 PASS
+sample 167 PASS
+sample 168 PASS
+sample 169 PASS
+sample 170 PASS
+sample 171 PASS
+sample 172 PASS
+sample 173 PASS
+sample 174 PASS
+sample 175 PASS
+sample 176 PASS
+sample 177 PASS
+sample 178 PASS
+sample 179 PASS
+sample 180 PASS
+sample 181 PASS
+sample 182 PASS
+sample 183 PASS
+sample 184 PASS
+sample 185 PASS
+sample 186 PASS
+Check the first one again, seeking back from the end.
+sample 0 PASS
+Another fresh Opening to see if first sample works:
+Channels: 2
+sample 0 PASS
+Now with NtoM resampling to 33333 Hz!Channels: 2
+Collecting samples...
+Estimated length: 34829
+got sample 0 (0)
+got sample 1 (187)
+got sample 2 (374)
+got sample 3 (561)
+got sample 4 (748)
+got sample 5 (935)
+got sample 6 (1122)
+got sample 7 (1309)
+got sample 8 (1496)
+got sample 9 (1683)
+got sample 10 (1870)
+got sample 11 (2057)
+got sample 12 (2244)
+got sample 13 (2431)
+got sample 14 (2618)
+got sample 15 (2805)
+got sample 16 (2992)
+got sample 17 (3179)
+got sample 18 (3366)
+got sample 19 (3553)
+got sample 20 (3740)
+got sample 21 (3927)
+got sample 22 (4114)
+got sample 23 (4301)
+got sample 24 (4488)
+got sample 25 (4675)
+got sample 26 (4862)
+got sample 27 (5049)
+got sample 28 (5236)
+got sample 29 (5423)
+got sample 30 (5610)
+got sample 31 (5797)
+got sample 32 (5984)
+got sample 33 (6171)
+got sample 34 (6358)
+got sample 35 (6545)
+got sample 36 (6732)
+got sample 37 (6919)
+got sample 38 (7106)
+got sample 39 (7293)
+got sample 40 (7480)
+got sample 41 (7667)
+got sample 42 (7854)
+got sample 43 (8041)
+got sample 44 (8228)
+got sample 45 (8415)
+got sample 46 (8602)
+got sample 47 (8789)
+got sample 48 (8976)
+got sample 49 (9163)
+got sample 50 (9350)
+got sample 51 (9537)
+got sample 52 (9724)
+got sample 53 (9911)
+got sample 54 (10098)
+got sample 55 (10285)
+got sample 56 (10472)
+got sample 57 (10659)
+got sample 58 (10846)
+got sample 59 (11033)
+got sample 60 (11220)
+got sample 61 (11407)
+got sample 62 (11594)
+got sample 63 (11781)
+got sample 64 (11968)
+got sample 65 (12155)
+got sample 66 (12342)
+got sample 67 (12529)
+got sample 68 (12716)
+got sample 69 (12903)
+got sample 70 (13090)
+got sample 71 (13277)
+got sample 72 (13464)
+got sample 73 (13651)
+got sample 74 (13838)
+got sample 75 (14025)
+got sample 76 (14212)
+got sample 77 (14399)
+got sample 78 (14586)
+got sample 79 (14773)
+got sample 80 (14960)
+got sample 81 (15147)
+got sample 82 (15334)
+got sample 83 (15521)
+got sample 84 (15708)
+got sample 85 (15895)
+got sample 86 (16082)
+got sample 87 (16269)
+got sample 88 (16456)
+got sample 89 (16643)
+got sample 90 (16830)
+got sample 91 (17017)
+got sample 92 (17204)
+got sample 93 (17391)
+got sample 94 (17578)
+got sample 95 (17765)
+got sample 96 (17952)
+got sample 97 (18139)
+got sample 98 (18326)
+got sample 99 (18513)
+got sample 100 (18700)
+got sample 101 (18887)
+got sample 102 (19074)
+got sample 103 (19261)
+got sample 104 (19448)
+got sample 105 (19635)
+got sample 106 (19822)
+got sample 107 (20009)
+got sample 108 (20196)
+got sample 109 (20383)
+got sample 110 (20570)
+got sample 111 (20757)
+got sample 112 (20944)
+got sample 113 (21131)
+got sample 114 (21318)
+got sample 115 (21505)
+got sample 116 (21692)
+got sample 117 (21879)
+got sample 118 (22066)
+got sample 119 (22253)
+got sample 120 (22440)
+got sample 121 (22627)
+got sample 122 (22814)
+got sample 123 (23001)
+got sample 124 (23188)
+got sample 125 (23375)
+got sample 126 (23562)
+got sample 127 (23749)
+got sample 128 (23936)
+got sample 129 (24123)
+got sample 130 (24310)
+got sample 131 (24497)
+got sample 132 (24684)
+got sample 133 (24871)
+got sample 134 (25058)
+got sample 135 (25245)
+got sample 136 (25432)
+got sample 137 (25619)
+got sample 138 (25806)
+got sample 139 (25993)
+got sample 140 (26180)
+got sample 141 (26367)
+got sample 142 (26554)
+got sample 143 (26741)
+got sample 144 (26928)
+got sample 145 (27115)
+got sample 146 (27302)
+got sample 147 (27489)
+got sample 148 (27676)
+got sample 149 (27863)
+got sample 150 (28050)
+got sample 151 (28237)
+got sample 152 (28424)
+got sample 153 (28611)
+got sample 154 (28798)
+got sample 155 (28985)
+got sample 156 (29172)
+got sample 157 (29359)
+got sample 158 (29546)
+got sample 159 (29733)
+got sample 160 (29920)
+got sample 161 (30107)
+got sample 162 (30294)
+got sample 163 (30481)
+got sample 164 (30668)
+got sample 165 (30855)
+got sample 166 (31042)
+got sample 167 (31229)
+got sample 168 (31416)
+got sample 169 (31603)
+got sample 170 (31790)
+got sample 171 (31977)
+got sample 172 (32164)
+got sample 173 (32351)
+got sample 174 (32538)
+got sample 175 (32725)
+got sample 176 (32912)
+got sample 177 (33099)
+got sample 178 (33286)
+got sample 179 (33473)
+got sample 180 (33660)
+got sample 181 (33847)
+got sample 182 (34034)
+got sample 183 (34221)
+got sample 184 (34408)
+got sample 185 (34595)
+got sample 186 (34828)
+Seeking and comparing...
+sample 0 PASS
+sample 1 PASS
+sample 2 PASS
+sample 3 PASS
+sample 4 PASS
+sample 5 PASS
+sample 6 PASS
+sample 7 PASS
+sample 8 PASS
+sample 9 PASS
+sample 10 PASS
+sample 11 PASS
+sample 12 PASS
+sample 13 PASS
+sample 14 PASS
+sample 15 PASS
+sample 16 PASS
+sample 17 PASS
+sample 18 PASS
+sample 19 PASS
+sample 20 PASS
+sample 21 PASS
+sample 22 PASS
+sample 23 PASS
+sample 24 PASS
+sample 25 PASS
+sample 26 PASS
+sample 27 PASS
+sample 28 PASS
+sample 29 PASS
+sample 30 PASS
+sample 31 PASS
+sample 32 PASS
+sample 33 PASS
+sample 34 PASS
+sample 35 PASS
+sample 36 PASS
+sample 37 PASS
+sample 38 PASS
+sample 39 PASS
+sample 40 PASS
+sample 41 PASS
+sample 42 PASS
+sample 43 PASS
+sample 44 PASS
+sample 45 PASS
+sample 46 PASS
+sample 47 PASS
+sample 48 PASS
+sample 49 PASS
+sample 50 PASS
+sample 51 PASS
+sample 52 PASS
+sample 53 PASS
+sample 54 PASS
+sample 55 PASS
+sample 56 PASS
+sample 57 PASS
+sample 58 PASS
+sample 59 PASS
+sample 60 PASS
+sample 61 PASS
+sample 62 PASS
+sample 63 PASS
+sample 64 PASS
+sample 65 PASS
+sample 66 PASS
+sample 67 PASS
+sample 68 PASS
+sample 69 PASS
+sample 70 PASS
+sample 71 PASS
+sample 72 PASS
+sample 73 PASS
+sample 74 PASS
+sample 75 PASS
+sample 76 PASS
+sample 77 PASS
+sample 78 PASS
+sample 79 PASS
+sample 80 PASS
+sample 81 PASS
+sample 82 PASS
+sample 83 PASS
+sample 84 PASS
+sample 85 PASS
+sample 86 PASS
+sample 87 PASS
+sample 88 PASS
+sample 89 PASS
+sample 90 PASS
+sample 91 PASS
+sample 92 PASS
+a little scan in between
+sample 93 PASS
+sample 94 PASS
+sample 95 PASS
+sample 96 PASS
+sample 97 PASS
+sample 98 PASS
+sample 99 PASS
+sample 100 PASS
+sample 101 PASS
+sample 102 PASS
+sample 103 PASS
+sample 104 PASS
+sample 105 PASS
+sample 106 PASS
+sample 107 PASS
+sample 108 PASS
+sample 109 PASS
+sample 110 PASS
+sample 111 PASS
+sample 112 PASS
+sample 113 PASS
+sample 114 PASS
+sample 115 PASS
+sample 116 PASS
+sample 117 PASS
+sample 118 PASS
+sample 119 PASS
+sample 120 PASS
+sample 121 PASS
+sample 122 PASS
+sample 123 PASS
+sample 124 PASS
+sample 125 PASS
+sample 126 PASS
+sample 127 PASS
+sample 128 PASS
+sample 129 PASS
+sample 130 PASS
+sample 131 PASS
+sample 132 PASS
+sample 133 PASS
+sample 134 PASS
+sample 135 PASS
+sample 136 PASS
+sample 137 PASS
+sample 138 PASS
+sample 139 PASS
+sample 140 PASS
+sample 141 PASS
+sample 142 PASS
+sample 143 PASS
+sample 144 PASS
+sample 145 PASS
+sample 146 PASS
+sample 147 PASS
+sample 148 PASS
+sample 149 PASS
+sample 150 PASS
+sample 151 PASS
+sample 152 PASS
+sample 153 PASS
+sample 154 PASS
+sample 155 PASS
+sample 156 PASS
+sample 157 PASS
+sample 158 PASS
+sample 159 PASS
+sample 160 PASS
+sample 161 PASS
+sample 162 PASS
+sample 163 PASS
+sample 164 PASS
+sample 165 PASS
+sample 166 PASS
+sample 167 PASS
+sample 168 PASS
+sample 169 PASS
+sample 170 PASS
+sample 171 PASS
+sample 172 PASS
+sample 173 PASS
+sample 174 PASS
+sample 175 PASS
+sample 176 PASS
+sample 177 PASS
+sample 178 PASS
+sample 179 PASS
+sample 180 PASS
+sample 181 PASS
+sample 182 PASS
+sample 183 PASS
+sample 184 PASS
+sample 185 PASS
+sample 186 PASS
+Check the first one again, seeking back from the end.
+sample 0 PASS
+With fresh opening (empty seek index):
+Channels: 2
+Seeking and comparing...
+sample 0 PASS
+sample 1 PASS
+sample 2 PASS
+sample 3 PASS
+sample 4 PASS
+sample 5 PASS
+sample 6 PASS
+sample 7 PASS
+sample 8 PASS
+sample 9 PASS
+sample 10 PASS
+sample 11 PASS
+sample 12 PASS
+sample 13 PASS
+sample 14 PASS
+sample 15 PASS
+sample 16 PASS
+sample 17 PASS
+sample 18 PASS
+sample 19 PASS
+sample 20 PASS
+sample 21 PASS
+sample 22 PASS
+sample 23 PASS
+sample 24 PASS
+sample 25 PASS
+sample 26 PASS
+sample 27 PASS
+sample 28 PASS
+sample 29 PASS
+sample 30 PASS
+sample 31 PASS
+sample 32 PASS
+sample 33 PASS
+sample 34 PASS
+sample 35 PASS
+sample 36 PASS
+sample 37 PASS
+sample 38 PASS
+sample 39 PASS
+sample 40 PASS
+sample 41 PASS
+sample 42 PASS
+sample 43 PASS
+sample 44 PASS
+sample 45 PASS
+sample 46 PASS
+sample 47 PASS
+sample 48 PASS
+sample 49 PASS
+sample 50 PASS
+sample 51 PASS
+sample 52 PASS
+sample 53 PASS
+sample 54 PASS
+sample 55 PASS
+sample 56 PASS
+sample 57 PASS
+sample 58 PASS
+sample 59 PASS
+sample 60 PASS
+sample 61 PASS
+sample 62 PASS
+sample 63 PASS
+sample 64 PASS
+sample 65 PASS
+sample 66 PASS
+sample 67 PASS
+sample 68 PASS
+sample 69 PASS
+sample 70 PASS
+sample 71 PASS
+sample 72 PASS
+sample 73 PASS
+sample 74 PASS
+sample 75 PASS
+sample 76 PASS
+sample 77 PASS
+sample 78 PASS
+sample 79 PASS
+sample 80 PASS
+sample 81 PASS
+sample 82 PASS
+sample 83 PASS
+sample 84 PASS
+sample 85 PASS
+sample 86 PASS
+sample 87 PASS
+sample 88 PASS
+sample 89 PASS
+sample 90 PASS
+sample 91 PASS
+sample 92 PASS
+a little scan in between
+sample 93 PASS
+sample 94 PASS
+sample 95 PASS
+sample 96 PASS
+sample 97 PASS
+sample 98 PASS
+sample 99 PASS
+sample 100 PASS
+sample 101 PASS
+sample 102 PASS
+sample 103 PASS
+sample 104 PASS
+sample 105 PASS
+sample 106 PASS
+sample 107 PASS
+sample 108 PASS
+sample 109 PASS
+sample 110 PASS
+sample 111 PASS
+sample 112 PASS
+sample 113 PASS
+sample 114 PASS
+sample 115 PASS
+sample 116 PASS
+sample 117 PASS
+sample 118 PASS
+sample 119 PASS
+sample 120 PASS
+sample 121 PASS
+sample 122 PASS
+sample 123 PASS
+sample 124 PASS
+sample 125 PASS
+sample 126 PASS
+sample 127 PASS
+sample 128 PASS
+sample 129 PASS
+sample 130 PASS
+sample 131 PASS
+sample 132 PASS
+sample 133 PASS
+sample 134 PASS
+sample 135 PASS
+sample 136 PASS
+sample 137 PASS
+sample 138 PASS
+sample 139 PASS
+sample 140 PASS
+sample 141 PASS
+sample 142 PASS
+sample 143 PASS
+sample 144 PASS
+sample 145 PASS
+sample 146 PASS
+sample 147 PASS
+sample 148 PASS
+sample 149 PASS
+sample 150 PASS
+sample 151 PASS
+sample 152 PASS
+sample 153 PASS
+sample 154 PASS
+sample 155 PASS
+sample 156 PASS
+sample 157 PASS
+sample 158 PASS
+sample 159 PASS
+sample 160 PASS
+sample 161 PASS
+sample 162 PASS
+sample 163 PASS
+sample 164 PASS
+sample 165 PASS
+sample 166 PASS
+sample 167 PASS
+sample 168 PASS
+sample 169 PASS
+sample 170 PASS
+sample 171 PASS
+sample 172 PASS
+sample 173 PASS
+sample 174 PASS
+sample 175 PASS
+sample 176 PASS
+sample 177 PASS
+sample 178 PASS
+sample 179 PASS
+sample 180 PASS
+sample 181 PASS
+sample 182 PASS
+sample 183 PASS
+sample 184 PASS
+sample 185 PASS
+sample 186 PASS
+Check the first one again, seeking back from the end.
+sample 0 PASS
+Another fresh Opening to see if first sample works:
+Channels: 2
+sample 0 PASS
+
+1to1 indexed seek errors: 0 / 187
+1to1 non-indexed seek errors: 0 / 187
+NtoM indexed seek errors: 0 / 187
+NtoM non-indexed seek errors: 0 / 187
+Errors in getting first sample again: 0
+
+Congratulations, all seeks were accurate!
+But be warned: Not _all_ sample offsets have been tested. This result just means that the basic mechanism of sample-accurate seeking seems to work.
+PASS
+PASS seek_accuracy.sh
+RUN resample_total
+PASS
+PASS resample_total
+RUN text
+Conversion of latin1: PASS
+Conversion of cp1252: PASS
+Conversion of utf8: PASS
+Conversion of utf16bom_be: PASS
+Conversion of utf16bom_le: PASS
+Conversion of utf16be: PASS
+Let's see what happens with a non-BOM little endian UTF-16 string: PASS
+Now some basic usage of chomp and strlen.
+
+PASS
+PASS text
+RUN textprint
+Testing plain ASCII world.
+string 0: PASS
+string 1: PASS
+string 2: PASS
+string 3: PASS
+Testing hacked UTF-8 world.
+string 0: PASS
+string 1: PASS
+string 2: PASS
+string 3: PASS
+Got locale, testing proper workings.
+string 0: PASS
+non-terminal non-filtering: PASS
+string 1: PASS
+non-terminal non-filtering: PASS
+string 2: PASS
+non-terminal non-filtering: PASS
+string 3: PASS
+non-terminal non-filtering: PASS
+PASS
+PASS textprint
+RUN plain_id3.sh
+PASS
+PASS plain_id3.sh
+SUMMARY pass=6

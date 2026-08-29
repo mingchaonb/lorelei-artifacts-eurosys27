@@ -1,0 +1,43 @@
+diff --git a/tests/sampledata.sh b/tests/sampledata.sh
+index f329081..cd24891 100755
+--- a/tests/sampledata.sh
++++ b/tests/sampledata.sh
+@@ -8,8 +8,17 @@ set -e
+ GRAEC="../src/graec"
+ if [ -n "$1" ]; then
+     srcdir=$1
+ fi
++
++graec () {
++    if [ -n "${LIBAEC_TEST_RUNNER:-}" ]; then
++        ${LIBAEC_TEST_RUNNER} "$GRAEC" "$@"
++    else
++        "$GRAEC" "$@"
++    fi
++}
++
+ CCSDS_DATA="${srcdir}/../data/121B2TestData"
+ ALLO="${CCSDS_DATA}/AllOptions"
+ EXTP="${CCSDS_DATA}/ExtendedParameters"
+ LOWE="${CCSDS_DATA}/LowEntropyOptions"
+@@ -19,17 +28,17 @@ filesize () {
+ }
+ 
+ decode () {
+-    "$GRAEC" -d $3 "$1" test.dat
++    graec -d $3 "$1" test.dat
+     dd if=test.dat bs=1 count=$(filesize "$2") | cmp "$2" -
+ }
+ 
+ code () {
+-    "$GRAEC" $3 "$2" test.rz
++    graec $3 "$2" test.rz
+     cmp "$1" test.rz
+ }
+ 
+ code_size () {
+-    "$GRAEC" $3 "$2" test.rz
++    graec $3 "$2" test.rz
+     if [ ! $(filesize test.rz) -eq $(filesize "$1") ]; then
+         echo "$1 size mismatch"
+         exit 1

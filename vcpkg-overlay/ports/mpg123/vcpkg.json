@@ -1,0 +1,8 @@
+{
+  "name": "mpg123",
+  "version": "1.33.7",
+  "description": "libmpg123 shared library for the Lorelei AE",
+  "homepage": "https://www.mpg123.de/",
+  "license": "LGPL-2.1-or-later",
+  "supports": "linux"
+}

@@ -1,0 +1,51 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 0d62db4..15be58a 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -386,5 +386,6 @@ if (BUILD_TESTS)
+ 
+   add_executable (bench ${fftw_libbench2_SOURCE} tests/bench.c tests/hook.c tests/fftw-bench.c)
++  target_compile_definitions (bench PRIVATE FFTW_HECATE_SHARED_TESTS=1)
+ 
+   if (ENABLE_THREADS AND NOT WITH_COMBINED_THREADS)
+     target_link_libraries (bench ${fftw3_lib}_threads)
+diff --git a/tests/bench.c b/tests/bench.c
+index 26e4425..6588163 100644
+--- a/tests/bench.c
++++ b/tests/bench.c
+@@ -13,9 +13,15 @@
+ #include <string.h>
+ #include "tests/fftw-bench.h"
+ 
++#ifdef FFTW_HECATE_SHARED_TESTS
++static const char *mkversion(void) { return "3.3.10 shared Hecate test"; }
++static const char *mkcc(void) { return "cross compiler"; }
++static const char *mkcodelet_optim(void) { return "scalar"; }
++#else
+ static const char *mkversion(void) { return FFTW(version); }
+ static const char *mkcc(void) { return FFTW(cc); }
+ static const char *mkcodelet_optim(void) { return FFTW(codelet_optim); }
++#endif
+ 
+ BEGIN_BENCH_DOC
+ BENCH_DOC("name", "fftw3")
+diff --git a/tests/hook.c b/tests/hook.c
+index 82c838c..322247f 100644
+--- a/tests/hook.c
++++ b/tests/hook.c
+@@ -12,4 +12,9 @@
+ */
+ 
++#ifdef FFTW_HECATE_SHARED_TESTS
++void install_hook(void) { }
++void uninstall_hook(void) { }
++#else
++
+ #include <stdio.h>
+ #include "libbench2/bench-user.h"
+@@ -257,3 +264,5 @@ void uninstall_hook(void)
+      planner *plnr = X(the_planner)();
+      plnr->hook = 0;
+ }
++
++#endif

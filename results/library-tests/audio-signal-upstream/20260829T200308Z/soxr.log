@@ -1,0 +1,55 @@
+RUN 1-delay-clear
+ 9599  4410     0
+    0   729  3681
+    0   629  3781
+    0   529  3881
+    0   429  3981
+    0   329  4081
+    0   229  4181
+    0   129  4281
+    0    29  4381
+    0     0  4410
+ 9599  4410     0
+    0   729  3681
+    0   629  3781
+    0   529  3881
+    0   429  3981
+    0   329  4081
+    0   229  4181
+    0   129  4281
+    0    29  4381
+    0     0  4410
+PASS 1-delay-clear
+RUN 20-bit-perfect-44100-192000
+../examples/3-options-input-fn no error; 227 clips; I/O: no error (cr32)
+20.101777
+PASS 20-bit-perfect-44100-192000
+RUN 20-bit-perfect-192000-44100
+../examples/3-options-input-fn no error; 163 clips; I/O: no error (cr32)
+20.785074
+PASS 20-bit-perfect-192000-44100
+RUN 20-bit-perfect-44100-65537
+../examples/3-options-input-fn no error; 83 clips; I/O: no error (cr32)
+20.653486
+PASS 20-bit-perfect-44100-65537
+RUN 20-bit-perfect-65537-44100
+../examples/3-options-input-fn no error; 259 clips; I/O: no error (cr32)
+20.603395
+PASS 20-bit-perfect-65537-44100
+RUN 28-bit-perfect-44100-192000
+../examples/3-options-input-fn no error; 102 clips; I/O: no error (cr64)
+29.415037
+PASS 28-bit-perfect-44100-192000
+RUN 28-bit-perfect-192000-44100
+../examples/3-options-input-fn no error; 126 clips; I/O: no error (cr64)
+30.000000
+PASS 28-bit-perfect-192000-44100
+RUN 28-bit-perfect-44100-65537
+../examples/3-options-input-fn no error; 23 clips; I/O: no error (cr64)
+29.415037
+PASS 28-bit-perfect-44100-65537
+RUN 28-bit-perfect-65537-44100
+../examples/3-options-input-fn no error; 120 clips; I/O: no error (cr64)
+30.000000
+PASS 28-bit-perfect-65537-44100
+SUMMARY pass=9

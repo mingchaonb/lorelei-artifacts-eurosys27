@@ -1,0 +1,8 @@
+{
+  "name": "libsyn123",
+  "version": "1.33.7",
+  "description": "libsyn123 DSO from mpg123 for the Lorelei AE",
+  "homepage": "https://www.mpg123.de/",
+  "license": "LGPL-2.1-or-later",
+  "supports": "linux"
+}

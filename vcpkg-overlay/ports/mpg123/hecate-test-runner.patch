@@ -1,0 +1,41 @@
+diff --git a/src/tests/plain_id3.sh b/src/tests/plain_id3.sh
+index 472964b..284424d 100755
+--- a/src/tests/plain_id3.sh
++++ b/src/tests/plain_id3.sh
+@@ -8,7 +8,11 @@ sweep="$srcdir/src/tests/sweep.mp3"
+ out=src/tests/plain_id3.out.txt
+ ref="$srcdir/src/tests/plain_id3.txt"
+ 
+-src/tests/plain_id3 "$sweep" > src/tests/plain_id3.out.txt
++if [ -n "${MPG123_TEST_RUNNER:-}" ]; then
++    ${MPG123_TEST_RUNNER} src/tests/.libs/plain_id3 "$sweep" > src/tests/plain_id3.out.txt
++else
++    src/tests/plain_id3 "$sweep" > src/tests/plain_id3.out.txt
++fi
+ 
+ if ! diff -q "$ref" "$out"; then
+   exit 1
+diff --git a/src/tests/seek_accuracy.sh b/src/tests/seek_accuracy.sh
+index 217fc3a..19339db 100755
+--- a/src/tests/seek_accuracy.sh
++++ b/src/tests/seek_accuracy.sh
+@@ -1,2 +1,6 @@
+ #!/bin/sh
+-exec src/tests/seek_accuracy "$srcdir/src/tests/sweep.mp3"
++if [ -n "${MPG123_TEST_RUNNER:-}" ]; then
++    exec ${MPG123_TEST_RUNNER} src/tests/.libs/seek_accuracy "$srcdir/src/tests/sweep.mp3"
++else
++    exec src/tests/seek_accuracy "$srcdir/src/tests/sweep.mp3"
++fi
+diff --git a/src/tests/seek_whence.sh b/src/tests/seek_whence.sh
+index 4e12dd7..d7ae315 100755
+--- a/src/tests/seek_whence.sh
++++ b/src/tests/seek_whence.sh
+@@ -1,2 +1,6 @@
+ #!/bin/sh
+-exec src/tests/seek_whence "$srcdir/src/tests/sweep.mp3"
++if [ -n "${MPG123_TEST_RUNNER:-}" ]; then
++    exec ${MPG123_TEST_RUNNER} src/tests/.libs/seek_whence "$srcdir/src/tests/sweep.mp3"
++else
++    exec src/tests/seek_whence "$srcdir/src/tests/sweep.mp3"
++fi

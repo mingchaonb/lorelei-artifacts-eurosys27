@@ -1,0 +1,23 @@
+# libogg 1.3.6 validation (TLC Only) [ALL TESTS PASSED]
+
+This recipe builds the pinned official release as shared libraries for the AArch64 host and x86_64 guest, generates the workload-scoped TLC thunk, and runs the same directed public-API workload natively and through Hecate. The port has no `hlr` feature and the runner does not load an HLR extension.
+
+## Commands
+
+```bash
+./evaluations/1-libs/libogg/run.sh /path/to/lorelei-devkit
+./evaluations/1-libs/libogg/run.sh --reference --verbose /path/to/lorelei-devkit
+./evaluations/1-libs/libogg/run.sh --install-only /path/to/lorelei-devkit
+```
+
+Set `QEMU=/path/to/qemu-x86_64` when QEMU is not installed in the devkit.
+
+## Workload and expected result
+
+The workload creates a stream with a fixed serial number, submits one seven-byte beginning-and-end packet, flushes one page, validates its header and body sizes, and clears the stream.
+
+Success prints one produced page with a seven-byte body in both lanes. The test links the shared ABI and does not compile Ogg implementation sources into the executable.
+
+## Exclusions
+
+The larger bitwise and framing selftests, examples, documentation, and static-library paths are excluded.

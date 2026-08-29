@@ -1,0 +1,25 @@
+RUN cerftest_c
+0/73 tests failed
+PASS cerftest_c
+RUN dawsontest_c
+0/46 tests failed
+PASS dawsontest_c
+RUN erfcxtest_c
+PASS erfcxtest_c
+RUN imwofxtest_c
+PASS imwofxtest_c
+RUN realtest_c
+0/142515 tests failed
+PASS realtest_c
+RUN statusquotest_c
+0/631 tests failed
+PASS statusquotest_c
+RUN voigttest_c
+0/8 tests failed
+PASS voigttest_c
+RUN widthtest_c
+PASS widthtest_c
+RUN wofztest_c
+0/55 tests failed
+PASS wofztest_c
+SUMMARY pass=9
