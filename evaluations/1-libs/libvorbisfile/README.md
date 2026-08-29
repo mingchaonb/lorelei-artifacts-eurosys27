@@ -18,6 +18,6 @@ The workload passes a deterministic non-Vorbis byte string through an `ov_callba
 
 Success prints a negative result and a positive read count in both lanes. `libvorbisfile.so.3` remains a separate DSO and depends on the `libvorbis` and `libogg` packages. TLC handles the callback table without HLR.
 
-## Exclusions
+## Upstream suite
 
-Valid-stream seeking, encoding, arbitrary media corpora, and interactive examples are excluded.
+The libvorbis 1.3.7 CMake configuration registers no dedicated `libvorbisfile` upstream tests. The vcpkg port still installs the configured test tree under `tools/libvorbisfile/upstream-tests`, and the default `run.sh` records the symmetric native and Hecate count as 0/0 after the directed callback workload passes in both lanes. No pure-QEMU lane is run.

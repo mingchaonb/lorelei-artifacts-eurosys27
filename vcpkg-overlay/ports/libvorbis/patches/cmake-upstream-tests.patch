@@ -1,0 +1,32 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index b884a42..46d2901 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -12,6 +12,7 @@ include(CheckLibraryExists)
+ 
+ # Build options
+ option(BUILD_SHARED_LIBS "Build shared library" OFF)
++option(BUILD_TESTING "Build upstream tests" OFF)
+ if(APPLE)
+     option(BUILD_FRAMEWORK "Build Framework bundle for OSX" OFF)
+ endif()
+@@ -71,6 +72,19 @@ find_package(Ogg REQUIRED)
+ 
+ add_subdirectory(lib)
+ 
++if(BUILD_TESTING)
++    enable_testing()
++    add_executable(vorbis_upstream_test
++        test/test.c
++        test/util.c
++        test/write_read.c
++    )
++    target_include_directories(vorbis_upstream_test PRIVATE test)
++    target_link_libraries(vorbis_upstream_test PRIVATE vorbisenc vorbis Ogg::ogg m)
++    add_test(NAME vorbis_upstream_test COMMAND vorbis_upstream_test)
++
++endif()
++
+ configure_pkg_config_file(vorbis.pc.in)
+ configure_pkg_config_file(vorbisenc.pc.in)
+ configure_pkg_config_file(vorbisfile.pc.in)

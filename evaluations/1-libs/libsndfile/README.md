@@ -18,6 +18,6 @@ The workload writes eight PCM16 samples to an in-memory WAV through five virtual
 
 Success reports eight samples plus positive read and write callback counts in both lanes. TLC handles the persistent virtual-I/O callback table. No HLR or allocator shim is used.
 
-## Exclusions
+## Upstream suite
 
-External FLAC, Ogg, Opus, Vorbis, and MPEG codecs remain disabled. The complete release test wrapper is outside this directed workload.
+The vcpkg port patches shared-library testing support and installs the complete configured CTest tree under `tools/libsndfile/upstream-tests`. The default `run.sh` executes the same 142 registered tests in native and Hecate lanes after the directed workload. Both lanes pass 142/142. The private-symbol-only `test_main` target is not registered for a shared build. External FLAC, Ogg, Opus, Vorbis, and MPEG codecs are disabled in this configuration. No pure-QEMU lane is run.

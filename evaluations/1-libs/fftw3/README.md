@@ -18,6 +18,6 @@ The workload allocates two eight-element complex buffers, creates and executes o
 
 Success prints `fftw:1.000,0.000,0.000,-1.000` in both lanes. It exercises the double-precision public planner and execution API. It does not use the upstream bench metadata objects.
 
-## Exclusions
+## Upstream suite
 
-Threads, Fortran, float and long-double variants, planner hooks, and the complete upstream suite are excluded. The port uses the official 3.3.10 release tarball because the Git tag omits release-generated files.
+The vcpkg port installs the configured upstream test build under `tools/fftw3/upstream-tests`. The default `run.sh` executes both available scalar benchmark checks in native and Hecate lanes after the directed workload. Both lanes pass 2/2. Threads, Fortran, float, long-double, and SIMD variants are disabled in this configuration. No pure-QEMU lane is run.

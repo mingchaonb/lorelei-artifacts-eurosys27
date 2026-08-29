@@ -14,8 +14,8 @@ index 4e7f79c..05077b4 100644
  option (BUILD_EXAMPLES "Build examples" ON)
  option (ENABLE_CPACK "Enable CPack support" ON)
 @@ -1351,7 +1347,14 @@ if (BUILD_TESTING)
-
-	### g72x_test
+ 
+ 	### g72x_test
  
 -	add_executable (g72x_test src/G72x/g72x_test.c)
 +	add_executable (g72x_test
@@ -29,3 +29,27 @@ index 4e7f79c..05077b4 100644
  	target_include_directories (g72x_test
  		PRIVATE
  			src
+@@ -947,6 +943,7 @@ if (BUILD_TESTING)
+ 	target_link_libraries(test_utils PRIVATE sndfile)
+ 
+ 	### test_main
++	if (NOT BUILD_SHARED_LIBS)
+ 
+ 	add_executable (test_main
+ 		src/test_main.c
+@@ -975,6 +972,7 @@ if (BUILD_TESTING)
+ 		target_compile_definitions (test_main PRIVATE _USE_MATH_DEFINES)
+ 	endif ()
+ 	add_test (test_main test_main)
++	endif ()
+ 
+ 	### sfversion_test
+ 
+@@ -1553,7 +1551,6 @@ if (BUILD_TESTING)
+ 
+ 	set (SNDFILE_TEST_TARGETS
+ 		test_utils
+-		test_main
+ 		sfversion
+ 		error_test
+ 		ulaw_test

@@ -18,6 +18,6 @@ The workload performs a scalar one-shot mono conversion from eight to sixteen sa
 
 Success reports `ok` and more than eight output frames in both lanes. No callback or shim is used.
 
-## Exclusions
+## Upstream suite
 
-SIMD, OpenMP, libsamplerate bindings, examples, libavutil integration, and the upstream vector suite are excluded.
+The vcpkg port installs the complete configured CTest tree under `tools/soxr/upstream-tests`. The default `run.sh` executes all vector and example-backed tests in native and Hecate lanes after the directed workload. Both lanes pass 9/9. SIMD, OpenMP, libsamplerate bindings, and libavutil integration are disabled in this configuration. No pure-QEMU lane is run.

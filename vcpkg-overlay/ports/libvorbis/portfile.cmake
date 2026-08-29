@@ -1,5 +1,5 @@
-vcpkg_from_github(OUT_SOURCE_PATH SOURCE_PATH REPO xiph/vorbis REF v1.3.7 SHA512 bfb6f5dbfd49ed38b2b08b3667c06d02e68f649068a050f21a3cc7e1e56b27afd546aaa3199c4f6448f03f6e66a82f9a9dc2241c826d3d1d4acbd38339b9e9fb HEAD_REF master)
-vcpkg_cmake_configure(SOURCE_PATH "${SOURCE_PATH}" OPTIONS "-DOGG_LIBRARY=${CURRENT_INSTALLED_DIR}/lib/libogg.so" "-DOGG_INCLUDE_DIR=${CURRENT_INSTALLED_DIR}/include")
+vcpkg_from_github(OUT_SOURCE_PATH SOURCE_PATH REPO xiph/vorbis REF v1.3.7 SHA512 bfb6f5dbfd49ed38b2b08b3667c06d02e68f649068a050f21a3cc7e1e56b27afd546aaa3199c4f6448f03f6e66a82f9a9dc2241c826d3d1d4acbd38339b9e9fb HEAD_REF master PATCHES patches/cmake-upstream-tests.patch)
+vcpkg_cmake_configure(SOURCE_PATH "${SOURCE_PATH}" OPTIONS -DBUILD_SHARED_LIBS=ON -DBUILD_TESTING=ON "-DOGG_LIBRARY=${CURRENT_INSTALLED_DIR}/lib/libogg.so" "-DOGG_INCLUDE_DIR=${CURRENT_INSTALLED_DIR}/include")
 vcpkg_cmake_install()
 vcpkg_cmake_config_fixup(PACKAGE_NAME Vorbis CONFIG_PATH lib/cmake/Vorbis)
 vcpkg_fixup_pkgconfig()
@@ -9,3 +9,5 @@ file(REMOVE "${CURRENT_PACKAGES_DIR}/lib/pkgconfig/vorbisfile.pc" "${CURRENT_PAC
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/share/Vorbis")
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
 vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/COPYING")
+file(INSTALL "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/" DESTINATION "${CURRENT_PACKAGES_DIR}/tools/libvorbis/upstream-tests/build" USE_SOURCE_PERMISSIONS)
+file(INSTALL "${SOURCE_PATH}/" DESTINATION "${CURRENT_PACKAGES_DIR}/tools/libvorbis/upstream-tests/source" USE_SOURCE_PERMISSIONS)

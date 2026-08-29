@@ -18,6 +18,6 @@ The workload creates a 48 kHz mono encoder, sets a 64 kbit/s bitrate through the
 
 Success reports a positive packet size and bitrate 64000 in both lanes. `Desc.h` provides TLC's request-dependent variadic extractor. No HLR or shim is used.
 
-## Exclusions
+## Upstream suite
 
-Decoder, multistream, randomized corpus, private-symbol extension tests, programs, and the four-program upstream shared-library suite are excluded.
+The vcpkg fetch patches CMake to retain shared-library-compatible tests and installs them under `tools/opus/upstream-tests`. The default `run.sh` executes all four tests registered by this shared configuration in native and Hecate lanes after the directed workload. Both lanes pass 4/4. The private-symbol extension target is not registered for a shared build because it cannot link against the public DSO. No pure-QEMU lane is run.

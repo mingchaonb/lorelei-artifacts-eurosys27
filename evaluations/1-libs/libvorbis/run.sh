@@ -51,7 +51,9 @@ invocation+=("$devkit")
 printf '%q ' "${invocation[@]}" >"$run_dir/invocation.txt"
 printf '\n' >>"$run_dir/invocation.txt"
 find "$port_dir" -type f -print0 | sort -z | xargs -0 sha256sum >"$run_dir/generated/port-inputs.sha256"
-sha256sum "$recipe_dir/tests/Test.c" "$recipe_dir/run.sh" >"$run_dir/generated/evaluation-inputs.sha256"
+sha256sum "$recipe_dir/tests/Test.c" "$recipe_dir/run.sh" \
+    "$repo_root/evaluations/1-libs/audio-signal-upstream.sh" \
+    "$repo_root/evaluations/1-libs/audio-signal-ctest.py" >"$run_dir/generated/evaluation-inputs.sha256"
 
 run_logged() {
     local log=$1 status
@@ -81,7 +83,7 @@ export VCPKG_MAX_CONCURRENCY
 VCPKG_MAX_CONCURRENCY=$(nproc)
 install_lane() {
     local lane=$1 triplet=$2
-    run_logged "$run_dir/logs/vcpkg-$lane.log" "$vcpkg" install "libvorbis:$triplet"         --overlay-ports="$repo_root/vcpkg-overlay/ports"         --overlay-triplets="$repo_root/vcpkg-overlay/triplets"         --x-install-root="$work/installed/$lane"         --x-buildtrees-root="$work/vcpkg/$lane/buildtrees"         --x-packages-root="$work/vcpkg/$lane/packages"         --downloads-root="$work/vcpkg/downloads" --triplet="$triplet"
+    run_logged "$run_dir/logs/vcpkg-$lane.log" "$vcpkg" install "libvorbis:$triplet"         --overlay-ports="$repo_root/vcpkg-overlay/ports"         --overlay-triplets="$repo_root/vcpkg-overlay/triplets"         --x-install-root="$work/installed/$lane"         --x-buildtrees-root="$work/vcpkg/$lane/buildtrees"         --x-packages-root="$work/vcpkg/$lane/packages"         --downloads-root="$work/vcpkg/downloads" --triplet="$triplet" --binarysource=clear
 }
 install_lane host arm64-linux-ae
 install_lane guest x64-linux-ae
@@ -111,8 +113,7 @@ if $install_only; then
     tests_run=false
     status=installed
 else
-    qemu=$(realpath -m "${QEMU:-$devkit/bin/qemu-x86_64}")
-    [[ -x $qemu ]] || { echo "Patched QEMU not found: $qemu" >&2; exit 2; }
+    qemu=$("$repo_root/evaluations/1-libs/audio-signal-upstream.sh" --resolve-qemu "$devkit" "$repo_root")
     mkdir -p "$work/tests/native" "$work/tests/guest" "$run_dir/logs/native" "$run_dir/logs/hecate"
     link_args=(-lvorbisenc -lvorbis -logg -lm)
     native_search=(-L"$host_prefix/lib" -Wl,-rpath,"$host_prefix/lib")
@@ -141,6 +142,9 @@ else
     [[ $native_status == 0 && $hecate_status == 0 ]]
     tests_run=true
     status=pass
+    "$repo_root/evaluations/1-libs/audio-signal-upstream.sh" \
+        "libvorbis" "$repo_root" "$work" "$run_dir" "$devkit" "$qemu" \
+        "$host_prefix" "$guest_prefix" "$host_runtime" "$guest_runtime" "$verbose"
 fi
 
 
@@ -169,8 +173,10 @@ summary = {
     "tests_run": tests_run == "true",
     "native": {"exit_status": None if native_status == "-1" else int(native_status)},
     "hecate": {"exit_status": None if hecate_status == "-1" else int(hecate_status)},
+    "pure_qemu_run": False,
 }
 pathlib.Path(meta_path).write_text(json.dumps(meta, indent=2, sort_keys=True) + "\n")
 pathlib.Path(summary_path).write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n")
 PY
 echo "Build and thunk evidence: $run_dir"
+if ! $install_only; then echo "ALL TESTS PASSED: libvorbis native + Hecate, pure QEMU not run"; fi

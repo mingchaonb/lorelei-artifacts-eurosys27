@@ -18,6 +18,6 @@ The workload initializes libmpg123, creates a generic decoder handle, reads its 
 
 Success prints `mpg123:0` and identical flags in both lanes. No audio device, input file, callback, or shim is used.
 
-## Exclusions
+## Upstream suite
 
-Players, networking, CPU-specific decoder dispatch, device backends, and the six-program upstream suite are excluded.
+The vcpkg port builds and installs all six tests selected by the configured upstream Automake suite under `tools/mpg123/upstream-tests`. The default `run.sh` executes the same six tests in native and Hecate lanes after the directed workload. Both lanes pass 6/6. Players, networking, CPU-specific decoder dispatch, and device backends are disabled build features. No pure-QEMU lane is run.

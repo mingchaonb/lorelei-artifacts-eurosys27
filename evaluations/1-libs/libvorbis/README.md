@@ -18,6 +18,6 @@ The workload creates a stereo Vorbis encoder, adds a comment, initializes analys
 
 Success reports two channels and 44100 Hz in both lanes. The recipe builds separate TLC thunks for `libogg.so.0`, `libvorbis.so.0`, and `libvorbisenc.so.2`, preserving their DSO boundaries.
 
-## Exclusions
+## Upstream suite
 
-The high-level `libvorbisfile` DSO, full encode and decode round trip, arbitrary media, and upstream tests are excluded.
+The vcpkg fetch applies a CMake patch that registers and installs the upstream encode and decode round-trip suite under `tools/libvorbis/upstream-tests`. The default `run.sh` executes the suite in native and Hecate lanes after the directed workload. Both lanes pass the executable and all 528 internal checks. The high-level `libvorbisfile` DSO is evaluated by its separate port. No pure-QEMU lane is run.

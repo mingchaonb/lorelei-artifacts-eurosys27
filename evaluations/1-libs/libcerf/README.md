@@ -18,6 +18,6 @@ The workload evaluates the complex error function, Dawson function, and Voigt pr
 
 Success prints identical nine-digit values in both lanes. The Clang patch only enables upstream's existing `__builtin_complex` construction path for complex infinity and NaN constants.
 
-## Exclusions
+## Upstream suite
 
-The C++ interface, examples, manuals, and the nine-program upstream numerical suite are outside this directed workload.
+The vcpkg port installs the complete configured CTest tree under `tools/libcerf/upstream-tests`. The default `run.sh` executes all nine upstream C numerical tests in native and Hecate lanes after the directed workload. Both lanes pass 9/9. The C++ interface, examples, and manuals are disabled build products rather than tests in this configuration. No pure-QEMU lane is run.

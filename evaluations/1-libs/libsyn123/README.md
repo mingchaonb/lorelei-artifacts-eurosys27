@@ -18,6 +18,6 @@ The workload creates a synthesis handle, converts minus six decibels to a linear
 
 Success reports error zero and a recovered value of minus six decibels in both lanes. `libsyn123.so.0` is a separate DSO shipped by the mpg123 release. The `libmpg123` decoder DSO is evaluated separately.
 
-## Exclusions
+## Upstream suite
 
-The upstream `volume` and `resample_total` programs, signal generation, and the decoder API are outside this directed workload.
+The vcpkg port builds and installs the configured upstream `resample_total` test under `tools/libsyn123/upstream-tests`. The default `run.sh` executes it in native and Hecate lanes after the directed workload. Both lanes pass 1/1. Decoder tests belong to the separate mpg123 port. No pure-QEMU lane is run.

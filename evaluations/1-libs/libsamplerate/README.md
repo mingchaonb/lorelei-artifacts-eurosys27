@@ -18,6 +18,6 @@ The workload creates a callback-backed mono converter, returns one fixed eight-f
 
 Success reports a positive frame count, one callback invocation, and error zero in both lanes. TLC performs the callback replacement. No HLR or shim is used.
 
-## Exclusions
+## Upstream suite
 
-Examples, audio devices, optional FFTW comparisons, and the complete 13-test upstream configuration are excluded.
+The vcpkg port installs the complete configured CTest tree under `tools/libsamplerate/upstream-tests`, including the FFTW comparison dependency. The default `run.sh` executes all tests in native and Hecate lanes after the directed workload. Both lanes pass 13/13. Audio-device examples are disabled build products. No pure-QEMU lane is run.

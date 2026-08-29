@@ -18,6 +18,6 @@ The workload compresses 32 deterministic 16-bit samples with preprocessing and t
 
 Success reports a positive compressed size, 64 decoded bytes, and result zero in both lanes. No callback or shim is used.
 
-## Exclusions
+## Upstream suite
 
-The historical long-running option and random-access stress programs are outside this directed workload. They remain separate upstream-suite evidence.
+The vcpkg port installs the complete configured CTest tree under `tools/libaec/upstream-tests`. The default `run.sh` executes all option, buffer, seeking, random-access, and sample-data tests in native and Hecate lanes after the directed workload. Both lanes pass 7/7. No pure-QEMU lane is run.

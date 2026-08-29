@@ -18,6 +18,6 @@ The workload creates a stream with a fixed serial number, submits one seven-byte
 
 Success prints one produced page with a seven-byte body in both lanes. The test links the shared ABI and does not compile Ogg implementation sources into the executable.
 
-## Exclusions
+## Upstream suite
 
-The larger bitwise and framing selftests, examples, documentation, and static-library paths are excluded.
+The vcpkg port patches the shared build to retain and install the two upstream bitwise and framing selftests under `tools/libogg/upstream-tests`. The default `run.sh` executes both tests in native and Hecate lanes after the directed workload. Both lanes pass 2/2. No pure-QEMU lane is run.
