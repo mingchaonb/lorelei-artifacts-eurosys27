@@ -1,4 +1,4 @@
-# zstd 1.5.7 validation (TLC Only)
+# zstd 1.5.7 validation (TLC Only) [ALL TESTS PASSED]
 
 This recipe fetches the official zstd 1.5.7 release through the pinned vcpkg overlay, builds shared libraries for AArch64 and x86-64, generates TLC thunks, and executes the same directed workload in native and Hecate lanes.
 

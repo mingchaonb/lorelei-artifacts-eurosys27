@@ -1,4 +1,4 @@
-# libdeflate 1.26 validation (TLC Only)
+# libdeflate 1.26 validation (TLC Only) [ALL TESTS PASSED]
 
 This recipe fetches the official libdeflate 1.26 release through the pinned vcpkg overlay, builds shared libraries for AArch64 and x86-64, generates TLC thunks, and executes the same directed workload in native and Hecate lanes.
 

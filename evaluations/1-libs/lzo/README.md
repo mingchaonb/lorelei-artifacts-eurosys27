@@ -1,4 +1,4 @@
-# lzo 2.10 validation (TLC Only)
+# lzo 2.10 validation (TLC Only) [ALL TESTS PASSED]
 
 This recipe fetches the official lzo 2.10 release through the pinned vcpkg overlay, builds shared libraries for AArch64 and x86-64, generates TLC thunks, and executes the same directed workload in native and Hecate lanes.
 

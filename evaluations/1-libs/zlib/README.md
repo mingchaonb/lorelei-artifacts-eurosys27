@@ -1,4 +1,4 @@
-# zlib 1.3.2 validation (TLC Only)
+# zlib 1.3.2 validation (TLC Only) [ALL TESTS PASSED]
 
 This recipe fetches the official zlib 1.3.2 release through the pinned vcpkg overlay, builds shared libraries for AArch64 and x86-64, generates TLC thunks, and executes the same directed workload in native and Hecate lanes.
 

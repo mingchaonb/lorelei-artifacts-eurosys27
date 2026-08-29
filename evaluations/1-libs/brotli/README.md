@@ -1,4 +1,4 @@
-# brotli 1.2.0 validation (TLC Only)
+# brotli 1.2.0 validation (TLC Only) [ALL TESTS PASSED]
 
 This recipe fetches the official brotli 1.2.0 release through the pinned vcpkg overlay, builds shared libraries for AArch64 and x86-64, generates TLC thunks, and executes the same directed workload in native and Hecate lanes.
 

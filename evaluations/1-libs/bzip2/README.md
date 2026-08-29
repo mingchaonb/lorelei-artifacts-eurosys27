@@ -1,4 +1,4 @@
-# bzip2 1.0.8 validation (TLC Only)
+# bzip2 1.0.8 validation (TLC Only) [ALL TESTS PASSED]
 
 This recipe fetches the official bzip2 1.0.8 release through the pinned vcpkg overlay, builds shared libraries for AArch64 and x86-64, generates TLC thunks, and executes the same directed workload in native and Hecate lanes.
 

@@ -1,4 +1,4 @@
-# libspng 0.7.4 validation (TLC Only)
+# libspng 0.7.4 validation (TLC Only) [ALL TESTS PASSED]
 
 This recipe fetches the official libspng 0.7.4 release through the pinned vcpkg overlay, builds shared libraries for AArch64 and x86-64, generates TLC thunks, and executes the same directed workload in native and Hecate lanes.
 
