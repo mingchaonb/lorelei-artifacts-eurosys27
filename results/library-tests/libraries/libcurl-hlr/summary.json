@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "version": "8.20.0",
+  "baseline_commit": "a05f34973e6c4bb629d018f7cb51487be1c904d8",
+  "hlr_commit": "337440cd67dd6302ad6e70b046b9ae08093e4176",
+  "functions": 8,
+  "tests": 1,
+  "callback_replace": false,
+  "callback": "curl_write_callback",
+  "result": "11 response bytes, CURLE_OK"
+}

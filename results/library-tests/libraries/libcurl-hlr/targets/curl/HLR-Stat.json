@@ -1,0 +1,21 @@
+{
+    "callbackCheckGuardSignatures": [
+        "unsigned long (*)(char *, unsigned long, unsigned long, void *)"
+    ],
+    "filesNeedPatch": [
+        "/home/functioner/Documents/rover2024/ae-libs/curl/lib/cw-out.c",
+        "/home/functioner/Documents/rover2024/ae-libs/curl/lib/doh.c",
+        "/home/functioner/Documents/rover2024/ae-libs/curl/lib/mime.c",
+        "/home/functioner/Documents/rover2024/ae-libs/curl/lib/sendf.c"
+    ],
+    "functionDecayGuardStats": [
+        {
+            "locations": {
+                "/home/functioner/Documents/rover2024/ae-libs/curl/lib/doh.c:177:1": "/home/functioner/Documents/rover2024/ae-libs/curl/lib/doh.c",
+                "/home/functioner/Documents/rover2024/ae-libs/curl/lib/mime.c:565:1": "/home/functioner/Documents/rover2024/ae-libs/curl/lib/mime.c",
+                "/home/functioner/Documents/rover2024/ae-libs/curl/lib/mime.c:621:1": "/home/functioner/Documents/rover2024/ae-libs/curl/lib/mime.c"
+            },
+            "signature": "unsigned long (*)(char *, unsigned long, unsigned long, void *)"
+        }
+    ]
+}

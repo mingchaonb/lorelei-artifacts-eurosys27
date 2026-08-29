@@ -1,0 +1,4 @@
+#include "Desc.h"
+#include <lorelei/ThunkInterface/ManifestGuest.cpp.inc>
+
+namespace lore::thunk {}
