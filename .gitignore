@@ -16,5 +16,3 @@ build/
 .work/
 /vcpkg/
 __pycache__/
-!results/**/*.log
-!tests-v2/libraries/*/results/**/*.log

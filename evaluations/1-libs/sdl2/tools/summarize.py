@@ -16,13 +16,23 @@ def read_status(path: pathlib.Path) -> dict[str, int]:
     }
 
 
-def automation(path: pathlib.Path) -> dict[str, object]:
+def automation(path: pathlib.Path, exit_status: int | None) -> dict[str, object]:
     text = path.read_text(errors="replace")
     matches = SUMMARY_RE.findall(text)
     if not matches:
-        raise SystemExit(f"No SDL automation summary in {path}")
+        return {
+            "completed": False,
+            "exit_status": exit_status,
+            "total": None,
+            "passed": None,
+            "failed": None,
+            "skipped": None,
+            "failure_filters": [],
+        }
     total, passed, failed, skipped = (int(value) for value in matches[-1])
     return {
+        "completed": True,
+        "exit_status": exit_status,
         "total": total,
         "passed": passed,
         "failed": failed,
@@ -39,7 +49,7 @@ def classify(native: dict[str, int], transformed: dict[str, int]) -> dict[str, l
         transformed_exit = transformed.get(name)
         if transformed_exit == 0:
             result["passed"].append(name)
-        elif transformed_exit == native_exit and transformed_exit != 124:
+        elif native_exit != 0 and transformed_exit is not None and transformed_exit != 0:
             result["baseline_skip"].append(name)
         else:
             result["failed"].append(name)
@@ -51,46 +61,54 @@ def main() -> None:
     parser.add_argument("--run-dir", type=pathlib.Path, required=True)
     args = parser.parse_args()
     native_status = read_status(args.run_dir / "logs/native/status.tsv")
-    native_auto = automation(args.run_dir / "logs/native/testautomation.log")
+    native_auto = automation(
+        args.run_dir / "logs/native/testautomation.log",
+        native_status.get("testautomation"),
+    )
     fields = ("total", "passed", "failed", "skipped", "failure_filters")
-    lanes: dict[str, object] = {}
     failures: list[str] = []
-    for mode in ("tlc", "hlr"):
-        status_path = args.run_dir / f"logs/{mode}/status.tsv"
-        if not status_path.exists():
-            continue
-        status = read_status(status_path)
-        auto = automation(args.run_dir / f"logs/{mode}/testautomation.log")
-        auto_matches = all(native_auto[field] == auto[field] for field in fields)
-        programs = classify(native_status, status)
-        callback_log = args.run_dir / f"logs/{mode}/test-callbacks-ae.log"
+    if not native_auto["completed"]:
+        failures.append("native testautomation did not complete")
+
+    hecate_status = read_status(args.run_dir / "logs/hecate/status.tsv")
+    hecate_auto = automation(
+        args.run_dir / "logs/hecate/testautomation.log",
+        hecate_status.get("testautomation"),
+    )
+    automation_matches = bool(native_auto["completed"] and hecate_auto["completed"]) and all(
+        native_auto[field] == hecate_auto[field] for field in fields
+    )
+    programs = classify(native_status, hecate_status)
+    callback_log = args.run_dir / "logs/hecate/test-callbacks-ae.log"
+    callback_passes = 0
+    if callback_log.exists():
         callback_passes = len(re.findall(r"^PASS:", callback_log.read_text(errors="replace"), re.MULTILINE))
-        lane_failures = list(programs["failed"])
-        if not auto_matches:
-            lane_failures.insert(0, "testautomation differs from native")
-        if lane_failures:
-            failures.append(f"{mode}: " + ", ".join(lane_failures))
-        lanes[mode] = {
-            "status": "pass" if not lane_failures else "fail",
-            "automation": auto,
-            "automation_native_equivalent": auto_matches,
-            "programs": programs,
-            "callback_assertions_passed": callback_passes,
-        }
+    failures.extend(programs["failed"])
+    if not hecate_auto["completed"]:
+        failures.insert(0, f"Hecate testautomation did not complete, exit {hecate_auto['exit_status']}")
+    elif not automation_matches:
+        failures.insert(0, "Hecate testautomation differs from native")
+
+    hecate = {
+        "status": "pass" if not failures else "fail",
+        "label": "Hecate, TLC + HLR",
+        "automation": hecate_auto,
+        "automation_native_equivalent": automation_matches,
+        "programs": programs,
+        "callback_assertions_passed": callback_passes,
+    }
     result = {
         "schema_version": 2,
         "package": "sdl2",
         "status": "pass" if not failures else "fail",
         "failures": failures,
         "native": {"automation": native_auto, "status": native_status},
-        "lanes": lanes,
+        "hecate": hecate,
         "excluded": ["testatomic", "testlock", "testsem", "torturethread"],
     }
     (args.run_dir / "summary.json").write_text(json.dumps(result, indent=2, sort_keys=True) + "\n")
-    print(f"SDL2 tests-v2 status: {result['status']}")
-    for mode, data in lanes.items():
-        programs = data["programs"]
-        print(f"{mode}: {len(programs['passed'])} passed, {len(programs['baseline_skip'])} baseline skip, {len(programs['failed'])} failed")
+    print(f"SDL2 evaluation status: {result['status']}")
+    print(f"Hecate, TLC + HLR: {len(programs['passed'])} passed, {len(programs['baseline_skip'])} baseline skip, {len(programs['failed'])} failed")
     if failures:
         raise SystemExit(1)
 

@@ -42,6 +42,12 @@ scripts/                  可重复的配置、构建、测试与分析命令
 configs/                  版本固定信息与实验配置
 patches/                  artifact 所需且经过审查的源码补丁
 inputs/                   可再分发的固定输入或下载清单
+evaluations/              可复现评测配方及其就近存放的证据
+evaluations/1-libs/       库 API 与边界验证
+evaluations/2-cli-benchmarks/ 八个命令行 workload
+evaluations/3-breakdown/  调用、callback 与机制开销拆分
+evaluations/4-games/      游戏性能与可玩性
+vcpkg-overlay/            固定版本的第三方 port 与 AE 构建策略
 results/                  按论文结论分组并纳入版本管理的证据
 results/README.md         结果分类与共享证据规则
 results/library-tests/    83-target API 与正确性证据

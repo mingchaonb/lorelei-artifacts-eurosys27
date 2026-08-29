@@ -13,7 +13,7 @@ vcpkg_from_github(
 # Resolve the artifact root from this overlay port. HLR needs the shared guest
 # libc-shim header because the SDL manifests describe FILE and stream ownership.
 get_filename_component(REPO_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
-set(COMMON_INCLUDE_DIR "${REPO_ROOT}/tests-v2/common/include")
+set(COMMON_INCLUDE_DIR "${REPO_ROOT}/evaluations/common/include")
 
 # Convert vcpkg features into independent build options. The tests feature builds
 # upstream executables. The hlr feature rewrites only production sources below

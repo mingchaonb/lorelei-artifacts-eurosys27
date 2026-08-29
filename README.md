@@ -41,6 +41,12 @@ scripts/                  repeatable setup, build, test, and analysis commands
 configs/                  version pins and experiment configurations
 patches/                  reviewed source patches required by the artifact
 inputs/                   redistributable fixed test inputs or fetch manifests
+evaluations/              reproducible evaluation recipes and colocated evidence
+evaluations/1-libs/       library API and boundary validation
+evaluations/2-cli-benchmarks/ eight command-line workloads
+evaluations/3-breakdown/  call, callback, and mechanism breakdowns
+evaluations/4-games/      game performance and playability
+vcpkg-overlay/            pinned third-party ports and AE build policy
 results/                  committed evidence, organized by claim group
 results/README.md         result taxonomy and shared evidence rules
 results/library-tests/    83-target API and correctness evidence
