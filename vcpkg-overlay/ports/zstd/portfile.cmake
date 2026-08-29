@@ -9,6 +9,7 @@ vcpkg_from_github(
         fix-emscripten-and-clang-cl.patch
         fix-windows-rc-compile.patch
         patches/allow-skipping-dictionary-training.patch
+        patches/allow-skipping-thunk-incompatible-subtests.patch
 )
 
 vcpkg_replace_string("${SOURCE_PATH}/build/cmake/CMakeLists.txt"

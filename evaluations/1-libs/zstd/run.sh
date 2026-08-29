@@ -86,7 +86,7 @@ installed_upstream_binaries=(zstd datagen fullbench fuzzer zstreamtest)
 for test_name in "${installed_upstream_binaries[@]}"; do
   [[ -x $native_upstream/bin/$test_name && -x $guest_upstream/bin/$test_name ]] || { echo "Missing installed upstream test: $test_name" >&2; exit 1; }
 done
-for test_name in zstd datagen fullbench; do
+for test_name in "${installed_upstream_binaries[@]}"; do
   "$nm_tool" -D --undefined-only --just-symbol-name "$guest_upstream/bin/$test_name"
 done | sed 's/@.*//' | sort -u >"$run_dir/generated/guest-undefined.txt"
 thunk_host=()
@@ -118,9 +118,9 @@ guest_path=$(IFS=:; echo "${thunk_guest[*]}")
 run_zstd_binary() {
   local lane=$1 test_name=$2; shift 2
   if [[ $lane == native ]]; then
-    LD_LIBRARY_PATH="$native_prefix/lib" "$native_upstream/bin/$test_name" "$@" >"$run_dir/logs/native/$test_name.log" 2>&1
+    ZSTD_SKIP_STATIC_CONTEXT_TESTS=1 ZSTD_SKIP_SEQUENCE_PRODUCER_TESTS=1 LD_LIBRARY_PATH="$native_prefix/lib" "$native_upstream/bin/$test_name" "$@" >"$run_dir/logs/native/$test_name.log" 2>&1
   else
-    env LD_LIBRARY_PATH="$devkit/lib:$hecate_prefix/lib:$host_path" "$qemu" -L "$devkit/x86_64/sysroot" -E LD_BIND_NOW=1 -E "LD_LIBRARY_PATH=$devkit/x86_64/lib:$guest_path" "$guest_upstream/bin/$test_name" "$@" >"$run_dir/logs/hecate/$test_name.log" 2>&1
+    env LD_LIBRARY_PATH="$devkit/lib:$hecate_prefix/lib:$host_path" "$qemu" -L "$devkit/x86_64/sysroot" -E LD_BIND_NOW=1 -E ZSTD_SKIP_STATIC_CONTEXT_TESTS=1 -E ZSTD_SKIP_SEQUENCE_PRODUCER_TESTS=1 -E "LD_LIBRARY_PATH=$devkit/x86_64/lib:$guest_path" "$guest_upstream/bin/$test_name" "$@" >"$run_dir/logs/hecate/$test_name.log" 2>&1
   fi
 }
 run_play_tests() {
@@ -141,10 +141,12 @@ run_play_tests() {
 }
 run_zstd_suite() {
   local lane=$1 upstream=$2 prefix=$3 passed=0 failed=0
-  if run_zstd_binary "$lane" fullbench; then passed=1; else failed=1; cat "$run_dir/logs/$lane/fullbench.log"; fi
+  for test_name in fullbench fuzzer zstreamtest; do
+    if run_zstd_binary "$lane" "$test_name"; then passed=$((passed + 1)); else failed=$((failed + 1)); cat "$run_dir/logs/$lane/$test_name.log"; fi
+  done
   if run_play_tests "$lane" "$upstream" "$prefix"; then passed=$((passed + 1)); else failed=$((failed + 1)); cat "$run_dir/logs/$lane/playTests.log"; fi
-  printf '%s selected upstream tests: %d passed, %d failed, 2 total, 2 excluded\n' "$lane" "$passed" "$failed" | tee "$run_dir/logs/$lane/upstream-summary.log"
-  [[ $passed == 2 && $failed == 0 ]]
+  printf '%s registered upstream tests: %d passed, %d failed, 4 total\n' "$lane" "$passed" "$failed" | tee "$run_dir/logs/$lane/upstream-summary.log"
+  [[ $passed == 4 && $failed == 0 ]]
 }
 native_status=0
 hecate_status=0
@@ -154,7 +156,7 @@ python3 - "$run_dir/summary.json" "$native_status" "$hecate_status" "$index" <<'
 import json, pathlib, sys
 out, native, hecate, libraries = sys.argv[1:]
 ok = native == hecate == "0"
-data = {"schema_version": 2, "package": "zstd", "version": "1.5.7", "mechanism": "TLC Only", "status": "pass" if ok else "fail", "libraries": int(libraries), "native": {"exit_status": int(native)}, "hecate": {"exit_status": int(hecate)}, "output_match": True, "upstream_suite": {"registered_tests": 4, "selected_tests": 2, "native_passed": 2 if native == "0" else 0, "hecate_passed": 2 if hecate == "0" else 0, "dynamic_test_patch": True, "program_multithreading": False, "library_multithreading": True, "excluded": ["fuzzer", "zstreamtest", "playTests dictionary training sections"], "exclusion_reason": "fuzzer and zstreamtest directly access internal context state and crash through Hecate; dictionary trainer buffer semantics are not supported across the thunk boundary"}}
+data = {"schema_version": 2, "package": "zstd", "version": "1.5.7", "mechanism": "TLC Only", "status": "pass" if ok else "fail", "libraries": int(libraries), "native": {"exit_status": int(native)}, "hecate": {"exit_status": int(hecate)}, "output_match": True, "upstream_suite": {"registered_tests": 4, "selected_tests": 4, "native_passed": 4 if native == "0" else 0, "hecate_passed": 4 if hecate == "0" else 0, "dynamic_test_patch": True, "program_multithreading": False, "library_multithreading": True, "excluded_subtests": ["fuzzer static context section", "zstreamtest external sequence producer section", "playTests dictionary training sections"], "exclusion_reason": "caller-owned static contexts, guest callbacks, and dictionary trainer buffer semantics are not supported across the thunk boundary"}}
 pathlib.Path(out).write_text(json.dumps(data, indent=2, sort_keys=True) + "\n")
 raise SystemExit(0 if ok else 1)
 PY
