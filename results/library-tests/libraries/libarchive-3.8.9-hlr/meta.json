@@ -1,0 +1,14 @@
+{
+  "library": "libarchive",
+  "release": "3.8.9",
+  "upstream_commit": "27cbc7827172698143e440801fc0ba39ccb4f1f5",
+  "hlr_commit": "a8dfcfba305fa9eea61b0759ac960014341b0383",
+  "lorelei_commit": "4506ce3",
+  "host_arch": "aarch64",
+  "guest_arch": "x86_64",
+  "tlc_callback_replacement": false,
+  "host_hlr_extension": true,
+  "guest_hlr_extension": true,
+  "thread_hook_preloaded": true,
+  "compilation_database": "shared DSO entries only"
+}

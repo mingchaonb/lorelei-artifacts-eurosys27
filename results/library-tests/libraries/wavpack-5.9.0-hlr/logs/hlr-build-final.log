@@ -1,0 +1,32 @@
+[1/28] Building C object CMakeFiles/wavpack.dir/src/open_filename.c.o
+[2/28] Building C object CMakeFiles/wavpack.dir/src/open_legacy.c.o
+[3/28] Building C object CMakeFiles/wavpack.dir/src/tags.c.o
+[4/28] Building C object CMakeFiles/wavpack.dir/src/entropy_utils.c.o
+[5/28] Building C object CMakeFiles/wavpack.dir/src/decorr_utils.c.o
+[6/28] Building C object CMakeFiles/wavpack.dir/src/unpack_seek.c.o
+[7/28] Building C object CMakeFiles/wavpack.dir/src/open_raw.c.o
+[8/28] Building C object CMakeFiles/wavpack.dir/src/unpack_floats.c.o
+[9/28] Building C object CMakeFiles/wavpack.dir/src/pack_floats.c.o
+[10/28] Building C object CMakeFiles/wavpack.dir/src/common_utils.c.o
+In file included from /home/functioner/Documents/rover2024/ae-libs/wavpack/src/common_utils.c:864:
+/home/functioner/Documents/rover2024/ae-libs/wavpack/src/../LoreFileContext.c:41:48: warning: ‘LoreFileContext_FDGs’ defined but not used [-Wunused-variable]
+   41 | static struct LoreStaticFunctionDecayGuardInfo LoreFileContext_FDGs[] = {
+      |                                                ^~~~~~~~~~~~~~~~~~~~
+[11/28] Building C object CMakeFiles/wavpack.dir/src/unpack_utils.c.o
+[12/28] Building C object CMakeFiles/wavpack.dir/src/pack_dns.c.o
+[13/28] Building C object CMakeFiles/wavpack.dir/src/write_words.c.o
+[14/28] Building C object CMakeFiles/wavpack.dir/src/extra1.c.o
+[15/28] Building C object CMakeFiles/wavpack.dir/src/read_words.c.o
+[16/28] Building C object CMakeFiles/wavpack.dir/src/pack_dsd.c.o
+[17/28] Building C object CMakeFiles/wavpack.dir/src/tag_utils.c.o
+[18/28] Building C object CMakeFiles/wvtest.dir/cli/md5.c.o
+[19/28] Building C object CMakeFiles/wavpack.dir/src/open_utils.c.o
+[20/28] Building C object CMakeFiles/wavpack.dir/src/unpack_dsd.c.o
+[21/28] Building C object CMakeFiles/wavpack.dir/src/unpack.c.o
+[22/28] Building C object CMakeFiles/wavpack.dir/src/extra2.c.o
+[23/28] Building C object CMakeFiles/wavpack.dir/src/pack_utils.c.o
+[24/28] Building C object CMakeFiles/wvtest.dir/cli/wvtest.c.o
+[25/28] Building C object CMakeFiles/wavpack.dir/src/pack.c.o
+[26/28] Linking C shared library libwavpack.so.1.2.8
+[27/28] Creating library symlink libwavpack.so.1 libwavpack.so
+[28/28] Linking C executable wvtest

@@ -1,0 +1,265 @@
+
+ WVTEST  libwavpack Tester/Exerciser for WavPack  Linux Version 5.9.0
+ Copyright (c) 2015 - 2026 David Bryant.  All Rights Reserved.
+
+
+
+                          ****** pure lossless ******
+
+   *** 8-bit, mono ***
+test 0001...pass (      -f, 40.70%, 4.74 bps, f6cbc3b446a08ea286df036123c42e22)
+test 0002...pass (       -, 41.27%, 4.70 bps, 3ba59c28c2ecc48a72170ee4f4f1b1bd)
+test 0003...pass (      -h, 41.27%, 4.70 bps, 8efb8708be0c481b350869ddf09ba599)
+test 0004...pass (     -hh, 41.45%, 4.68 bps, 61922f57fe3d6c36db0c307832b3f519)
+
+   *** 16-bit, mono ***
+test 0005...pass (      -f, 25.01%, 12.00 bps, 7cb6e4bb75ec73858158de28a3ddfb4f)
+test 0006...pass (       -, 25.56%, 11.91 bps, 95eade6686ca64fe76a36cf53e2c41f3)
+test 0007...pass (      -h, 25.74%, 11.88 bps, c8b15d789faecddea41d7f18aadc4f01)
+test 0008...pass (     -hh, 25.99%, 11.84 bps, 169b03401e4b6a07d6e6fb7105d1b893)
+
+   *** 16-bit, stereo ***
+test 0009...pass (      -f, 26.99%, 11.68 bps, 9ad733c06b8816c51365f6833da6ba25)
+test 0010...pass (       -, 27.53%, 11.60 bps, 880e124a6f92ce026af36d597d6d33df)
+test 0011...pass (      -h, 30.52%, 11.12 bps, 0f9112cace7d45f45a165839d8def23e)
+test 0012...pass (     -hh, 31.17%, 11.01 bps, 1943412868a3f37aa0bddf736b831f37)
+
+   *** 16-bit (converted to float), stereo ***
+test 0013...pass (      -f, 63.47%, 11.69 bps, 2a238e6771c5a9477fb3b82a575136c4)
+test 0014...pass (       -, 63.73%, 11.61 bps, 04f131a820efe66b9691a44fb3ea76a5)
+test 0015...pass (      -h, 65.05%, 11.18 bps, d1a88dfefbdc8e3b3b27de8dafecd0c7)
+test 0016...pass (     -hh, 65.35%, 11.09 bps, dca413db00db2458422dc711a237688c)
+
+   *** 24-bit, 5.1 channels ***
+test 0017...pass (      -f, 21.75%, 18.78 bps, f5eeb0e8eefa48e81e959f6b4c219ad8)
+test 0018...pass (       -, 22.20%, 18.67 bps, dd5f2e318c42becf21f8be479656ffcf)
+test 0019...pass (      -h, 23.59%, 18.34 bps, 58ed811398a9f00b0e92011c118d3eb5)
+test 0020...pass (     -hh, 23.83%, 18.28 bps, c122ce9318a7a3c7662c0d38b9dbf6f7)
+
+   *** 24-bit (converted to float), 5.1 channels ***
+test 0021...pass (      -f, 41.28%, 18.79 bps, 72870548b3c5338039d90f47ad441cd0)
+test 0022...pass (       -, 41.60%, 18.69 bps, 52a5eaacd80b02fd8dcb7be565974b81)
+test 0023...pass (      -h, 42.61%, 18.36 bps, 588a1e668126e7d94b846e3a9aecb275)
+test 0024...pass (     -hh, 42.77%, 18.31 bps, b8a74655cd33f0578623ce7cbf46463a)
+
+   *** 32-bit integer (converted from float), 5.1 channels ***
+test 0025...pass (      -f, 16.69%, 26.66 bps, f80bd4aaae6ada68cc0dd621d829de34)
+test 0026...pass (       -, 17.08%, 26.53 bps, 0ff276546cbee9f90f350650b60aa69d)
+test 0027...pass (      -h, 28.49%, 22.88 bps, 9bac13be5651c122d7cacedf33b76407)
+test 0028...pass (     -hh, 28.74%, 22.80 bps, 4034c617623ee1a4ed7622404f6e9872)
+
+   *** 32-bit integer, 5.1 channels ***
+test 0029...pass (      -f, 16.52%, 26.71 bps, 4ba6fd45868667a9852a4a4d2fb48a99)
+test 0030...pass (       -, 16.98%, 26.57 bps, e9c66d60df311a931bf254786c057c16)
+test 0031...pass (      -h, 17.85%, 26.29 bps, d66c4e1d6e9ae5e0dea0c8c840eb5f77)
+test 0032...pass (     -hh, 17.88%, 26.28 bps, 2973de3c2bf617a7057c57b3e27a25a5)
+
+   *** 32-bit float stored as integer (pathological), 5.1 channels ***
+test 0033...pass (      -f, 13.36%, 27.72 bps, cde1cacc7ba7e0d4a5a0cd6b581297e9)
+test 0034...pass (       -, 13.87%, 27.56 bps, 82d0d187929c19bc56c0ceb0888127cc)
+test 0035...pass (      -h, 13.19%, 27.78 bps, 49f2f49380bbd3638ed65fad2d3fc91c)
+test 0036...pass (     -hh, 12.71%, 27.93 bps, d3332c7d861b264d546d85ac6f4978f7)
+
+   *** 32-bit integer stored as float (pathological), 5.1 channels ***
+test 0037...pass (      -f, -24.54%, 39.85 bps, 0abd5ab07d3e184d4f34ed46cea2af32)
+test 0038...pass (       -, -27.43%, 40.78 bps, c7e78c90e572f335328871666ed67d9c)
+test 0039...pass (      -h, -29.51%, 41.44 bps, 9596ddef67b3ec14dfc99d8dd937fa8b)
+test 0040...pass (     -hh, -34.07%, 42.90 bps, 9fa84fdded1158006e6e204c270e15eb)
+
+   *** 32-bit float, 5.1 channels ***
+test 0041...pass (      -f, 25.62%, 23.80 bps, 06d291a42cd51b70e537e894aec083fb)
+test 0042...pass (       -, 25.95%, 23.70 bps, f89cb9a9fce732a0b0f17fa2fcc6946b)
+test 0043...pass (      -h, 27.01%, 23.36 bps, e3b4616dd5b2aed19030dd0b251258a5)
+test 0044...pass (     -hh, 27.15%, 23.31 bps, 9ddd6a3fff1e0cbecae64178be40db4a)
+
+
+                         ****** hybrid lossless ******
+
+   *** 8-bit, mono ***
+test 0045...pass (   -fb3c, 34.95%, 5.20 bps, 417e5aaffe6537a1206b901fd5df19b5)
+test 0046...pass (    -b3c, 35.42%, 5.17 bps, 21d4a65e303be12dc7399b6e6ae23f99)
+test 0047...pass (   -hb3c, 35.18%, 5.19 bps, 3cedac71621d0d4c04cd7dbb4a88a3e4)
+test 0048...pass (  -hhb3c, 34.82%, 5.21 bps, 9a06c033b44845ba703f41ada36e69a9)
+
+   *** 16-bit, mono ***
+test 0049...pass (   -fb3c, 21.50%, 12.56 bps, 7e314ceb4077596beabc8ce11645c8a4)
+test 0050...pass (    -b3c, 22.07%, 12.47 bps, 5699ca15923521937a6a8d65a6aa57c4)
+test 0051...pass (   -hb3c, 22.21%, 12.45 bps, 44460f7b870fbbc7e27c9c76ee728943)
+test 0052...pass (  -hhb3c, 22.22%, 12.45 bps, c09cc9310c797a96ba3da5f6d5946f5d)
+
+   *** 16-bit, stereo ***
+test 0053...pass (   -fb3c, 24.52%, 12.08 bps, ed2038dd950d320ddf7936ee6587bb50)
+test 0054...pass (    -b3c, 24.97%, 12.00 bps, 1753b65632ee8d522fea0d6068590aac)
+test 0055...pass (   -hb3c, 25.36%, 11.94 bps, b3883b08cd35c5ee8ae69ffdf38dfbb8)
+test 0056...pass (  -hhb3c, 25.44%, 11.93 bps, edf14111558e68144c799172382faedc)
+
+   *** 16-bit (converted to float), stereo ***
+test 0057...pass (   -fb3c, 62.94%, 11.86 bps, 7415f28952f0e61f9b7a25c44f112bf3)
+test 0058...pass (    -b3c, 63.23%, 11.77 bps, 34aa78d732204773e837a0aab52f2ae0)
+test 0059...pass (   -hb3c, 63.42%, 11.71 bps, f8da89429a6a7b53a7acd0ce93e2e8f1)
+test 0060...pass (  -hhb3c, 63.58%, 11.65 bps, bb0e0b99ac2a072c54d935e21ba0158c)
+
+   *** 24-bit, 5.1 channels ***
+test 0061...pass (   -fb3c, 19.80%, 19.25 bps, 45319a820e4478719c5b650f1c1ed586)
+test 0062...pass (    -b3c, 20.33%, 19.12 bps, d83f7c97c467c179c34dfed1ed88ee5e)
+test 0063...pass (   -hb3c, 20.38%, 19.11 bps, 56bf4f875d38d06dbbf7d1738191cd9f)
+test 0064...pass (  -hhb3c, 20.41%, 19.10 bps, 482022e3c9f54e5bfc9ee14b5805a194)
+
+   *** 24-bit (converted to float), 5.1 channels ***
+test 0065...pass (   -fb3c, 40.76%, 18.96 bps, d537ef3f2b2575bb6d693c527855a52e)
+test 0066...pass (    -b3c, 41.21%, 18.81 bps, 2902d6856151ff156e53b9c761d9144d)
+test 0067...pass (   -hb3c, 41.29%, 18.79 bps, 9d6cee94b87a3426f5e64a808ec9f84e)
+test 0068...pass (  -hhb3c, 41.38%, 18.76 bps, 6172e9e3094881d94141dea623aa074d)
+
+   *** 32-bit integer (converted from float), 5.1 channels ***
+test 0069...pass (   -fb3c, 16.14%, 26.84 bps, 1793d9d800142a180ee955d3a0fdb7db)
+test 0070...pass (    -b3c, 16.60%, 26.69 bps, d8cac0e364351bb5a2558eee24eb9a4b)
+test 0071...pass (   -hb3c, 27.20%, 23.30 bps, 917e4a361f353cb615402a893337367e)
+test 0072...pass (  -hhb3c, 27.31%, 23.26 bps, 3985a63e23184f910a7d448f3f507b1a)
+
+   *** 32-bit integer, 5.1 channels ***
+test 0073...pass (   -fb3c, 15.98%, 26.89 bps, 8850ce5bd384c33a41e56afee38df927)
+test 0074...pass (    -b3c, 16.48%, 26.73 bps, aec581dd6be10ee22082c68f4f78cf72)
+test 0075...pass (   -hb3c, 16.45%, 26.74 bps, 8d0a8eafac9c64bd08569acca16c0f1a)
+test 0076...pass (  -hhb3c, 16.51%, 26.72 bps, 3ab9376ab056a676fbcf3873753fe73b)
+
+   *** 32-bit float stored as integer (pathological), 5.1 channels ***
+test 0077...pass (   -fb3c, 12.56%, 27.98 bps, 9b5a87cdfbd70cc81cc3740f7e2b56fe)
+test 0078...pass (    -b3c, 12.46%, 28.01 bps, 3b8266e2c073baf5ab5e141b1c786fa0)
+test 0079...pass (   -hb3c, 11.67%, 28.27 bps, c99ae60f10a7da38e77a1d6dc34ce39f)
+test 0080...pass (  -hhb3c, 11.26%, 28.40 bps, a19f0cc200dfb9e19ff3918bf8c2f622)
+
+   *** 32-bit float, 5.1 channels ***
+test 0081...pass (   -fb3c, 25.06%, 23.98 bps, a272ee9ba22eb3c3fd9ca8f1a56ed478)
+test 0082...pass (    -b3c, 25.50%, 23.84 bps, a5fe50f213f283022d21da5104141a04)
+test 0083...pass (   -hb3c, 25.66%, 23.79 bps, 0252f670639a0d0b1a4f0623286b363d)
+test 0084...pass (  -hhb3c, 25.72%, 23.77 bps, 216c2f0911a25058a5cf04c88c67dbf5)
+
+
+                          ****** hybrid lossy ******
+
+   *** 8-bit, mono ***
+test 0085...pass (    -fb5, 50.39%, 3.97 bps, 77d5683fa6f68096e51bd11576c33b4e)
+test 0086...pass (     -b5, 50.39%, 3.97 bps, a79e78b1a07d9ab6e3f4c96d5fdc3dca)
+test 0087...pass (    -hb5, 50.23%, 3.98 bps, 957b63eadac7261ee454b44d409ab624)
+test 0088...pass (   -hhb5, 50.05%, 4.00 bps, 0469774d3ab9bb0c572a9526bbc9cc59)
+
+   *** 16-bit, mono ***
+test 0089...pass (    -fb5, 68.67%, 5.01 bps, 7c5cdcfbd25bb53868c9621304d1d595)
+test 0090...pass (     -b5, 68.51%, 5.04 bps, f4c507aa20600e8b16e2dcdbb81690f0)
+test 0091...pass (    -hb5, 68.49%, 5.04 bps, 92c214a4a4b583a7cfa727dadea73697)
+test 0092...pass (   -hhb5, 68.42%, 5.05 bps, 5835702856ef2fb1ce769c8a3a880f17)
+
+   *** 16-bit, stereo ***
+test 0093...pass (    -fb5, 68.13%, 5.10 bps, 7df39d47d66e7c50db9a9991784e1a71)
+test 0094...pass (     -b5, 67.93%, 5.13 bps, 56e7fc3fb88d7b913c7262e2f0a84453)
+test 0095...pass (    -hb5, 67.86%, 5.14 bps, ff7329cc266fcd9e88b6a6a68eb46f35)
+test 0096...pass (   -hhb5, 67.81%, 5.15 bps, af7abf428d1f57bad7b863cb4a30eed5)
+
+   *** 16-bit (converted to float), stereo ***
+test 0097...pass (    -fb5, 84.04%, 5.11 bps, 85fb3b4c643b5c34962fd60dc8bf9935)
+test 0098...pass (     -b5, 83.97%, 5.13 bps, d33ac9dd4c2df357a8af7f647385a639)
+test 0099...pass (    -hb5, 84.00%, 5.12 bps, 01a09bebde227b0176bf85aa61bdd134)
+test 0100...pass (   -hhb5, 83.99%, 5.12 bps, 5f022c7275d283e2dae86a553221ad7f)
+
+   *** 24-bit, 5.1 channels ***
+test 0101...pass (    -fb5, 78.96%, 5.05 bps, 29ff0f004c47134b4d64073d632a09e6)
+test 0102...pass (     -b5, 78.77%, 5.10 bps, 8b8a535260ab2d9be779f7e5b3a5fdbd)
+test 0103...pass (    -hb5, 78.60%, 5.14 bps, 22087b9ca1e0ccf1484d3265202f7f1f)
+test 0104...pass (   -hhb5, 78.51%, 5.16 bps, be594604e1bfa1044916f9e7158a01ae)
+
+   *** 24-bit (converted to float), 5.1 channels ***
+test 0105...pass (    -fb5, 84.19%, 5.06 bps, 929439fef8c75624994c002a0d6c8166)
+test 0106...pass (     -b5, 84.08%, 5.10 bps, 481841129f71fc23a7300d83a3dce24e)
+test 0107...pass (    -hb5, 83.99%, 5.12 bps, a1f42033305fb8a09eb9dfc003ee0a2c)
+test 0108...pass (   -hhb5, 83.91%, 5.15 bps, 008d99d6c0d6c087721ba3efafe4f12f)
+
+   *** 32-bit integer (converted from float), 5.1 channels ***
+test 0109...pass (    -fb5, 84.16%, 5.07 bps, bad31fbd064bd97c9fa3afaaf4f30c55)
+test 0110...pass (     -b5, 84.04%, 5.11 bps, a172a4333aa4724a1b54476d645e7165)
+test 0111...pass (    -hb5, 83.92%, 5.14 bps, 85e4fa7e091280e01b84ae05c8e3e031)
+test 0112...pass (   -hhb5, 83.86%, 5.17 bps, 46fc7edfe103b1a0b08c941a109e4a25)
+
+   *** 32-bit integer, 5.1 channels ***
+test 0113...pass (    -fb5, 84.11%, 5.08 bps, 74a9ec5467ee0c9ac8ac99e66097912b)
+test 0114...pass (     -b5, 84.00%, 5.12 bps, e48c242a6151070e2cfba35122fe2aa6)
+test 0115...pass (    -hb5, 83.89%, 5.15 bps, 028f173b4b39cbcbeddb5c76892d84dd)
+test 0116...pass (   -hhb5, 83.83%, 5.18 bps, fd435e739ddd4209af1cb69b4f24c267)
+
+   *** 32-bit float stored as integer (pathological), 5.1 channels ***
+test 0117...pass (    -fb5, 80.13%, 6.36 bps, 5200e1d3fb287d022e838d9e938862e0)
+test 0118...pass (     -b5, 79.75%, 6.48 bps, ae2ac23a6702d0b4115192d08bf1d7ec)
+test 0119...pass (    -hb5, 79.87%, 6.44 bps, ddbb748886775d1f73ff4d6dd9f49a80)
+test 0120...pass (   -hhb5, 79.79%, 6.47 bps, 39fb65f4c79c9acb0a8a73f47f9ee892)
+
+   *** 32-bit float, 5.1 channels ***
+test 0121...pass (    -fb5, 84.12%, 5.08 bps, b749a721f1663b5099ea0887bb5d1b11)
+test 0122...pass (     -b5, 84.00%, 5.12 bps, 13a58ddc41ea5d9608c6a563e2c11fc4)
+test 0123...pass (    -hb5, 83.92%, 5.15 bps, b4c8c17ba66b03b7c4e9829da196127d)
+test 0124...pass (   -hhb5, 83.85%, 5.17 bps, c145f3f0a2161927df9bc2dc074119f3)
+
+
+            ****** hybrid lossless (but ignore wvc on decode) ******
+
+   *** 8-bit, mono ***
+test 0125...pass (   -fb4c, 54.60%, 3.63 bps, 953ce342ae1d77172185fd8578b722c3)
+test 0126...pass (    -b4c, 54.27%, 3.66 bps, b568a4e8350cc1e3b1b271fb75f7a48c)
+test 0127...pass (   -hb4c, 53.82%, 3.69 bps, ae557025de8c90176b53b9ed7ac9461c)
+test 0128...pass (  -hhb4c, 53.14%, 3.75 bps, 982455aff5f90d445159f28f8ca51421)
+
+   *** 16-bit, mono ***
+test 0129...pass (   -fb4c, 73.32%, 4.27 bps, ff46a275a258c83b4aca051a66f716e6)
+test 0130...pass (    -b4c, 73.06%, 4.31 bps, 4624d3433c509eece074fc51ef31c361)
+test 0131...pass (   -hb4c, 72.89%, 4.34 bps, e5799695694ccbda46995981f64f3953)
+test 0132...pass (  -hhb4c, 72.55%, 4.39 bps, 6c377df2d61938155ea0fac6d3620d1d)
+
+   *** 16-bit, stereo ***
+test 0133...pass (   -fb4c, 73.47%, 4.24 bps, fa2d12ad95d472bd15ffd7bbf85bac4d)
+test 0134...pass (    -b4c, 73.21%, 4.29 bps, dd3c0ba22d96121aa3028e48b8d5a080)
+test 0135...pass (   -hb4c, 73.11%, 4.30 bps, eab1e91b0abae6f9a5f38385d5675bcc)
+test 0136...pass (  -hhb4c, 72.84%, 4.35 bps, 52d0535cb8a95cf7f865791cf19846e0)
+
+   *** 16-bit (converted to float), stereo ***
+test 0137...pass (   -fb4c, 87.15%, 4.11 bps, 14923914c6ea5fa24590ee4591cec9df)
+test 0138...pass (    -b4c, 87.09%, 4.13 bps, eeaa859556df24e0363906a53c157df9)
+test 0139...pass (   -hb4c, 87.15%, 4.11 bps, d998f9fb14174c84e65a8da8568f4141)
+test 0140...pass (  -hhb4c, 87.11%, 4.12 bps, 7b15802ebb904e4011c4b75e91a2acb4)
+
+   *** 24-bit, 5.1 channels ***
+test 0141...pass (   -fb4c, 82.39%, 4.23 bps, dd2ff77849dd830901ab067636cc24b1)
+test 0142...pass (    -b4c, 82.18%, 4.28 bps, 53b574ffd08c52e999e01b8ca35261a2)
+test 0143...pass (   -hb4c, 81.98%, 4.32 bps, 4d1070ba56ae8470905be32b6f37635e)
+test 0144...pass (  -hhb4c, 81.78%, 4.37 bps, 91767cb9d543559cbe56bb0e395db8f0)
+
+   *** 24-bit (converted to float), 5.1 channels ***
+test 0145...pass (   -fb4c, 87.32%, 4.06 bps, 1a265db70def52a1e8c32e76a8855ed4)
+test 0146...pass (    -b4c, 87.25%, 4.08 bps, e955475a626977d050437f647b0aac8a)
+test 0147...pass (   -hb4c, 87.19%, 4.10 bps, 724c72a0afd6a2171c469c2a9e282018)
+test 0148...pass (  -hhb4c, 87.13%, 4.12 bps, 0a30fa1181a8af7d9fa1e0e12617a882)
+
+   *** 32-bit integer (converted from float), 5.1 channels ***
+test 0149...pass (   -fb4c, 87.28%, 4.07 bps, bd2db29508631bdf74dbe7c33ccfe309)
+test 0150...pass (    -b4c, 87.21%, 4.09 bps, 5fc77a954a8fad1299afe4e93dede90a)
+test 0151...pass (   -hb4c, 87.15%, 4.11 bps, defbe4ca59485af16075b19806778019)
+test 0152...pass (  -hhb4c, 87.08%, 4.13 bps, e889a065b51fe26ce1d9291d66a7716c)
+
+   *** 32-bit integer, 5.1 channels ***
+test 0153...pass (   -fb4c, 87.25%, 4.08 bps, 9d71e431245ee2e5d7e6c987002f779e)
+test 0154...pass (    -b4c, 87.16%, 4.11 bps, 9dc2f216c517d2f084344895f7415b22)
+test 0155...pass (   -hb4c, 87.09%, 4.13 bps, 92c46db440c72f67c7f303547fbb37f9)
+test 0156...pass (  -hhb4c, 87.04%, 4.15 bps, bd2b3fa490e897f6d76c89fa207a2b0e)
+
+   *** 32-bit float stored as integer (pathological), 5.1 channels ***
+test 0157...pass (   -fb4c, 83.65%, 5.23 bps, 944352ef8780452f9b7a478bbd496558)
+test 0158...pass (    -b4c, 83.41%, 5.31 bps, e4c0f4d0f8801c68a5ff186c453204ab)
+test 0159...pass (   -hb4c, 83.58%, 5.26 bps, 65089be0753ce5ae41069deda4e2ba1e)
+test 0160...pass (  -hhb4c, 83.56%, 5.26 bps, 83c0e9d0032f79bbc93f9a92da26caa3)
+
+   *** 32-bit float, 5.1 channels ***
+test 0161...pass (   -fb4c, 87.26%, 4.08 bps, 2405994ca59e37566075ed72104a306e)
+test 0162...pass (    -b4c, 87.19%, 4.10 bps, 1d54e108f2255dbe9a6d64bbd4e438f2)
+test 0163...pass (   -hb4c, 87.13%, 4.12 bps, c49ced70fc8b5b83f779b3292662a734)
+test 0164...pass (  -hhb4c, 87.07%, 4.14 bps, 458782bf85a77142aea057acdc214f35)
+
+all tests pass
+

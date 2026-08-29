@@ -1,0 +1,259 @@
+[1/125] Building C object libarchive/CMakeFiles/archive.dir/archive_cryptor.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[2/125] Building C object libarchive/CMakeFiles/archive.dir/archive_hmac.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[3/125] Building C object libarchive/CMakeFiles/archive.dir/archive_entry_stat.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[4/125] Building C object libarchive/CMakeFiles/archive.dir/archive_pack_dev.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[5/125] Building C object libarchive/CMakeFiles/archive.dir/archive_entry_copy_stat.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[6/125] Building C object libarchive/CMakeFiles/archive.dir/archive_digest.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[7/125] Building C object libarchive/CMakeFiles/archive.dir/archive_pathmatch.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[8/125] Building C object libarchive/CMakeFiles/archive.dir/archive_random.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[9/125] Building C object libarchive/CMakeFiles/archive.dir/archive_entry_strmode.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[10/125] Building C object libarchive/CMakeFiles/archive.dir/archive_entry_xattr.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[11/125] Building C object libarchive/CMakeFiles/archive.dir/archive_check_magic.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[12/125] Building C object libarchive/CMakeFiles/archive.dir/archive_entry_sparse.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[13/125] Building C object libarchive/CMakeFiles/archive.dir/archive_options.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[14/125] Building C object libarchive/CMakeFiles/archive.dir/archive_cmdline.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[15/125] Building C object libarchive/CMakeFiles/archive.dir/archive_rb.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[16/125] Building C object libarchive/CMakeFiles/archive.dir/archive_entry_link_resolver.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[17/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_append_filter.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[18/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_extract.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[19/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_add_passphrase.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[20/125] Building C object libarchive/CMakeFiles/archive.dir/archive_parse_date.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[21/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_set_format.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[22/125] Building C object libarchive/CMakeFiles/archive.dir/archive_match.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[23/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_filter_all.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[24/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_set_options.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[25/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_data_into_fd.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[26/125] Building C object libarchive/CMakeFiles/archive.dir/archive_entry.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[27/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_open_fd.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[28/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_disk_set_standard_lookup.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[29/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_extract2.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[30/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_open_file.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[31/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_filter_bzip2.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[32/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_open_memory.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[33/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_filter_gzip.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[34/125] Building C object libarchive/CMakeFiles/archive.dir/archive_acl.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[35/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_open_filename.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[36/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_filter_by_code.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[37/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_filter_lz4.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[38/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[39/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_disk_entry_from_file.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[40/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_filter_compress.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[41/125] Building C object libarchive/CMakeFiles/archive.dir/archive_ppmd7.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[42/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_filter_grzip.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[43/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_filter_lrzip.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[44/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_filter_none.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[45/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_format_all.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[46/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_filter_lzop.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[47/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_format_by_code.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[48/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_filter_rpm.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[49/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_format_empty.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[50/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_filter_zstd.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[51/125] Building C object libarchive/CMakeFiles/archive.dir/archive_ppmd8.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[52/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_filter_program.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[53/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_format_xar.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[54/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_filter_xz.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[55/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_disk_posix.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[56/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_filter_uu.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[57/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_format_raw.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[58/125] Building C object libarchive/CMakeFiles/archive.dir/archive_virtual.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[59/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_format_ar.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[60/125] Building C object libarchive/CMakeFiles/archive.dir/archive_time.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[61/125] Building C object libarchive/CMakeFiles/archive.dir/archive_string_sprintf.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[62/125] Building C object libarchive/CMakeFiles/archive.dir/archive_version_details.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[63/125] Building C object libarchive/CMakeFiles/archive.dir/archive_util.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[64/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_disk_set_standard_lookup.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[65/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[66/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_format_warc.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[67/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_open_fd.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[68/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_open_file.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[69/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_add_filter_by_name.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[70/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_format_mtree.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[71/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_add_filter_b64encode.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[72/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_format_iso9660.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[73/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_format_cpio.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[74/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_open_memory.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[75/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_add_filter.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[76/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_add_filter_bzip2.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[77/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_open_filename.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[78/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_add_filter_gzip.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[79/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_add_filter_none.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[80/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_add_filter_lz4.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[81/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_add_filter_xz.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[82/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_add_filter_grzip.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[83/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_add_filter_compress.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[84/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_add_filter_lrzip.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[85/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_add_filter_uuencode.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[86/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_add_filter_lzop.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[87/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_set_format_by_name.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[88/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_set_format_cpio.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[89/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_add_filter_zstd.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[90/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_format_tar.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[91/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_set_format.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[92/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_set_format_cpio_newc.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[93/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_add_filter_program.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[94/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_set_format_cpio_binary.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[95/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_set_format_filter_by_ext.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[96/125] Building C object libarchive/CMakeFiles/archive.dir/archive_string.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[97/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_set_format_ar.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[98/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_set_format_cpio_odc.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[99/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_disk_posix.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[100/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_set_format_raw.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[101/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_format_7zip.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[102/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_set_format_shar.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[103/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_format_lha.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[104/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_format_rar.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[105/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_set_format_v7tar.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[106/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_set_format_gnutar.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[107/125] Building C object libarchive/CMakeFiles/archive.dir/filter_fork_posix.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[108/125] Building C object libarchive/CMakeFiles/archive.dir/xxhash.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[109/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_set_format_xar.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[110/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_set_format_7zip.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[111/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_set_options.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[112/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_set_passphrase.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[113/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_format_cab.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[114/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_set_format_warc.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[115/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_format_zip.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+/home/functioner/Documents/rover2024/ae-libs/libarchive-org/libarchive/archive_read_support_format_zip.c:486:1: warning: unused function 'zip_read_decrypt' [-Wunused-function]
+  486 | zip_read_decrypt(struct zip *zip, const void *compressed_buff,
+      | ^~~~~~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/libarchive-org/libarchive/archive_read_support_format_zip.c:566:1: warning: unused function 'zip_read_decrypt_update' [-Wunused-function]
+  566 | zip_read_decrypt_update(struct zip *zip, ssize_t to_consume, const void *sp)
+      | ^~~~~~~~~~~~~~~~~~~~~~~
+2 warnings generated.
+[116/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_set_format_ustar.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[117/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_format_rar5.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[118/125] Building C object libarchive/CMakeFiles/archive.dir/archive_blake2sp_ref.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[119/125] Building C object libarchive/CMakeFiles/archive.dir/archive_blake2s_ref.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[120/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_set_format_mtree.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+/home/functioner/Documents/rover2024/ae-libs/libarchive-org/libarchive/archive_write_set_format_mtree.c:1616:19: warning: unused variable 'digest' [-Wunused-variable]
+ 1616 |         struct ae_digest digest;
+      |                          ^~~~~~
+1 warning generated.
+[121/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_set_format_pax.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[122/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_set_format_zip.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[123/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_set_format_iso9660.c.o
+clang: warning: argument unused during compilation: '-fuse-ld=lld' [-Wunused-command-line-argument]
+[124/125] Linking C shared library libarchive/libarchive.so.13.8.9
+[125/125] Creating library symlink libarchive/libarchive.so.13 libarchive/libarchive.so

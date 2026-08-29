@@ -1,0 +1,139 @@
+[1/125] Building C object libarchive/CMakeFiles/archive.dir/archive_cryptor.c.o
+[2/125] Building C object libarchive/CMakeFiles/archive.dir/archive_entry_stat.c.o
+[3/125] Building C object libarchive/CMakeFiles/archive.dir/archive_entry_strmode.c.o
+[4/125] Building C object libarchive/CMakeFiles/archive.dir/archive_entry_sparse.c.o
+[5/125] Building C object libarchive/CMakeFiles/archive.dir/archive_entry_copy_stat.c.o
+[6/125] Building C object libarchive/CMakeFiles/archive.dir/archive_hmac.c.o
+[7/125] Building C object libarchive/CMakeFiles/archive.dir/archive_digest.c.o
+[8/125] Building C object libarchive/CMakeFiles/archive.dir/archive_random.c.o
+[9/125] Building C object libarchive/CMakeFiles/archive.dir/archive_pack_dev.c.o
+[10/125] Building C object libarchive/CMakeFiles/archive.dir/archive_entry_link_resolver.c.o
+[11/125] Building C object libarchive/CMakeFiles/archive.dir/archive_cmdline.c.o
+[12/125] Building C object libarchive/CMakeFiles/archive.dir/archive_entry_xattr.c.o
+[13/125] Building C object libarchive/CMakeFiles/archive.dir/archive_check_magic.c.o
+[14/125] Building C object libarchive/CMakeFiles/archive.dir/archive_rb.c.o
+[15/125] Building C object libarchive/CMakeFiles/archive.dir/archive_options.c.o
+[16/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_add_passphrase.c.o
+[17/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_data_into_fd.c.o
+[18/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_extract.c.o
+[19/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_open_file.c.o
+[20/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_open_memory.c.o
+[21/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_append_filter.c.o
+[22/125] Building C object libarchive/CMakeFiles/archive.dir/archive_pathmatch.c.o
+[23/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_disk_set_standard_lookup.c.o
+[24/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_disk_entry_from_file.c.o
+[25/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_open_fd.c.o
+[26/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_extract2.c.o
+[27/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_open_filename.c.o
+[28/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_filter_all.c.o
+[29/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_set_format.c.o
+[30/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_set_options.c.o
+[31/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_filter_by_code.c.o
+[32/125] Building C object libarchive/CMakeFiles/archive.dir/archive_parse_date.c.o
+[33/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_filter_grzip.c.o
+[34/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_filter_none.c.o
+[35/125] Building C object libarchive/CMakeFiles/archive.dir/archive_match.c.o
+[36/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_filter_lrzip.c.o
+[37/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_filter_lzop.c.o
+[38/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_filter_bzip2.c.o
+[39/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_filter_gzip.c.o
+[40/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_filter_lz4.c.o
+[41/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_format_all.c.o
+[42/125] Building C object libarchive/CMakeFiles/archive.dir/archive_ppmd7.c.o
+[43/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_filter_compress.c.o
+[44/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_format_by_code.c.o
+[45/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_filter_rpm.c.o
+[46/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_filter_zstd.c.o
+[47/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_disk_posix.c.o
+[48/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_filter_xz.c.o
+[49/125] Building C object libarchive/CMakeFiles/archive.dir/archive_ppmd8.c.o
+[50/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_format_empty.c.o
+[51/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read.c.o
+In file included from /home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_read.c:1825:
+/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/../LoreFileContext.c:42:48: warning: ‘LoreFileContext_FDGs’ defined but not used [-Wunused-variable]
+   42 | static struct LoreStaticFunctionDecayGuardInfo LoreFileContext_FDGs[] = {
+      |                                                ^~~~~~~~~~~~~~~~~~~~
+[52/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_filter_program.c.o
+[53/125] Building C object libarchive/CMakeFiles/archive.dir/archive_entry.c.o
+[54/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_format_raw.c.o
+[55/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_format_xar.c.o
+[56/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_filter_uu.c.o
+[57/125] Building C object libarchive/CMakeFiles/archive.dir/archive_acl.c.o
+[58/125] Building C object libarchive/CMakeFiles/archive.dir/archive_time.c.o
+[59/125] Building C object libarchive/CMakeFiles/archive.dir/archive_string_sprintf.c.o
+[60/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_format_warc.c.o
+[61/125] Building C object libarchive/CMakeFiles/archive.dir/archive_version_details.c.o
+[62/125] Building C object libarchive/CMakeFiles/archive.dir/archive_virtual.c.o
+[63/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_open_fd.c.o
+[64/125] Building C object libarchive/CMakeFiles/archive.dir/archive_util.c.o
+[65/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_format_ar.c.o
+[66/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_open_filename.c.o
+[67/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_open_file.c.o
+[68/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_add_filter.c.o
+[69/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_open_memory.c.o
+[70/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_disk_set_standard_lookup.c.o
+[71/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_add_filter_grzip.c.o
+[72/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_add_filter_by_name.c.o
+[73/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write.c.o
+[74/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_add_filter_bzip2.c.o
+[75/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_add_filter_lz4.c.o
+[76/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_format_mtree.c.o
+[77/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_add_filter_b64encode.c.o
+[78/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_add_filter_gzip.c.o
+[79/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_add_filter_compress.c.o
+[80/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_add_filter_none.c.o
+[81/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_format_cpio.c.o
+[82/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_add_filter_lrzip.c.o
+[83/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_format_iso9660.c.o
+[84/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_add_filter_lzop.c.o
+[85/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_set_format_cpio.c.o
+[86/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_add_filter_xz.c.o
+[87/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_set_format.c.o
+[88/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_set_format_by_name.c.o
+[89/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_add_filter_zstd.c.o
+[90/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_add_filter_uuencode.c.o
+[91/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_add_filter_program.c.o
+[92/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_format_cab.c.o
+[93/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_set_format_filter_by_ext.c.o
+[94/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_disk_posix.c.o
+[95/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_set_format_cpio_odc.c.o
+[96/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_set_format_cpio_binary.c.o
+[97/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_set_format_cpio_newc.c.o
+[98/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_set_format_ar.c.o
+[99/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_set_format_raw.c.o
+[100/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_set_format_xar.c.o
+[101/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_format_tar.c.o
+[102/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_set_format_warc.c.o
+[103/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_set_format_gnutar.c.o
+[104/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_set_format_shar.c.o
+[105/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_set_passphrase.c.o
+[106/125] Building C object libarchive/CMakeFiles/archive.dir/xxhash.c.o
+[107/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_set_options.c.o
+[108/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_format_lha.c.o
+[109/125] Building C object libarchive/CMakeFiles/archive.dir/filter_fork_posix.c.o
+[110/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_format_7zip.c.o
+[111/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_set_format_v7tar.c.o
+[112/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_set_format_7zip.c.o
+[113/125] Building C object libarchive/CMakeFiles/archive.dir/archive_blake2sp_ref.c.o
+[114/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_set_format_ustar.c.o
+[115/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_format_rar5.c.o
+[116/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_set_format_mtree.c.o
+/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_write_set_format_mtree.c: In function ‘sum_final’:
+/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_write_set_format_mtree.c:1616:26: warning: unused variable ‘digest’ [-Wunused-variable]
+ 1616 |         struct ae_digest digest;
+      |                          ^~~~~~
+[117/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_format_zip.c.o
+/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_read_support_format_zip.c:566:1: warning: ‘zip_read_decrypt_update’ defined but not used [-Wunused-function]
+  566 | zip_read_decrypt_update(struct zip *zip, ssize_t to_consume, const void *sp)
+      | ^~~~~~~~~~~~~~~~~~~~~~~
+/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_read_support_format_zip.c:486:1: warning: ‘zip_read_decrypt’ defined but not used [-Wunused-function]
+  486 | zip_read_decrypt(struct zip *zip, const void *compressed_buff,
+      | ^~~~~~~~~~~~~~~~
+[118/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_set_format_zip.c.o
+[119/125] Building C object libarchive/CMakeFiles/archive.dir/archive_blake2s_ref.c.o
+[120/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_set_format_pax.c.o
+[121/125] Building C object libarchive/CMakeFiles/archive.dir/archive_string.c.o
+[122/125] Building C object libarchive/CMakeFiles/archive.dir/archive_read_support_format_rar.c.o
+[123/125] Building C object libarchive/CMakeFiles/archive.dir/archive_write_set_format_iso9660.c.o
+[124/125] Linking C shared library libarchive/libarchive.so.13.8.9
+[125/125] Creating library symlink libarchive/libarchive.so.13 libarchive/libarchive.so

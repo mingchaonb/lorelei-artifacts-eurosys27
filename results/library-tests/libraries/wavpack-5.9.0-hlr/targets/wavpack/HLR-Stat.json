@@ -1,0 +1,55 @@
+{
+    "callbackCheckGuardSignatures": [
+        "int (*)(void *)",
+        "int (*)(void *, int)",
+        "int (*)(void *, int, int)",
+        "int (*)(void *, unsigned int)",
+        "int (*)(void *, void *, int)",
+        "unsigned int (*)(void *)"
+    ],
+    "filesNeedPatch": [
+        "/home/functioner/Documents/rover2024/ae-libs/wavpack/src/common_utils.c",
+        "/home/functioner/Documents/rover2024/ae-libs/wavpack/src/open_filename.c",
+        "/home/functioner/Documents/rover2024/ae-libs/wavpack/src/open_legacy.c",
+        "/home/functioner/Documents/rover2024/ae-libs/wavpack/src/open_raw.c",
+        "/home/functioner/Documents/rover2024/ae-libs/wavpack/src/open_utils.c",
+        "/home/functioner/Documents/rover2024/ae-libs/wavpack/src/pack_utils.c",
+        "/home/functioner/Documents/rover2024/ae-libs/wavpack/src/tag_utils.c",
+        "/home/functioner/Documents/rover2024/ae-libs/wavpack/src/tags.c",
+        "/home/functioner/Documents/rover2024/ae-libs/wavpack/src/unpack_seek.c",
+        "/home/functioner/Documents/rover2024/ae-libs/wavpack/src/unpack_utils.c"
+    ],
+    "functionDecayGuardStats": [
+        {
+            "locations": {
+                "/home/functioner/Documents/rover2024/ae-libs/wavpack/src/open_filename.c:134:1": "/home/functioner/Documents/rover2024/ae-libs/wavpack/src/open_filename.c",
+                "/home/functioner/Documents/rover2024/ae-libs/wavpack/src/open_filename.c:213:1": "/home/functioner/Documents/rover2024/ae-libs/wavpack/src/open_filename.c",
+                "/home/functioner/Documents/rover2024/ae-libs/wavpack/src/open_filename.c:223:1": "/home/functioner/Documents/rover2024/ae-libs/wavpack/src/open_filename.c",
+                "/home/functioner/Documents/rover2024/ae-libs/wavpack/src/open_legacy.c:67:1": "/home/functioner/Documents/rover2024/ae-libs/wavpack/src/open_legacy.c",
+                "/home/functioner/Documents/rover2024/ae-libs/wavpack/src/open_legacy.c:73:1": "/home/functioner/Documents/rover2024/ae-libs/wavpack/src/open_legacy.c",
+                "/home/functioner/Documents/rover2024/ae-libs/wavpack/src/open_raw.c:102:1": "/home/functioner/Documents/rover2024/ae-libs/wavpack/src/open_raw.c",
+                "/home/functioner/Documents/rover2024/ae-libs/wavpack/src/open_raw.c:97:1": "/home/functioner/Documents/rover2024/ae-libs/wavpack/src/open_raw.c"
+            },
+            "signature": "int (*)(void *)"
+        },
+        {
+            "locations": {
+                "/home/functioner/Documents/rover2024/ae-libs/wavpack/src/open_filename.c:108:1": "/home/functioner/Documents/rover2024/ae-libs/wavpack/src/open_filename.c",
+                "/home/functioner/Documents/rover2024/ae-libs/wavpack/src/open_legacy.c:55:1": "/home/functioner/Documents/rover2024/ae-libs/wavpack/src/open_legacy.c",
+                "/home/functioner/Documents/rover2024/ae-libs/wavpack/src/open_raw.c:84:1": "/home/functioner/Documents/rover2024/ae-libs/wavpack/src/open_raw.c"
+            },
+            "signature": "int (*)(void *, int)"
+        },
+        {
+            "locations": {
+                "/home/functioner/Documents/rover2024/ae-libs/wavpack/src/open_filename.c:155:1": "/home/functioner/Documents/rover2024/ae-libs/wavpack/src/open_filename.c",
+                "/home/functioner/Documents/rover2024/ae-libs/wavpack/src/open_filename.c:76:1": "/home/functioner/Documents/rover2024/ae-libs/wavpack/src/open_filename.c",
+                "/home/functioner/Documents/rover2024/ae-libs/wavpack/src/open_legacy.c:25:1": "/home/functioner/Documents/rover2024/ae-libs/wavpack/src/open_legacy.c",
+                "/home/functioner/Documents/rover2024/ae-libs/wavpack/src/open_legacy.c:31:1": "/home/functioner/Documents/rover2024/ae-libs/wavpack/src/open_legacy.c",
+                "/home/functioner/Documents/rover2024/ae-libs/wavpack/src/open_raw.c:32:1": "/home/functioner/Documents/rover2024/ae-libs/wavpack/src/open_raw.c",
+                "/home/functioner/Documents/rover2024/ae-libs/wavpack/src/open_raw.c:64:1": "/home/functioner/Documents/rover2024/ae-libs/wavpack/src/open_raw.c"
+            },
+            "signature": "int (*)(void *, void *, int)"
+        }
+    ]
+}

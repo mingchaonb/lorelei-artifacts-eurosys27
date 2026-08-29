@@ -1,0 +1,59 @@
+{
+    "callbackCheckGuardSignatures": [
+        "int (*)(struct archive *, void *)",
+        "long (*)(struct archive *, void *, const void **)",
+        "long (*)(struct archive *, void *, long)"
+    ],
+    "filesNeedPatch": [
+        "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_read.c",
+        "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_read_open_fd.c",
+        "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_read_open_file.c",
+        "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_read_open_filename.c",
+        "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_read_open_memory.c",
+        "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_write.c",
+        "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_write_open_fd.c",
+        "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_write_open_file.c",
+        "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_write_open_filename.c",
+        "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_write_open_memory.c"
+    ],
+    "functionDecayGuardStats": [
+        {
+            "locations": {
+                "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_read_open_fd.c:61:1": "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_read_open_fd.c",
+                "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_read_open_file.c:61:1": "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_read_open_file.c",
+                "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_read_open_filename.c:90:1": "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_read_open_filename.c",
+                "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_read_open_filename.c:91:1": "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_read_open_filename.c",
+                "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_read_open_memory.c:49:1": "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_read_open_memory.c",
+                "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_read_open_memory.c:50:1": "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_read_open_memory.c",
+                "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_write_open_fd.c:56:1": "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_write_open_fd.c",
+                "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_write_open_fd.c:57:1": "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_write_open_fd.c",
+                "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_write_open_file.c:53:1": "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_write_open_file.c",
+                "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_write_open_file.c:54:1": "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_write_open_file.c",
+                "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_write_open_filename.c:63:1": "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_write_open_filename.c",
+                "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_write_open_filename.c:64:1": "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_write_open_filename.c",
+                "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_write_open_filename.c:65:1": "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_write_open_filename.c",
+                "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_write_open_memory.c:41:1": "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_write_open_memory.c",
+                "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_write_open_memory.c:42:1": "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_write_open_memory.c"
+            },
+            "signature": "int (*)(struct archive *, void *)"
+        },
+        {
+            "locations": {
+                "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_read_open_fd.c:62:1": "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_read_open_fd.c",
+                "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_read_open_file.c:62:1": "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_read_open_file.c",
+                "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_read_open_filename.c:94:1": "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_read_open_filename.c",
+                "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_read_open_memory.c:53:1": "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_read_open_memory.c"
+            },
+            "signature": "long (*)(struct archive *, void *, const void **)"
+        },
+        {
+            "locations": {
+                "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_read_open_fd.c:64:1": "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_read_open_fd.c",
+                "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_read_open_file.c:64:1": "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_read_open_file.c",
+                "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_read_open_filename.c:96:1": "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_read_open_filename.c",
+                "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_read_open_memory.c:52:1": "/home/functioner/Documents/rover2024/ae-libs/libarchive/libarchive/archive_read_open_memory.c"
+            },
+            "signature": "long (*)(struct archive *, void *, long)"
+        }
+    ]
+}
