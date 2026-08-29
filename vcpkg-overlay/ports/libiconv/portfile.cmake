@@ -1,0 +1,16 @@
+if(NOT TARGET_TRIPLET MATCHES "-ae$")
+    message(STATUS "Using the C library iconv for the non-AE host triplet")
+    set(VCPKG_POLICY_EMPTY_PACKAGE enabled)
+    file(MAKE_DIRECTORY "${CURRENT_PACKAGES_DIR}/share/iconv")
+    file(COPY "${CMAKE_CURRENT_LIST_DIR}/vcpkg-cmake-wrapper.cmake"
+        DESTINATION "${CURRENT_PACKAGES_DIR}/share/iconv")
+    return()
+endif()
+
+vcpkg_download_distfile(ARCHIVE URLS "https://ftp.gnu.org/gnu/libiconv/libiconv-${VERSION}.tar.gz" FILENAME "libiconv-${VERSION}.tar.gz" SHA512 a55eb3b7b785a78ab8918db8af541c9e11deb5ff4f89d54483287711ed797d87848ce0eafffa7ce26d9a7adb4b5a9891cb484f94bd4f51d3ce97a6a47b4c719a)
+vcpkg_extract_source_archive(SOURCE_PATH ARCHIVE "${ARCHIVE}")
+vcpkg_make_configure(SOURCE_PATH "${SOURCE_PATH}" OPTIONS --enable-shared --disable-static --enable-extra-encodings --without-libiconv-prefix --without-libintl-prefix)
+vcpkg_make_install()
+set(VCPKG_POLICY_ALLOW_RESTRICTED_HEADERS enabled)
+file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/tools" "${CURRENT_PACKAGES_DIR}/debug/share" "${CURRENT_PACKAGES_DIR}/share/doc")
+vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/COPYING.LIB" "${SOURCE_PATH}/COPYING")

@@ -1,0 +1,14 @@
+{
+  "name": "libcsv",
+  "version": "3.0.3",
+  "description": "libcsv library used by the Lorelei AE",
+  "homepage": "https://github.com/rgamble/libcsv",
+  "license": "GPL-2.0-or-later",
+  "supports": "linux",
+  "dependencies": [
+    {
+      "name": "vcpkg-make",
+      "host": true
+    }
+  ]
+}

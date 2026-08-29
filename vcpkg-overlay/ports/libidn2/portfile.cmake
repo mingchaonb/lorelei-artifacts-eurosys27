@@ -1,0 +1,7 @@
+vcpkg_download_distfile(ARCHIVE URLS "https://ftp.gnu.org/gnu/libidn/libidn2-${VERSION}.tar.gz" FILENAME "libidn2-${VERSION}.tar.gz" SHA512 4d8427c0f115268132f7544e80a808c883ab1406338f6c529b1a586b016d57aedb0857f66166eb8d9f37d70efc9dccf907b673b43b17bcf258c8797db1e829ce)
+vcpkg_extract_source_archive(SOURCE_PATH ARCHIVE "${ARCHIVE}")
+vcpkg_make_configure(SOURCE_PATH "${SOURCE_PATH}" OPTIONS --enable-shared --disable-static --disable-doc --disable-gtk-doc --disable-nls --disable-gcc-warnings --with-included-libunistring)
+vcpkg_make_install()
+vcpkg_fixup_pkgconfig()
+file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/tools" "${CURRENT_PACKAGES_DIR}/debug/share")
+vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/COPYING.LESSERv3" "${SOURCE_PATH}/COPYINGv2" "${SOURCE_PATH}/COPYING.unicode")

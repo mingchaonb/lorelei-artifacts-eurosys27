@@ -1,0 +1,14 @@
+{
+  "name": "libexif",
+  "version": "0.6.26",
+  "description": "libexif library used by the Lorelei AE",
+  "homepage": "https://github.com/libexif/libexif",
+  "license": "LGPL-2.1-or-later",
+  "supports": "linux",
+  "dependencies": [
+    {
+      "name": "vcpkg-make",
+      "host": true
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+vcpkg_download_distfile(ARCHIVE URLS "https://ftp.gnu.org/gnu/libidn/libidn-${VERSION}.tar.gz" FILENAME "libidn-${VERSION}.tar.gz" SHA512 a098d9c1df9d47181e7707a115dcfa12ba4b1aba68b1d070eff4f0578fd2e09b9c453457f83fc1a704726eac3a6f90e5a00772ab116affd07efe1e1ab9d5b0f1)
+vcpkg_extract_source_archive(SOURCE_PATH ARCHIVE "${ARCHIVE}")
+vcpkg_make_configure(SOURCE_PATH "${SOURCE_PATH}" OPTIONS --enable-shared --disable-static --disable-doc --disable-nls --disable-java --disable-csharp)
+vcpkg_make_install()
+vcpkg_fixup_pkgconfig()
+file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/tools" "${CURRENT_PACKAGES_DIR}/debug/share")
+vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/COPYING.LESSERv3")

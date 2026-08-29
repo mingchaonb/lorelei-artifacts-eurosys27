@@ -1,0 +1,15 @@
+{
+  "name": "libidn",
+  "version": "1.43",
+  "description": "GNU Libidn library used by the Lorelei AE",
+  "homepage": "https://www.gnu.org/software/libidn/",
+  "license": "LGPL-3.0-or-later",
+  "supports": "linux",
+  "dependencies": [
+    "libiconv",
+    {
+      "name": "vcpkg-make",
+      "host": true
+    }
+  ]
+}

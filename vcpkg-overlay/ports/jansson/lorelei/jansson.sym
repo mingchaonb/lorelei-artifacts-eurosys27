@@ -1,0 +1,7 @@
+JANSSON_4 {
+    global:
+          json_*;
+          jansson_*;
+    local:
+          *;
+};

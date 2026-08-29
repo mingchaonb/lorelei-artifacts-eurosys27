@@ -1,0 +1,14 @@
+{
+  "name": "libpsl",
+  "version": "0.21.5",
+  "description": "libpsl with builtin PSL and no runtime IDNA used by the Lorelei AE",
+  "homepage": "https://github.com/rockdaboot/libpsl",
+  "license": "MIT",
+  "supports": "linux",
+  "dependencies": [
+    {
+      "name": "vcpkg-make",
+      "host": true
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+vcpkg_download_distfile(ARCHIVE URLS "https://github.com/libexif/libexif/releases/download/v${VERSION}/libexif-${VERSION}.tar.xz" FILENAME "libexif-${VERSION}.tar.xz" SHA512 944b65d1dfda431f2c8c5179965cb4a501c1524a8383d6d5ab7e1c77da62fa6ac4751b975edcec58948a11debb3a64ee3da3dfe0fa82c499033b434f294f5ff3)
+vcpkg_extract_source_archive(SOURCE_PATH ARCHIVE "${ARCHIVE}")
+vcpkg_make_configure(SOURCE_PATH "${SOURCE_PATH}" OPTIONS --enable-shared --disable-static --disable-nls --enable-internal-docs=no --enable-ship-binaries=no)
+vcpkg_make_install()
+vcpkg_fixup_pkgconfig()
+file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/share")
+vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/COPYING")

@@ -1,0 +1,14 @@
+{
+  "name": "pcre2-posix",
+  "version": "10.46",
+  "description": "PCRE2 POSIX ABI used by the Lorelei AE",
+  "homepage": "https://github.com/PCRE2Project/pcre2",
+  "license": "BSD-3-Clause",
+  "supports": "linux",
+  "dependencies": [
+    {
+      "name": "vcpkg-make",
+      "host": true
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "name": "libiconv",
+  "version": "1.18",
+  "description": "GNU libiconv used by the Lorelei AE",
+  "homepage": "https://www.gnu.org/software/libiconv/",
+  "license": "LGPL-2.1-or-later AND GPL-3.0-or-later",
+  "supports": "linux",
+  "dependencies": [
+    {
+      "name": "vcpkg-make",
+      "host": true
+    }
+  ]
+}

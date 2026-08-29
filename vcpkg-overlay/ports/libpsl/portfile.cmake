@@ -1,0 +1,7 @@
+vcpkg_download_distfile(ARCHIVE URLS "https://github.com/rockdaboot/libpsl/releases/download/${VERSION}/libpsl-${VERSION}.tar.gz" FILENAME "libpsl-${VERSION}.tar.gz" SHA512 c14d575cecc0f1693894dd79565b6b9220084ddfa43b908a1cefe16d147cdd5ec47796eb0c2135e2f829a951abaf39d8a371ab5c1352f57b36e610e25adf91f5)
+vcpkg_extract_source_archive(SOURCE_PATH ARCHIVE "${ARCHIVE}")
+vcpkg_make_configure(SOURCE_PATH "${SOURCE_PATH}" OPTIONS --disable-static --enable-shared --disable-runtime --enable-builtin)
+vcpkg_make_install()
+vcpkg_fixup_pkgconfig()
+file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/tools" "${CURRENT_PACKAGES_DIR}/debug/share")
+vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")

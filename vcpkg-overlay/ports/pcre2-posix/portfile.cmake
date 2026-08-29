@@ -1,0 +1,7 @@
+vcpkg_download_distfile(ARCHIVE URLS "https://github.com/PCRE2Project/pcre2/releases/download/pcre2-${VERSION}/pcre2-${VERSION}.tar.bz2" FILENAME "pcre2-${VERSION}.tar.bz2" SHA512 795b0d74efb898347990c29fefc85f37ac81e7795f9d6a5598d1169a03c547df7ff7eac280f708b1fef68d3e7686e0d4cd55f0c6364e287ff2a983bbd1a3c334)
+vcpkg_extract_source_archive(SOURCE_PATH ARCHIVE "${ARCHIVE}")
+vcpkg_make_configure(SOURCE_PATH "${SOURCE_PATH}" OPTIONS --enable-shared --disable-static --disable-jit --disable-pcre2-16 --disable-pcre2-32 --disable-pcre2grep-libz --disable-pcre2grep-libbz2 --disable-pcre2test-libreadline)
+vcpkg_make_install()
+vcpkg_fixup_pkgconfig()
+file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/bin" "${CURRENT_PACKAGES_DIR}/tools" "${CURRENT_PACKAGES_DIR}/debug/bin" "${CURRENT_PACKAGES_DIR}/debug/include" "${CURRENT_PACKAGES_DIR}/debug/share" "${CURRENT_PACKAGES_DIR}/share/doc" "${CURRENT_PACKAGES_DIR}/share/man")
+vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/COPYING")
