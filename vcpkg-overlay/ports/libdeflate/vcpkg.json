@@ -1,0 +1,38 @@
+{
+  "name": "libdeflate",
+  "version": "1.26",
+  "description": "libdeflate build used by the Lorelei AE TLC-only evaluation",
+  "homepage": "https://github.com/ebiggers/libdeflate",
+  "license": "MIT",
+  "supports": "linux",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    }
+  ],
+  "default-features": [
+    "compression",
+    "decompression",
+    "gzip",
+    "zlib"
+  ],
+  "features": {
+    "compression": {
+      "description": "Enable compression APIs"
+    },
+    "decompression": {
+      "description": "Enable decompression APIs"
+    },
+    "gzip": {
+      "description": "Enable gzip format APIs"
+    },
+    "zlib": {
+      "description": "Enable zlib format APIs"
+    }
+  }
+}

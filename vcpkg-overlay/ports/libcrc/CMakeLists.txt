@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 3.16)
+project(libcrc C)
+add_library(crc SHARED src/crc8.c src/crc16.c src/crc32.c src/crcccitt.c src/crcdnp.c src/crckrmit.c src/crcsick.c src/nmea-chk.c)
+target_include_directories(crc PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>" "$<INSTALL_INTERFACE:include>")
+set_target_properties(crc PROPERTIES OUTPUT_NAME crc SOVERSION 2 VERSION 2.0)
+install(TARGETS crc LIBRARY DESTINATION lib)
+install(DIRECTORY include/ DESTINATION include)
