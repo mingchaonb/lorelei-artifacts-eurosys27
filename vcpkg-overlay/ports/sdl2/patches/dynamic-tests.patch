@@ -1,0 +1,24 @@
+diff --git a/test/CMakeLists.txt b/test/CMakeLists.txt
+index e06adafa8..b82c7e9bb 100644
+--- a/test/CMakeLists.txt
++++ b/test/CMakeLists.txt
+@@ -21,8 +21,8 @@ macro(add_sdl_test_executable TARGET)
+     endif()
+ endmacro()
+ 
+-if(NOT TARGET SDL2::SDL2-static)
+-    find_package(SDL2 2.0.23 REQUIRED COMPONENTS SDL2-static SDL2test)
++if(NOT TARGET SDL2::SDL2)
++    find_package(SDL2 2.0.23 REQUIRED COMPONENTS SDL2 SDL2test)
+ endif()
+ 
+ enable_testing()
+@@ -70,7 +70,7 @@ link_libraries(
+         ps2_drivers
+ )
+ else()
+-    link_libraries(SDL2::SDL2test SDL2::SDL2-static)
++    link_libraries(SDL2::SDL2test SDL2::SDL2)
+ endif()
+ 
+ if(WINDOWS)

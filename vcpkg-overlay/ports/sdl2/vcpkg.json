@@ -1,0 +1,26 @@
+{
+  "name": "sdl2",
+  "version": "2.28.5",
+  "description": "SDL2 build used by the Lorelei AE library-validation recipe",
+  "homepage": "https://github.com/libsdl-org/SDL",
+  "license": "Zlib",
+  "supports": "linux",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    }
+  ],
+  "features": {
+    "hlr": {
+      "description": "Rewrite the host source closure with Lorelei HLR"
+    },
+    "tests": {
+      "description": "Build and install the upstream SDL tests"
+    }
+  }
+}
