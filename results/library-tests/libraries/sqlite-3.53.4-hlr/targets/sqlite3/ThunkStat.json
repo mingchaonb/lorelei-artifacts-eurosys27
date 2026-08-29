@@ -1,0 +1,87 @@
+{
+    "callbacks": [
+        {
+            "alias": "sqlite3_callback",
+            "origin": "Config[Function]:sqlite3_exec@arg3",
+            "signature": "int (*)(void *, int, char **, char **)"
+        },
+        {
+            "alias": "",
+            "origin": "Config[Function]:sqlite3_create_function_v2@arg8",
+            "signature": "void (*)(struct sqlite3_context *)"
+        },
+        {
+            "alias": "",
+            "origin": "Config[Function]:sqlite3_create_function_v2@arg7",
+            "signature": "void (*)(struct sqlite3_context *, int, struct sqlite3_value **)"
+        },
+        {
+            "alias": "sqlite3_destructor_type",
+            "origin": "Config[Function]:sqlite3_create_function_v2@arg9",
+            "signature": "void (*)(void *)"
+        },
+        {
+            "alias": "",
+            "origin": "Config[Function]:sqlite3_update_hook@arg2",
+            "signature": "void (*)(void *, int, const char *, const char *, long long)"
+        }
+    ],
+    "fileName": "/home/functioner/Documents/rover2024/ae-libs/sqlite-build/thunk-amalg-hlr/.gen/sqlite3/Desc.h",
+    "functions": {
+        "GuestToHost": [
+            {
+                "location": "/home/functioner/Documents/rover2024/ae-libs/sqlite/sqlite3.h:356:12",
+                "name": "sqlite3_close"
+            },
+            {
+                "location": "/home/functioner/Documents/rover2024/ae-libs/sqlite/sqlite3.h:5582:12",
+                "name": "sqlite3_column_int"
+            },
+            {
+                "location": "/home/functioner/Documents/rover2024/ae-libs/sqlite/sqlite3.h:5802:12",
+                "name": "sqlite3_create_function_v2"
+            },
+            {
+                "location": "/home/functioner/Documents/rover2024/ae-libs/sqlite/sqlite3.h:4246:12",
+                "name": "sqlite3_errmsg"
+            },
+            {
+                "location": "/home/functioner/Documents/rover2024/ae-libs/sqlite/sqlite3.h:430:12",
+                "name": "sqlite3_exec"
+            },
+            {
+                "location": "/home/functioner/Documents/rover2024/ae-libs/sqlite/sqlite3.h:5617:12",
+                "name": "sqlite3_finalize"
+            },
+            {
+                "location": "/home/functioner/Documents/rover2024/ae-libs/sqlite/sqlite3.h:3990:12",
+                "name": "sqlite3_open"
+            },
+            {
+                "location": "/home/functioner/Documents/rover2024/ae-libs/sqlite/sqlite3.h:4602:12",
+                "name": "sqlite3_prepare_v2"
+            },
+            {
+                "location": "/home/functioner/Documents/rover2024/ae-libs/sqlite/sqlite3.h:6592:12",
+                "name": "sqlite3_result_int"
+            },
+            {
+                "location": "/home/functioner/Documents/rover2024/ae-libs/sqlite/sqlite3.h:5312:12",
+                "name": "sqlite3_step"
+            },
+            {
+                "location": "/home/functioner/Documents/rover2024/ae-libs/sqlite/sqlite3.h:7284:12",
+                "name": "sqlite3_update_hook"
+            },
+            {
+                "location": "/home/functioner/Documents/rover2024/ae-libs/sqlite/sqlite3.h:6138:12",
+                "name": "sqlite3_value_int"
+            }
+        ],
+        "HostToGuest": []
+    },
+    "missingFunctions": {
+        "GuestToHost": [],
+        "HostToGuest": []
+    }
+}
