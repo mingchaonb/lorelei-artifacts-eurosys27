@@ -1,0 +1,22 @@
+diff --git a/tests/playTests.sh b/tests/playTests.sh
+index a445ee6..5ee36c9 100755
+--- a/tests/playTests.sh
++++ b/tests/playTests.sh
+@@ -1088,6 +1088,7 @@ cat tmp | zstd -14 -f --size-hint=1MB  | zstd -t
+ cat tmp | zstd -14 -f --size-hint=1MiB  | zstd -t
+ 
+ 
++if [ -z "${ZSTD_SKIP_DICT_TESTS:-}" ]; then
+ println "\n===>  dictionary tests "
+ println "- Test high/low compressibility corpus training"
+ datagen -g12M -P90 > tmpCorpusHighCompress
+@@ -1255,6 +1256,9 @@ test -f tmpDict
+ zstd --train-legacy "$TESTDIR"/*.c "$PRGDIR"/*.c
+ test -f dictionary
+ rm -f tmp* dictionary
++else
++rm -f tmp* dictionary
++fi
+ 
+ 
+ println "\n===>  integrity tests "

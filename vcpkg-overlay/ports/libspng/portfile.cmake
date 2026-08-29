@@ -8,6 +8,7 @@ vcpkg_from_github(
         fix-spngconfig-cmake.patch # https://github.com/randy408/libspng/pull/262/
         libspng-pr-286.diff # https://github.com/randy408/libspng/pull/286/
         patches/install-tests.patch
+        patches/libpng-hist-oracle.patch
 )
 
 string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "static" SPNG_BUILD_STATIC)

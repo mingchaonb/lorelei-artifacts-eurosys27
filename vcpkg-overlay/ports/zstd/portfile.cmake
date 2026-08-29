@@ -8,6 +8,7 @@ vcpkg_from_github(
         no-static-suffix.patch
         fix-emscripten-and-clang-cl.patch
         fix-windows-rc-compile.patch
+        patches/allow-skipping-dictionary-training.patch
 )
 
 vcpkg_replace_string("${SOURCE_PATH}/build/cmake/CMakeLists.txt"
@@ -16,6 +17,9 @@ vcpkg_replace_string("${SOURCE_PATH}/build/cmake/CMakeLists.txt"
 vcpkg_replace_string("${SOURCE_PATH}/build/cmake/tests/CMakeLists.txt"
     "libzstd_static"
     "libzstd_shared")
+vcpkg_replace_string("${SOURCE_PATH}/build/cmake/programs/CMakeLists.txt"
+    "if (ZSTD_MULTITHREAD_SUPPORT)\n    set_property(TARGET zstd APPEND PROPERTY COMPILE_DEFINITIONS \"ZSTD_MULTITHREAD\")"
+    "if (FALSE)\n    set_property(TARGET zstd APPEND PROPERTY COMPILE_DEFINITIONS \"ZSTD_MULTITHREAD\")")
 
 string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "static" ZSTD_BUILD_STATIC)
 string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "dynamic" ZSTD_BUILD_SHARED)

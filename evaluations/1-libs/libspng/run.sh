@@ -141,17 +141,14 @@ run_spng_suite() {
   for group in images crashers misc; do
     while IFS= read -r image; do
       test_name=$(basename "$image" .png)
-      if [[ $test_name == ch1n3p04 || $test_name == ch2n3p08 ]]; then
-        continue
-      fi
       expected=false
       if [[ $group == crashers || $test_name == x* ]]; then expected=true; fi
       if run_spng_case "$lane" "$test_name" "$expected" spng_testsuite "$image"; then passed=$((passed + 1)); else failed=$((failed + 1)); fi
     done < <(find "$upstream/data/$group" -maxdepth 1 -type f -name '*.png' | sort)
   done
-  printf '%s selected upstream tests: %d passed, %d failed, 206 total, 2 excluded\n' "$lane" "$passed" "$failed" | tee "$run_dir/logs/$lane/upstream-summary.log"
+  printf '%s upstream tests: %d passed, %d failed, 208 total\n' "$lane" "$passed" "$failed" | tee "$run_dir/logs/$lane/upstream-summary.log"
   printf '%s\n' "$passed" >"$run_dir/logs/$lane/upstream-passed.txt"
-  [[ $passed == 206 && $failed == 0 ]]
+  [[ $passed == 208 && $failed == 0 ]]
 }
 native_status=0
 hecate_status=0
@@ -162,8 +159,8 @@ hecate_count=$(<"$run_dir/logs/hecate/upstream-passed.txt")
 python3 - "$run_dir/summary.json" "$native_status" "$hecate_status" "$index" "$native_count" "$hecate_count" <<'PY'
 import json, pathlib, sys
 out, native, hecate, libraries, native_count, hecate_count = sys.argv[1:]
-ok = native == hecate == "0" and native_count == hecate_count == "206"
-data = {"schema_version": 2, "package": "libspng", "version": "0.7.4", "mechanism": "TLC Only", "status": "pass" if ok else "fail", "libraries": int(libraries), "native": {"exit_status": int(native)}, "hecate": {"exit_status": int(hecate)}, "output_match": True, "upstream_suite": {"registered_tests": 208, "selected_tests": 206, "native_passed": int(native_count), "hecate_passed": int(hecate_count), "expected_failures": 41, "failed": 0, "excluded": ["images/ch1n3p04", "images/ch2n3p08"], "exclusion_reason": "current vcpkg libpng 1.6.58 differential oracle rejects these two inputs"}}
+ok = native == hecate == "0" and native_count == hecate_count == "208"
+data = {"schema_version": 2, "package": "libspng", "version": "0.7.4", "mechanism": "TLC Only", "status": "pass" if ok else "fail", "libraries": int(libraries), "native": {"exit_status": int(native)}, "hecate": {"exit_status": int(hecate)}, "output_match": True, "upstream_suite": {"registered_tests": 208, "native_passed": int(native_count), "hecate_passed": int(hecate_count), "expected_failures": 41, "failed": 0, "excluded": [], "libpng_hist_oracle_compatibility": True}}
 pathlib.Path(out).write_text(json.dumps(data, indent=2, sort_keys=True) + "\n")
 raise SystemExit(0 if ok else 1)
 PY

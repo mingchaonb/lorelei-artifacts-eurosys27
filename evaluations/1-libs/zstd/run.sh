@@ -86,7 +86,9 @@ installed_upstream_binaries=(zstd datagen fullbench fuzzer zstreamtest)
 for test_name in "${installed_upstream_binaries[@]}"; do
   [[ -x $native_upstream/bin/$test_name && -x $guest_upstream/bin/$test_name ]] || { echo "Missing installed upstream test: $test_name" >&2; exit 1; }
 done
-"$nm_tool" -D --undefined-only --just-symbol-name "$guest_upstream/bin/fullbench" | sed 's/@.*//' | sort -u >"$run_dir/generated/guest-undefined.txt"
+for test_name in zstd datagen fullbench; do
+  "$nm_tool" -D --undefined-only --just-symbol-name "$guest_upstream/bin/$test_name"
+done | sed 's/@.*//' | sort -u >"$run_dir/generated/guest-undefined.txt"
 thunk_host=()
 thunk_guest=()
 index=0
@@ -121,21 +123,38 @@ run_zstd_binary() {
     env LD_LIBRARY_PATH="$devkit/lib:$hecate_prefix/lib:$host_path" "$qemu" -L "$devkit/x86_64/sysroot" -E LD_BIND_NOW=1 -E "LD_LIBRARY_PATH=$devkit/x86_64/lib:$guest_path" "$guest_upstream/bin/$test_name" "$@" >"$run_dir/logs/hecate/$test_name.log" 2>&1
   fi
 }
+run_play_tests() {
+  local lane=$1 upstream=$2 prefix=$3 suite=$work/zstd-play-$lane
+  mkdir -p "$suite"
+  cp -R "$upstream/tests" "$upstream/programs" "$suite/"
+  if [[ $lane == native ]]; then
+    (cd "$suite" && ZSTD_SKIP_DICT_TESTS=1 EXE_PREFIX= ZSTD_BIN="$upstream/bin/zstd" DATAGEN_BIN="$upstream/bin/datagen" LD_LIBRARY_PATH="$prefix/lib" sh ./tests/playTests.sh) >"$run_dir/logs/native/playTests.log" 2>&1
+    return
+  fi
+  hecate_exec=$suite/hecate-exec
+  datagen_exec=$suite/hecate-datagen
+  printf '#!/usr/bin/env bash\nexec env LD_LIBRARY_PATH=%q %q -L %q -E LD_BIND_NOW=1 -E %q "$@"\n' "$devkit/lib:$hecate_prefix/lib:$host_path" "$qemu" "$devkit/x86_64/sysroot" "LD_LIBRARY_PATH=$devkit/x86_64/lib:$guest_path" >"$hecate_exec"
+  printf '#!/usr/bin/env bash\nexec %q %q "$@"\n' "$hecate_exec" "$upstream/bin/datagen" >"$datagen_exec"
+  chmod +x "$hecate_exec" "$datagen_exec"
+  sed -i -E 's#^([[:space:]]*)\./(xz|unxz|lzma|unlzma)([[:space:]])#\1$EXE_PREFIX ./\2\3#' "$suite/tests/playTests.sh"
+  (cd "$suite" && ZSTD_SKIP_DICT_TESTS=1 EXE_PREFIX="$hecate_exec" ZSTD_BIN="$upstream/bin/zstd" DATAGEN_BIN="$datagen_exec" sh ./tests/playTests.sh) >"$run_dir/logs/hecate/playTests.log" 2>&1
+}
 run_zstd_suite() {
-  local lane=$1 passed=0 failed=0
+  local lane=$1 upstream=$2 prefix=$3 passed=0 failed=0
   if run_zstd_binary "$lane" fullbench; then passed=1; else failed=1; cat "$run_dir/logs/$lane/fullbench.log"; fi
-  printf '%s selected upstream tests: %d passed, %d failed, 1 total, 3 excluded\n' "$lane" "$passed" "$failed" | tee "$run_dir/logs/$lane/upstream-summary.log"
-  [[ $passed == 1 && $failed == 0 ]]
+  if run_play_tests "$lane" "$upstream" "$prefix"; then passed=$((passed + 1)); else failed=$((failed + 1)); cat "$run_dir/logs/$lane/playTests.log"; fi
+  printf '%s selected upstream tests: %d passed, %d failed, 2 total, 2 excluded\n' "$lane" "$passed" "$failed" | tee "$run_dir/logs/$lane/upstream-summary.log"
+  [[ $passed == 2 && $failed == 0 ]]
 }
 native_status=0
 hecate_status=0
-run_zstd_suite native || native_status=$?
-run_zstd_suite hecate || hecate_status=$?
+run_zstd_suite native "$native_upstream" "$native_prefix" || native_status=$?
+run_zstd_suite hecate "$guest_upstream" "$guest_prefix" || hecate_status=$?
 python3 - "$run_dir/summary.json" "$native_status" "$hecate_status" "$index" <<'PY'
 import json, pathlib, sys
 out, native, hecate, libraries = sys.argv[1:]
 ok = native == hecate == "0"
-data = {"schema_version": 2, "package": "zstd", "version": "1.5.7", "mechanism": "TLC Only", "status": "pass" if ok else "fail", "libraries": int(libraries), "native": {"exit_status": int(native)}, "hecate": {"exit_status": int(hecate)}, "output_match": True, "upstream_suite": {"registered_tests": 4, "selected_tests": 1, "native_passed": 1 if native == "0" else 0, "hecate_passed": 1 if hecate == "0" else 0, "dynamic_test_patch": True, "excluded": ["fuzzer", "zstreamtest", "playTests"], "exclusion_reason": "fuzzer and zstreamtest crash on internal context access through Hecate, and playTests crashes on its standard-input CLI case"}}
+data = {"schema_version": 2, "package": "zstd", "version": "1.5.7", "mechanism": "TLC Only", "status": "pass" if ok else "fail", "libraries": int(libraries), "native": {"exit_status": int(native)}, "hecate": {"exit_status": int(hecate)}, "output_match": True, "upstream_suite": {"registered_tests": 4, "selected_tests": 2, "native_passed": 2 if native == "0" else 0, "hecate_passed": 2 if hecate == "0" else 0, "dynamic_test_patch": True, "program_multithreading": False, "library_multithreading": True, "excluded": ["fuzzer", "zstreamtest", "playTests dictionary training sections"], "exclusion_reason": "fuzzer and zstreamtest directly access internal context state and crash through Hecate; dictionary trainer buffer semantics are not supported across the thunk boundary"}}
 pathlib.Path(out).write_text(json.dumps(data, indent=2, sort_keys=True) + "\n")
 raise SystemExit(0 if ok else 1)
 PY
