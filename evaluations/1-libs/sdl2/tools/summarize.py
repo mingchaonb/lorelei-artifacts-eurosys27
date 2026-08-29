@@ -56,6 +56,14 @@ def classify(native: dict[str, int], transformed: dict[str, int]) -> dict[str, l
     return result
 
 
+def native_programs(status: dict[str, int]) -> dict[str, list[str]]:
+    programs = {name: value for name, value in status.items() if name != "testautomation"}
+    return {
+        "passed": sorted(name for name, value in programs.items() if value == 0),
+        "nonzero": sorted(name for name, value in programs.items() if value != 0),
+    }
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--run-dir", type=pathlib.Path, required=True)
@@ -79,6 +87,7 @@ def main() -> None:
         native_auto[field] == hecate_auto[field] for field in fields
     )
     programs = classify(native_status, hecate_status)
+    native_program_result = native_programs(native_status)
     callback_log = args.run_dir / "logs/hecate/test-callbacks-ae.log"
     callback_passes = 0
     if callback_log.exists():
@@ -102,13 +111,39 @@ def main() -> None:
         "package": "sdl2",
         "status": "pass" if not failures else "fail",
         "failures": failures,
-        "native": {"automation": native_auto, "status": native_status},
+        "native": {
+            "automation": native_auto,
+            "programs": native_program_result,
+            "status": native_status,
+        },
         "hecate": hecate,
-        "excluded": ["testatomic", "testlock", "testsem", "torturethread"],
+        "excluded": ["testatomic", "testlock", "testsem", "testthread", "torturethread"],
     }
     (args.run_dir / "summary.json").write_text(json.dumps(result, indent=2, sort_keys=True) + "\n")
     print(f"SDL2 evaluation status: {result['status']}")
-    print(f"Hecate, TLC + HLR: {len(programs['passed'])} passed, {len(programs['baseline_skip'])} baseline skip, {len(programs['failed'])} failed")
+    print(
+        f"Automation native: {native_auto['passed']} passed, {native_auto['failed']} failed, "
+        f"{native_auto['skipped']} skipped of {native_auto['total']}"
+    )
+    print(
+        f"Automation Hecate: {hecate_auto['passed']} passed, {hecate_auto['failed']} failed, "
+        f"{hecate_auto['skipped']} skipped of {hecate_auto['total']}, "
+        f"native equivalent: {'yes' if automation_matches else 'no'}"
+    )
+    print(
+        f"Programs native: {len(native_program_result['passed'])} passed, "
+        f"{len(native_program_result['nonzero'])} nonzero"
+    )
+    print(
+        f"Programs Hecate, TLC + HLR: {len(programs['passed'])} passed, "
+        f"{len(programs['baseline_skip'])} baseline skip, {len(programs['failed'])} failed"
+    )
+    if programs["failed"]:
+        differences = ", ".join(
+            f"{name} (native {native_status.get(name)}, Hecate {hecate_status.get(name)})"
+            for name in programs["failed"]
+        )
+        print(f"Hecate-only failures: {differences}")
     if failures:
         raise SystemExit(1)
 

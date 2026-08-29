@@ -15,7 +15,6 @@ testqsort	20
 testresample	30	sample.wav resampled.wav 22050 1
 testsensor	20
 testsurround	20
-testthread	20
 testtimer	45
 testver	20
 testkeys	20

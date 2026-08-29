@@ -44,7 +44,7 @@ The disposable build tree is `.work/evaluations/sdl2`. Both evidence directories
 ## Included paths
 
 - The SDL automation harness runs all 301 registered cases once with a fixed seed during artifact construction.
-- Twenty-one noninteractive upstream programs exercise platform queries, filesystems, RWops, iconv, dynamic loading, locale, qsort, resampling, dummy audio, threads, timers, key tables, sensors, and automated YUV conversion.
+- Twenty noninteractive upstream programs exercise platform queries, filesystems, RWops, iconv, dynamic loading, locale, qsort, resampling, dummy audio, timers, key tables, sensors, and automated YUV conversion.
 - `TestCallbacks.c` directly checks event filters, event watches, log output, assertion handling, timer callbacks, thread entry callbacks, and allocator FDG calls.
 - `TestFDG.c` is a minimal independent check for a host function pointer returned to the guest.
 
@@ -55,6 +55,7 @@ Each run writes `generated/configuration-loc.json`. This file reports physical, 
 ## Excluded paths
 
 - `testatomic`, `testlock`, `testsem`, and `torturethread` are excluded because the artifact does not claim to repair emulated atomic-instruction or contention semantics.
+- The upstream `testthread` program is excluded because its final phase raises `SIGTERM` and performs SDL logging, delay, shutdown, and process exit from the signal handler. Thread entry callbacks remain covered by `TestCallbacks.c` without adding signal-delivery semantics to the claim.
 - Interactive windows, device hotplug, physical audio, physical input, haptic devices, OpenGL, and Vulkan programs are excluded because they do not provide deterministic noninteractive evidence for the stated dummy-backend pass-through scope.
 - Fuzz, sanitizer, stress, and source-coverage campaigns are not part of this recipe.
 
