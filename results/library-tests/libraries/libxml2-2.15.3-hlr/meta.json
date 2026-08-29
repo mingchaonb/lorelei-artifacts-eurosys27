@@ -1,0 +1,13 @@
+{
+  "library": "libxml2",
+  "release": "2.15.3",
+  "upstream_commit": "c94eb0210183b9d7cb43f8e7fddc6be55843ef49",
+  "hlr_commit": "b41a872",
+  "lorelei_commit": "20243b9972b45c62ad5da037410162b557aedb28",
+  "host_arch": "aarch64",
+  "guest_arch": "x86_64",
+  "tlc_callback_replacement": false,
+  "host_hlr_extension": true,
+  "guest_hlr_extension": true,
+  "thread_hook_preloaded": true
+}

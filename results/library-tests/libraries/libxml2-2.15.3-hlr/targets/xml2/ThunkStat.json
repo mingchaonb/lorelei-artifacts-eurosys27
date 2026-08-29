@@ -1,0 +1,150 @@
+{
+    "callbacks": [
+        {
+            "alias": "",
+            "origin": "Config[Function]:xmlCreatePushParserCtxt@arg1@ptr@setDocumentLocator@arg2@ptr@getSystemId",
+            "signature": "const unsigned char *(*)(void *)"
+        },
+        {
+            "alias": "xmlCharEncodingOutputFunc",
+            "origin": "Config[Function]:xmlCreatePushParserCtxt@arg1@ptr@resolveEntity@ret@ptr@buf@ptr@encoder@ptr@output@legacyFunc",
+            "signature": "int (*)(unsigned char *, int *, const unsigned char *, int *)"
+        },
+        {
+            "alias": "hasExternalSubsetSAXFunc",
+            "origin": "Config[Function]:xmlCreatePushParserCtxt@arg1@ptr@setDocumentLocator@arg2@ptr@getColumnNumber",
+            "signature": "int (*)(void *)"
+        },
+        {
+            "alias": "xmlInputReadCallback",
+            "origin": "Config[Function]:xmlCreatePushParserCtxt@arg1@ptr@resolveEntity@ret@ptr@buf@ptr@readcallback",
+            "signature": "int (*)(void *, char *, int)"
+        },
+        {
+            "alias": "getParameterEntitySAXFunc",
+            "origin": "Config[Function]:xmlCreatePushParserCtxt@arg1@ptr@getParameterEntity",
+            "signature": "struct _xmlEntity *(*)(void *, const unsigned char *)"
+        },
+        {
+            "alias": "resolveEntitySAXFunc",
+            "origin": "Config[Function]:xmlCreatePushParserCtxt@arg1@ptr@resolveEntity",
+            "signature": "struct _xmlParserInput *(*)(void *, const unsigned char *, const unsigned char *)"
+        },
+        {
+            "alias": "xmlParserInputDeallocate",
+            "origin": "Config[Function]:xmlCreatePushParserCtxt@arg1@ptr@resolveEntity@ret@ptr@free",
+            "signature": "void (*)(unsigned char *)"
+        },
+        {
+            "alias": "endDocumentSAXFunc",
+            "origin": "Config[Function]:xmlCreatePushParserCtxt@arg1@ptr@endDocument",
+            "signature": "void (*)(void *)"
+        },
+        {
+            "alias": "fatalErrorSAXFunc",
+            "origin": "Config[Function]:xmlCreatePushParserCtxt@arg1@ptr@fatalError",
+            "signature": "void (*)(void *, const char *, ...)"
+        },
+        {
+            "alias": "xmlStructuredErrorFunc",
+            "origin": "Config[Function]:xmlCreatePushParserCtxt@arg1@ptr@serror",
+            "signature": "void (*)(void *, const struct _xmlError *)"
+        },
+        {
+            "alias": "commentSAXFunc",
+            "origin": "Config[Function]:xmlCreatePushParserCtxt@arg1@ptr@comment",
+            "signature": "void (*)(void *, const unsigned char *)"
+        },
+        {
+            "alias": "processingInstructionSAXFunc",
+            "origin": "Config[Function]:xmlCreatePushParserCtxt@arg1@ptr@processingInstruction",
+            "signature": "void (*)(void *, const unsigned char *, const unsigned char *)"
+        },
+        {
+            "alias": "startElementSAXFunc",
+            "origin": "Config[Function]:xmlCreatePushParserCtxt@arg1@ptr@startElement",
+            "signature": "void (*)(void *, const unsigned char *, const unsigned char **)"
+        },
+        {
+            "alias": "endElementNsSAX2Func",
+            "origin": "Config[Function]:xmlCreatePushParserCtxt@arg1@ptr@endElementNs",
+            "signature": "void (*)(void *, const unsigned char *, const unsigned char *, const unsigned char *)"
+        },
+        {
+            "alias": "unparsedEntityDeclSAXFunc",
+            "origin": "Config[Function]:xmlCreatePushParserCtxt@arg1@ptr@unparsedEntityDecl",
+            "signature": "void (*)(void *, const unsigned char *, const unsigned char *, const unsigned char *, const unsigned char *)"
+        },
+        {
+            "alias": "startElementNsSAX2Func",
+            "origin": "Config[Function]:xmlCreatePushParserCtxt@arg1@ptr@startElementNs",
+            "signature": "void (*)(void *, const unsigned char *, const unsigned char *, const unsigned char *, int, const unsigned char **, int, int, const unsigned char **)"
+        },
+        {
+            "alias": "attributeDeclSAXFunc",
+            "origin": "Config[Function]:xmlCreatePushParserCtxt@arg1@ptr@attributeDecl",
+            "signature": "void (*)(void *, const unsigned char *, const unsigned char *, int, int, const unsigned char *, struct _xmlEnumeration *)"
+        },
+        {
+            "alias": "cdataBlockSAXFunc",
+            "origin": "Config[Function]:xmlCreatePushParserCtxt@arg1@ptr@cdataBlock",
+            "signature": "void (*)(void *, const unsigned char *, int)"
+        },
+        {
+            "alias": "entityDeclSAXFunc",
+            "origin": "Config[Function]:xmlCreatePushParserCtxt@arg1@ptr@entityDecl",
+            "signature": "void (*)(void *, const unsigned char *, int, const unsigned char *, const unsigned char *, unsigned char *)"
+        },
+        {
+            "alias": "elementDeclSAXFunc",
+            "origin": "Config[Function]:xmlCreatePushParserCtxt@arg1@ptr@elementDecl",
+            "signature": "void (*)(void *, const unsigned char *, int, struct _xmlElementContent *)"
+        },
+        {
+            "alias": "setDocumentLocatorSAXFunc",
+            "origin": "Config[Function]:xmlCreatePushParserCtxt@arg1@ptr@setDocumentLocator",
+            "signature": "void (*)(void *, struct _xmlSAXLocator *)"
+        },
+        {
+            "alias": "xmlCharEncConvFunc",
+            "origin": "Config[Function]:xmlCreatePushParserCtxt@arg1@ptr@resolveEntity@ret@ptr@buf@ptr@encoder@ptr@output@func",
+            "signature": "xmlCharEncError (*)(void *, unsigned char *, int *, const unsigned char *, int *, int)"
+        },
+        {
+            "alias": "xmlResourceLoader",
+            "origin": "Config[Function]:xmlCreatePushParserCtxt@ret@ptr@resourceLoader",
+            "signature": "xmlParserErrors (*)(void *, const char *, const char *, xmlResourceType, xmlParserInputFlags, struct _xmlParserInput **)"
+        },
+        {
+            "alias": "xmlCharEncConvImpl",
+            "origin": "Config[Function]:xmlCreatePushParserCtxt@ret@ptr@convImpl",
+            "signature": "xmlParserErrors (*)(void *, const char *, xmlCharEncFlags, struct _xmlCharEncodingHandler **)"
+        }
+    ],
+    "fileName": "/home/functioner/Documents/rover2024/ae-libs/libxml2-build/thunk-hlr/.gen/xml2/Desc.h",
+    "functions": {
+        "GuestToHost": [
+            {
+                "location": "/home/functioner/Documents/rover2024/ae-libs/libxml2/include/libxml/parser.h:1381:11",
+                "name": "xmlCleanupParser"
+            },
+            {
+                "location": "/home/functioner/Documents/rover2024/ae-libs/libxml2/include/libxml/parser.h:1618:11",
+                "name": "xmlCreatePushParserCtxt"
+            },
+            {
+                "location": "/home/functioner/Documents/rover2024/ae-libs/libxml2/include/libxml/parser.h:1602:11",
+                "name": "xmlFreeParserCtxt"
+            },
+            {
+                "location": "/home/functioner/Documents/rover2024/ae-libs/libxml2/include/libxml/parser.h:1624:11",
+                "name": "xmlParseChunk"
+            }
+        ],
+        "HostToGuest": []
+    },
+    "missingFunctions": {
+        "GuestToHost": [],
+        "HostToGuest": []
+    }
+}
