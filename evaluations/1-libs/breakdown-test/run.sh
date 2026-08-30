@@ -43,16 +43,25 @@ touch "$state/.lorelei-evaluations-workspace"
 
 export LORELEI_DEVKIT=$devkit
 export VCPKG_MAX_CONCURRENCY=$(nproc)
-"$vcpkg" install breakdown-test:arm64-linux-ae \
-    --overlay-ports="$overlay_dir/ports" \
-    --overlay-triplets="$overlay_dir/triplets" \
-    --x-install-root="$state/installed/hecate" \
-    --x-buildtrees-root="$state/vcpkg/hecate/buildtrees" \
-    --x-packages-root="$state/vcpkg/hecate/packages" \
-    --downloads-root="$state/vcpkg/downloads" \
-    --triplet=arm64-linux-ae
+install_lane()
+{
+    local lane=$1
+    local triplet=$2
+    "$vcpkg" install "breakdown-test:$triplet" \
+        --overlay-ports="$overlay_dir/ports" \
+        --overlay-triplets="$overlay_dir/triplets" \
+        --x-install-root="$state/installed/$lane" \
+        --x-buildtrees-root="$state/vcpkg/$lane/buildtrees" \
+        --x-packages-root="$state/vcpkg/$lane/packages" \
+        --downloads-root="$state/vcpkg/downloads" \
+        --triplet="$triplet"
+}
+
+install_lane hecate arm64-linux-ae
+install_lane guest x64-linux-ae
 
 prefix=$state/installed/hecate/arm64-linux-ae
 test -f "$prefix/include/breakdown-test.h"
 test -f "$prefix/lib/libbreakdown_test.so"
+test -f "$state/installed/guest/x64-linux-ae/lib/libbreakdown_test.so"
 echo "Installed breakdown-test at $prefix"
