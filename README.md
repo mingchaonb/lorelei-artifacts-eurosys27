@@ -12,12 +12,12 @@ Install the host build tools and the GNU x86-64 cross compiler. The zlib guest p
 sudo apt install -y build-essential cmake ninja-build gcc-x86-64-linux-gnu g++-x86-64-linux-gnu python3
 ```
 
-The default setup places the source checkouts next to this repository under the evaluator's home directory:
+The default setup keeps all generated dependencies inside the artifact repository:
 
 ```text
-/home/user/
-├── eurosys-lorelei-artifacts/
-└── lorelei-ae/build/install/
+eurosys-lorelei-artifacts/
+├── .work/devkit/
+└── vcpkg/
 ```
 
 Clone the pinned vcpkg release into the artifact repository root, then bootstrap it once:
@@ -28,7 +28,7 @@ git -C vcpkg checkout 2026.07.29
 ./vcpkg/bootstrap-vcpkg.sh -disableMetrics
 ```
 
-Prepare the complete artifact with the following three installation commands. They install the shared tools, every library recipe, and the packaged games in dependency order:
+Prepare the complete artifact with the following three installation commands. The first command downloads the released Lorelei devkit and installs the shared tools. The remaining commands install every library recipe and packaged game in dependency order:
 
 ```bash
 ./evaluations/install-tools.sh
@@ -36,7 +36,7 @@ Prepare the complete artifact with the following three installation commands. Th
 ./evaluations/install-games.sh
 ```
 
-These are the only artifact installation commands. Existing vcpkg packages, downloads, and build state are reused. The tool and library installers keep the full vcpkg output visible above a two-line progress display. Add `--plain` when redirecting output or when terminal control sequences are undesirable.
+These are the only artifact installation commands. Existing devkit downloads, vcpkg packages, downloads, and build state are reused. The devkit can also be installed independently with `./evaluations/install-devkit.sh`. The tool and library installers keep the full vcpkg output visible above a two-line progress display. Add `--plain` when redirecting output or when terminal control sequences are undesirable.
 
 Run the verified library set sequentially:
 
@@ -52,7 +52,7 @@ Run one library directly:
 ./evaluations/1-libs/sdl2/run.sh --verbose
 ```
 
-All public recipes read the devkit from `LORELEI_DEVKIT`, which defaults to `../lorelei-ae/build/install` resolved from this repository. The four pinned emulators default to the executables installed by `evaluations/install-tools.sh` under `vcpkg/installed/arm64-linux/tools/`. They can be overridden with `QEMU`, `BLINK`, `BOX64`, and `FEX`:
+All public recipes read the devkit from `LORELEI_DEVKIT`, which defaults to `.work/devkit` resolved from this repository. The four pinned emulators default to the executables installed by `evaluations/install-tools.sh` under `vcpkg/installed/arm64-linux/tools/`. They can be overridden with `QEMU`, `BLINK`, `BOX64`, and `FEX`:
 
 ```bash
 LORELEI_DEVKIT=/absolute/path/to/devkit \

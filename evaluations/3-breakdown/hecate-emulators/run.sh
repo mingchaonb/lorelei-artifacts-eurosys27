@@ -6,7 +6,7 @@ repo_root=$(cd "$target_dir/../../.." && pwd)
 rover_root=$(cd "$repo_root/.." && pwd)
 emulator_tools=$repo_root/vcpkg/installed/arm64-linux/tools
 [[ $# == 0 ]] || { echo "Unexpected positional argument: $1" >&2; exit 2; }
-devkit=$(realpath -m "${LORELEI_DEVKIT:-$rover_root/lorelei-ae/build/install}")
+devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/.work/devkit}")
 blink=$(realpath -m "${BLINK:-$emulator_tools/blink-ae/blink}")
 box64=$(realpath -m "${BOX64:-$emulator_tools/box64-ae/box64}")
 fex=$(realpath -m "${FEX:-$emulator_tools/fex-ae/FEX}")

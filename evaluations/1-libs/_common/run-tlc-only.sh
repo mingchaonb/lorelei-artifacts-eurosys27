@@ -24,7 +24,7 @@ done
 recipe_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")/../$package" 2>/dev/null && pwd || true)
 if [[ -z $recipe_dir ]]; then recipe_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")/../sdl2-ttf" && pwd); fi
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)
-devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/../lorelei-ae/build/install}")
+devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/.work/devkit}")
 export LORELEI_DEVKIT=$devkit
 common_dir=$repo_root/evaluations/common
 overlay=$repo_root/vcpkg-overlay

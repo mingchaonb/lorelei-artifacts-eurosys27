@@ -7,7 +7,7 @@ cli_common_init() {
     repo_root=$(cd "$cli_root/../.." && pwd)
     rover_root=$(cd "$repo_root/.." && pwd)
     emulator_tools=$repo_root/vcpkg/installed/arm64-linux/tools
-    devkit=$(realpath -m "${LORELEI_DEVKIT:-$rover_root/lorelei-ae/build/install}")
+    devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/.work/devkit}")
     qemu=$(realpath -m "${QEMU:-$emulator_tools/qemu-ae/qemu-x86_64}")
     blink=$(realpath -m "${BLINK:-$emulator_tools/blink-ae/blink}")
     box64=$(realpath -m "${BOX64:-$emulator_tools/box64-ae/box64}")

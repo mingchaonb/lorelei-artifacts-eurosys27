@@ -1,6 +1,6 @@
 # SDL 1.2 HLR evaluation
 
-Public commands use the sibling `../lorelei-ae/build/install` devkit by default. Set `LORELEI_DEVKIT=/absolute/path/to/devkit` to override it.
+Public commands use the repository-local `.work/devkit` by default. Set `LORELEI_DEVKIT=/absolute/path/to/devkit` to override it.
 
 This recipe pins the Ubuntu 24.04 SDL 1.2 implementation, `sdl12-compat` 1.2.68, rewrites its production source with HLR, generates the OpenArena-facing SDL 1.2 thunk and runs a directed x86-64 guest test under Hecate.
 

@@ -7,7 +7,7 @@ This group aims to run every upstream test discoverable after each selected libr
 Each library directory must provide:
 
 1. A README that identifies the pinned upstream release, mechanism path, configured upstream suite, expected result, and exclusions.
-2. A self-contained `run.sh` entry point that reads `LORELEI_DEVKIT`, defaulting to the sibling `../lorelei-ae/build/install` checkout.
+2. A self-contained `run.sh` entry point that reads `LORELEI_DEVKIT`, defaulting to the repository-local `.work/devkit`.
 3. `--install-only`, `--reference`, and `--verbose` where the mode is applicable.
 4. A repository-level vcpkg overlay port that fetches the official release and applies reviewed patches from its own `patches/` directory.
 5. Every configured upstream test installed by the port under `tools/<port>/upstream-tests`. If upstream has no test installation rule, the port adds one or applies a minimal patch stored under `vcpkg-overlay/ports/<port>/patches/`.

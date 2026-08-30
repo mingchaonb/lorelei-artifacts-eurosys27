@@ -27,7 +27,7 @@ while (($#)); do
     shift
 done
 
-devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/../lorelei-ae/build/install}")
+devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/.work/devkit}")
 results_root=$recipe_dir/results
 result_kind=evaluator
 if $reference; then results_root=$recipe_dir/reference-results; result_kind=reference; fi

@@ -14,7 +14,7 @@ while (($#)); do
     esac
     shift
 done
-devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/../lorelei-ae/build/install}")
+devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/.work/devkit}")
 qemu=$(realpath -m "${QEMU:-$repo_root/vcpkg/installed/arm64-linux/tools/qemu-ae/qemu-x86_64}")
 gui_env=${GUI_ENV:-$HOME/Desktop/spark-gui-env.txt}
 run_id=$(date -u +%Y%m%dT%H%M%SZ)

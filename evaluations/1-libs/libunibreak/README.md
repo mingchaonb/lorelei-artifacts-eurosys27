@@ -1,6 +1,6 @@
 # libunibreak 7.0 validation (TLC Only) [ALL TESTS PASSED]
 
-Public commands use the sibling `../lorelei-ae/build/install` devkit by default. Set `LORELEI_DEVKIT=/absolute/path/to/devkit` to override it.
+Public commands use the repository-local `.work/devkit` by default. Set `LORELEI_DEVKIT=/absolute/path/to/devkit` to override it.
 
 The workload runs the upstream `tests` executable in line, word, and grapheme modes using the release conformance vectors. Each mode must exit successfully in native and Hecate lanes.
 

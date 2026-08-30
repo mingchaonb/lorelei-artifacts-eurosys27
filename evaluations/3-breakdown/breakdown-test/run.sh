@@ -4,7 +4,7 @@ set -euo pipefail
 target_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 repo_root=$(cd "$target_dir/../../.." && pwd)
 [[ $# == 0 ]] || { echo "Unexpected positional argument: $1" >&2; exit 2; }
-devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/../lorelei-ae/build/install}")
+devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/.work/devkit}")
 qemu=$(realpath -m "${QEMU:-$repo_root/vcpkg/installed/arm64-linux/tools/qemu-ae/qemu-x86_64}")
 iterations=${ITERATIONS:-1000000}
 rounds=${ROUNDS:-5}

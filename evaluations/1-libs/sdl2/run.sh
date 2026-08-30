@@ -37,7 +37,7 @@ while (($#)); do
     esac
     shift
 done
-devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/../lorelei-ae/build/install}")
+devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/.work/devkit}")
 qemu=$(realpath -m "${QEMU:-$repo_root/vcpkg/installed/arm64-linux/tools/qemu-ae/qemu-x86_64}")
 # Keep the documented default stable. Developers may select another disposable
 # marked workspace to avoid colliding with a concurrent graphics evaluation.

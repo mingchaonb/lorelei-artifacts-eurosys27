@@ -29,7 +29,7 @@ The comparison keeps the native and emulated software versions identical:
 - Box64 with Hecate
 - FEX with Hecate
 
-The Hecate environment for Blink, Box64, and FEX follows `evaluations/3-breakdown/hecate-emulators`. `LORELEI_DEVKIT` defaults to the sibling `../lorelei-ae/build/install`. Emulator paths default to the pinned vcpkg tools installed by `evaluations/install-tools.sh` and can be overridden with `QEMU`, `BLINK`, `BOX64`, and `FEX`.
+The Hecate environment for Blink, Box64, and FEX follows `evaluations/3-breakdown/hecate-emulators`. `LORELEI_DEVKIT` defaults to the repository-local `.work/devkit`. Emulator paths default to the pinned vcpkg tools installed by `evaluations/install-tools.sh` and can be overridden with `QEMU`, `BLINK`, `BOX64`, and `FEX`.
 
 ## Inputs
 

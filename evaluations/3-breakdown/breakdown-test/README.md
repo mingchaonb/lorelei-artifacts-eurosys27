@@ -1,6 +1,6 @@
 # Three-integer function call breakdown
 
-Public commands use the sibling `../lorelei-ae/build/install` devkit by default. Set `LORELEI_DEVKIT=/absolute/path/to/devkit` to override it.
+Public commands use the repository-local `.work/devkit` by default. Set `LORELEI_DEVKIT=/absolute/path/to/devkit` to override it.
 
 This benchmark measures `int breakdown_test(int first, int second, int third)` from the `breakdown-test` port. The function only returns its first argument. This keeps the host function body near an empty operation while preserving the packing and transfer of three integer arguments.
 

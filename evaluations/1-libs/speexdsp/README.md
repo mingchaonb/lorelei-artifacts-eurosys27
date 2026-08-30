@@ -1,6 +1,6 @@
 # SpeexDSP 1.2.1 validation (TLC Only) [ALL TESTS PASSED]
 
-Public commands use the sibling `../lorelei-ae/build/install` devkit by default. Set `LORELEI_DEVKIT=/absolute/path/to/devkit` to override it.
+Public commands use the repository-local `.work/devkit` by default. Set `LORELEI_DEVKIT=/absolute/path/to/devkit` to override it.
 
 This recipe installs the official SpeexDSP 1.2.1 shared library and all five test programs supplied by the release. It generates one TLC thunk and executes the same programs against the native AArch64 DSO and through Hecate against that DSO. It does not load HLR extensions or run a pure QEMU lane.
 

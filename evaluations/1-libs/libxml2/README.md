@@ -1,6 +1,6 @@
 # libxml2 2.15.3 validation (TLC + HLR)
 
-Public commands use the sibling `../lorelei-ae/build/install` devkit by default. Set `LORELEI_DEVKIT=/absolute/path/to/devkit` to override it.
+Public commands use the repository-local `.work/devkit` by default. Set `LORELEI_DEVKIT=/absolute/path/to/devkit` to override it.
 
 This recipe builds the official libxml2 2.15.3 shared library. The directed workload feeds an XML document to the push parser in two chunks and requires two start-element callbacks, two end-element callbacks, and seven bytes of character data in both native and Hecate paths.
 

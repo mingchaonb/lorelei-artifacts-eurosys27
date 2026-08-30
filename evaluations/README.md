@@ -11,13 +11,13 @@
 
 ## Evaluation tools
 
-The native FFmpeg utility and the four pinned emulator forks are packaged separately from the libraries under test. Install all of them into the repository-local vcpkg tree from any working directory:
+The released Lorelei devkit, native FFmpeg utility, and four pinned emulator forks are packaged separately from the libraries under test. Install all of them from any working directory:
 
 ```bash
 ./evaluations/install-tools.sh
 ```
 
-The installer reuses packages already present in vcpkg and places the public executables below `vcpkg/installed/arm64-linux/tools/`. The emulator recipes live in `vcpkg-overlay/ports-tools`. Native FFmpeg comes from the built-in vcpkg port, not from the Hecate FFmpeg library-test recipe.
+The installer downloads the architecture-matched AE devkit into `.work/devkit`, reuses packages already present in vcpkg, and places the public emulator and FFmpeg executables below `vcpkg/installed/arm64-linux/tools/`. The devkit step is also available independently as `evaluations/install-devkit.sh`. The emulator recipes live in `vcpkg-overlay/ports-tools`. Native FFmpeg comes from the built-in vcpkg port, not from the Hecate FFmpeg library-test recipe.
 
 ## Directory contract
 
@@ -41,7 +41,7 @@ vcpkg-overlay/
 └── triplets/                       shared native and guest targets
 ```
 
-Every public recipe reads the Lorelei devkit from `LORELEI_DEVKIT`. The default is the sibling checkout `../lorelei-ae/build/install`, resolved from the artifact repository. Emulator defaults come from `vcpkg/installed/arm64-linux/tools/` after running `evaluations/install-tools.sh`. `QEMU`, `BLINK`, `BOX64`, and `FEX` override those packaged executables. A library recipe may provide `--reference`, `--install-only`, and `--verbose`. Source acquisition, version verification, compilation, and installation belong to the repository-level vcpkg overlay. A recipe must use the repository-local `vcpkg/vcpkg` executable.
+Every public recipe reads the Lorelei devkit from `LORELEI_DEVKIT`. The default is the repository-local `.work/devkit`. Emulator defaults come from `vcpkg/installed/arm64-linux/tools/` after running `evaluations/install-tools.sh`. `QEMU`, `BLINK`, `BOX64`, and `FEX` override those packaged executables. A library recipe may provide `--reference`, `--install-only`, and `--verbose`. Source acquisition, version verification, compilation, and installation belong to the repository-level vcpkg overlay. A recipe must use the repository-local `vcpkg/vcpkg` executable.
 
 Each recipe must perform these stages when applicable:
 

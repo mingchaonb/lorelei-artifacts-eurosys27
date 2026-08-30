@@ -12,12 +12,12 @@
 sudo apt install -y build-essential cmake ninja-build gcc-x86-64-linux-gnu g++-x86-64-linux-gnu python3
 ```
 
-默认配置将各源码仓库并列放在评审者的用户目录下：
+默认配置将所有生成的依赖保存在 artifact 仓库内：
 
 ```text
-/home/user/
-├── eurosys-lorelei-artifacts/
-└── lorelei-ae/build/install/
+eurosys-lorelei-artifacts/
+├── .work/devkit/
+└── vcpkg/
 ```
 
 首次使用时，在 artifact 仓库根目录 clone 固定版本的 vcpkg，再完成初始化：
@@ -28,7 +28,7 @@ git -C vcpkg checkout 2026.07.29
 ./vcpkg/bootstrap-vcpkg.sh -disableMetrics
 ```
 
-随后只需依次运行下面三个安装命令，即可准备完整 artifact。它们按依赖顺序安装共享工具、全部 library 配方和打包后的游戏：
+随后只需依次运行下面三个安装命令，即可准备完整 artifact。第一个命令下载已发布的 Lorelei devkit 并安装共享工具，后两个命令按依赖顺序安装全部 library 配方和打包后的游戏：
 
 ```bash
 ./evaluations/install-tools.sh
@@ -36,7 +36,7 @@ git -C vcpkg checkout 2026.07.29
 ./evaluations/install-games.sh
 ```
 
-这三个脚本是 artifact 的全部安装入口。已有的 vcpkg package、下载和构建状态都会复用。工具和 library 安装脚本在终端底部显示两行进度，同时在上方保留完整 vcpkg 输出。重定向输出或不希望出现终端控制序列时可添加 `--plain`。
+这三个脚本是 artifact 的全部安装入口。已有的 devkit 下载、vcpkg package、下载和构建状态都会复用。也可以单独运行 `./evaluations/install-devkit.sh` 安装 devkit。工具和 library 安装脚本在终端底部显示两行进度，同时在上方保留完整 vcpkg 输出。重定向输出或不希望出现终端控制序列时可添加 `--plain`。
 
 依次运行已经验证的 library 集合：
 
@@ -52,7 +52,7 @@ git -C vcpkg checkout 2026.07.29
 ./evaluations/1-libs/sdl2/run.sh --verbose
 ```
 
-所有公开配方都从 `LORELEI_DEVKIT` 读取 devkit，其默认值是相对于本仓库解析的 `../lorelei-ae/build/install`。四个固定版本的模拟器默认使用 `evaluations/install-tools.sh` 安装到 `vcpkg/installed/arm64-linux/tools/` 下的可执行文件，可通过 `QEMU`、`BLINK`、`BOX64` 和 `FEX` 覆盖：
+所有公开配方都从 `LORELEI_DEVKIT` 读取 devkit，其默认值是相对于本仓库解析的 `.work/devkit`。四个固定版本的模拟器默认使用 `evaluations/install-tools.sh` 安装到 `vcpkg/installed/arm64-linux/tools/` 下的可执行文件，可通过 `QEMU`、`BLINK`、`BOX64` 和 `FEX` 覆盖：
 
 ```bash
 LORELEI_DEVKIT=/absolute/path/to/devkit \

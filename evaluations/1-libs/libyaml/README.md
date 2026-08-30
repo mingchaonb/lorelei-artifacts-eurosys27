@@ -1,6 +1,6 @@
 # libyaml 0.2.5 validation (TLC Only) [ALL TESTS PASSED]
 
-Public commands use the sibling `../lorelei-ae/build/install` devkit by default. Set `LORELEI_DEVKIT=/absolute/path/to/devkit` to override it.
+Public commands use the repository-local `.work/devkit` by default. Set `LORELEI_DEVKIT=/absolute/path/to/devkit` to override it.
 
 This recipe runs the two tests enabled by the pinned upstream CMake configuration. They validate version reporting and parser buffer handling. Native and Hecate CTest lanes must both complete successfully.
 

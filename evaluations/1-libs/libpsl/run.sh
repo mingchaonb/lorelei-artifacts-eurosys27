@@ -19,7 +19,7 @@ while (($#)); do
   esac
   shift
 done
-devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/../lorelei-ae/build/install}")
+devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/.work/devkit}")
 default_qemu=$repo_root/vcpkg/installed/arm64-linux/tools/qemu-ae/qemu-x86_64
 qemu=$(realpath -m "${QEMU:-$default_qemu}")
 vcpkg=$repo_root/vcpkg/vcpkg

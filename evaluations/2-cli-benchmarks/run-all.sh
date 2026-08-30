@@ -50,7 +50,7 @@ if $reference && $install_only; then
     exit 2
 fi
 
-devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/../lorelei-ae/build/install}")
+devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/.work/devkit}")
 [[ -d $devkit ]] || { echo "Devkit not found: $devkit" >&2; exit 2; }
 
 # Make the public batch command self-contained. vcpkg returns immediately for

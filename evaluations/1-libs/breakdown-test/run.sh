@@ -27,7 +27,7 @@ test "$install_only" = true || {
     echo "breakdown-test is an installation prerequisite. Pass --install-only" >&2
     exit 2
 }
-devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/../lorelei-ae/build/install}")
+devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/.work/devkit}")
 test -x "$vcpkg"
 test -x "$devkit/bin/x86_64-linux-gnu-clang"
 

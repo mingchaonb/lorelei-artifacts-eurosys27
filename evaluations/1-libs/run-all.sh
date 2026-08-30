@@ -30,7 +30,7 @@ while (($#)); do
     shift
 done
 
-devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/../lorelei-ae/build/install}")
+devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/.work/devkit}")
 [[ -d $devkit ]] || { echo "Devkit not found: $devkit" >&2; exit 2; }
 
 mode=verified

@@ -1,6 +1,6 @@
 # Box64 callback address-origin breakdown
 
-Public commands use the sibling `../lorelei-ae/build/install` devkit by default. Set `LORELEI_DEVKIT=/absolute/path/to/devkit` to override it.
+Public commands use the repository-local `.work/devkit` by default. Set `LORELEI_DEVKIT=/absolute/path/to/devkit` to override it.
 
 This benchmark measures the address-origin checks in Box64 `GetNativeOrAlt()`. It uses the synthetic `breakdown-test` library installed by `evaluations/1-libs/breakdown-test`.
 

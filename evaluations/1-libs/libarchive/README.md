@@ -1,6 +1,6 @@
 # libarchive 3.8.9 validation (TLC + HLR)
 
-Public commands use the sibling `../lorelei-ae/build/install` devkit by default. Set `LORELEI_DEVKIT=/absolute/path/to/devkit` to override it.
+Public commands use the repository-local `.work/devkit` by default. Set `LORELEI_DEVKIT=/absolute/path/to/devkit` to override it.
 
 This recipe builds the official libarchive 3.8.9 shared library. The directed workload creates a restricted PAX archive in memory, then opens it with `archive_read_open2` and guest-provided open, read, skip, and close callbacks. Both native and Hecate paths must recover `payload.txt`, its 24-byte payload, one open callback, five read callbacks, and one close callback.
 

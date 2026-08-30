@@ -1,6 +1,6 @@
 # System libGL validation
 
-Public commands use the sibling `../lorelei-ae/build/install` devkit by default. Set `LORELEI_DEVKIT=/absolute/path/to/devkit` to override it.
+Public commands use the repository-local `.work/devkit` by default. Set `LORELEI_DEVKIT=/absolute/path/to/devkit` to override it.
 
 This recipe uses the installed libglvnd DSOs. The `glvnd` overlay port does not build or copy libglvnd. Its CMake project generates and installs separate legacy GL, direct GLX, and X11 thunk packs, native and x86_64 validation programs, `ThunkDB.json`, and TLC audit output into the vcpkg package tree. The evaluation script only installs that port, runs the packaged programs, and collects evidence.
 

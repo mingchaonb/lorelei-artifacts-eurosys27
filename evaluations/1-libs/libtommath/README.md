@@ -1,6 +1,6 @@
 # LibTomMath 1.3.0 validation (TLC + HLR)
 
-Public commands use the sibling `../lorelei-ae/build/install` devkit by default. Set `LORELEI_DEVKIT=/absolute/path/to/devkit` to override it.
+Public commands use the repository-local `.work/devkit` by default. Set `LORELEI_DEVKIT=/absolute/path/to/devkit` to override it.
 
 This recipe builds the official LibTomMath 1.3.0 shared library. The directed workload installs a deterministic guest random-source callback with `mp_rand_source`, requires two later `mp_rand` calls to invoke it, and compares the resulting multiplication and hexadecimal conversion across native and Hecate paths.
 

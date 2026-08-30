@@ -4,7 +4,7 @@ set -euo pipefail
 target_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 repo_root=$(cd "$target_dir/../../.." && pwd)
 [[ $# == 0 ]] || { echo "Unexpected positional argument: $1" >&2; exit 2; }
-devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/../lorelei-ae/build/install}")
+devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/.work/devkit}")
 box64_source=${BOX64_SOURCE:-$repo_root/../ae-work/box64-breakdown}
 box64_build=${BOX64_BUILD:-$box64_source/build-breakdown}
 box64=${BOX64:-$box64_build/box64}

@@ -18,7 +18,7 @@ while (($#)); do
     esac
     shift
 done
-devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/../lorelei-ae/build/install}")
+devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/.work/devkit}")
 vcpkg=$repo_root/vcpkg/vcpkg
 [[ -x $vcpkg ]] || { echo "Bootstrap ./vcpkg first" >&2; exit 2; }
 [[ -x $devkit/bin/x86_64-linux-gnu-clang ]] || { echo "Invalid devkit: $devkit" >&2; exit 2; }

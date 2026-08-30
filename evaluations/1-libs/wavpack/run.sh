@@ -28,7 +28,7 @@ while (($#)); do
     shift
 done
 
-devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/../lorelei-ae/build/install}")
+devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/.work/devkit}")
 qemu=$(realpath -m "${QEMU:-$repo_root/vcpkg/installed/arm64-linux/tools/qemu-ae/qemu-x86_64}")
 vcpkg=$repo_root/vcpkg/vcpkg
 work_dir=$repo_root/.work/evaluations/wavpack

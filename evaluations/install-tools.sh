@@ -13,8 +13,8 @@ usage() {
     cat <<'EOF'
 Usage: ./evaluations/install-tools.sh [--plain]
 
-Install the native FFmpeg utility and the four pinned AE emulators into the
-repository-local vcpkg/installed tree. Existing binary packages are reused.
+Install the released Lorelei devkit, native FFmpeg utility, and four pinned AE
+emulators. Existing downloads and binary packages are reused.
 
 Environment:
   VCPKG_DEFAULT_TRIPLET  Target triplet, default: arm64-linux
@@ -37,6 +37,10 @@ done
     exit 2
 }
 [[ -d $tool_ports ]] || { echo "Missing tool overlay: $tool_ports" >&2; exit 2; }
+
+# Install the released devkit before tools so the three top-level artifact
+# installers remain sufficient for a fresh evaluator checkout.
+"$evaluations_dir/install-devkit.sh"
 
 # This feature set provides the native FFmpeg executable used to prepare and
 # validate every codec workload. It intentionally comes from vcpkg's built-in

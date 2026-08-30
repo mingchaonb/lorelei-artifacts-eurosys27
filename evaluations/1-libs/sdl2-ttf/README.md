@@ -1,6 +1,6 @@
 # SDL2_ttf 2.24.0 validation (TLC + HLR audit)
 
-Public commands use the sibling `../lorelei-ae/build/install` devkit by default. Set `LORELEI_DEVKIT=/absolute/path/to/devkit` to override it.
+Public commands use the repository-local `.work/devkit` by default. Set `LORELEI_DEVKIT=/absolute/path/to/devkit` to override it.
 
 This recipe builds official SDL2_ttf 2.24.0 with FreeType and without HarfBuzz. Upstream does not register an automated CMake test suite for this release. The port therefore installs one directed text-size test and a checksum-pinned DejaVu Sans font under `tools/sdl2-ttf/upstream-tests`. It runs that test in native and Hecate lanes and requires identical output.
 

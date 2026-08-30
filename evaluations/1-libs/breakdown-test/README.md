@@ -1,6 +1,6 @@
 # breakdown-test 1.0.0 installation
 
-Public commands use the sibling `../lorelei-ae/build/install` devkit by default. Set `LORELEI_DEVKIT=/absolute/path/to/devkit` to override it.
+Public commands use the repository-local `.work/devkit` by default. Set `LORELEI_DEVKIT=/absolute/path/to/devkit` to override it.
 
 This synthetic port supports the single-call and callback-origin breakdowns. It exports `int breakdown_test(int first, int second, int third)`. The function ignores the last two arguments and returns the first argument. Two additional helpers return a native callback and verify that an address passed through a wrapper resolves back to that callback.
 

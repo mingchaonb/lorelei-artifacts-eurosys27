@@ -23,7 +23,7 @@ while (($#)); do
     shift
 done
 
-devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/../lorelei-ae/build/install}")
+devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/.work/devkit}")
 vcpkg=$repo_root/vcpkg/vcpkg
 work=$repo_root/.work/evaluations/libvorbis
 results_root=$recipe_dir/results

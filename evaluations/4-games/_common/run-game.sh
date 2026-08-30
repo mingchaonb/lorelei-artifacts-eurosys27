@@ -42,7 +42,7 @@ fi
 recipe_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 repo_root=$(cd "$recipe_dir/../../.." && pwd)
 rover_root=$(cd "$repo_root/.." && pwd)
-devkit=$(realpath -m "${LORELEI_DEVKIT:-$rover_root/lorelei-ae/build/install}")
+devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/.work/devkit}")
 qemu=$(realpath -m "${QEMU:-$repo_root/vcpkg/installed/arm64-linux/tools/qemu-ae/qemu-x86_64}")
 games_root=${GAMES_ROOT:-$rover_root/ae-games}
 gui_env=${GUI_ENV:-$HOME/Desktop/spark-gui-env.txt}
