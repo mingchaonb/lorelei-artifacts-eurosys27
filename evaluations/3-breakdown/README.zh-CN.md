@@ -8,8 +8,9 @@
 
 | 实验 | 目的 | 默认规模 | 入口 |
 |---|---|---|---|
-| 三整数函数调用拆分 | 分别测量 GTL、Hecate 中间层、QEMU 和 HTL 的单次调用开销 | 5 个进程，每个进程 1,000,000 次调用 | `breakdown-test/run.sh` |
+| 2 参数与 6 参数函数调用拆分 | 分别测量 GTL、Hecate 中间层、QEMU 和 HTL 的单次调用开销 | 5 轮，每轮每种参数数量调用 1,000,000 次 | `breakdown-test/run.sh` |
 | Box64 callback 地址来源拆分 | 测量 Box64 识别 guest bridge 对应 native callback 时的各阶段开销 | CPU 0 上 5 个进程，每个进程 1,000,000 次检查 | `box64-callback-track/run.sh` |
+| Hecate callback 边界比较 | 测量 HLR 对 host callback 执行的地址边界快速判断 | CPU 0 上 5 轮，每轮 100,000,000 次比较 | `hecate-callback-track/run.sh` |
 | Hecate 模拟器烟测 | 验证 Blink、Box64 和 FEX 的直接调用、host callback round trip 与 guest callback 重入 | 每个模拟器调用 guest callback 1,000 次 | `hecate-emulators/run.sh` |
 
 ## 2. 准备依赖
@@ -29,7 +30,7 @@
 
 普通 Box64 与插桩 Box64 彼此独立。`BOX64` 指向普通性能版本，`BOX64_CALLBACK_TRACK` 只覆盖 callback 拆分实验使用的可执行文件路径。
 
-## 3. 三整数函数调用拆分
+## 3. 2 参数与 6 参数函数调用拆分
 
 运行：
 
@@ -40,10 +41,11 @@
 benchmark 调用：
 
 ```c
-int breakdown_test(int first, int second, int third);
+int breakdown_test_2(int first, int second);
+int breakdown_test_6(int first, int second, int third, int fourth, int fifth, int sixth);
 ```
 
-函数只返回第一个参数。runner 重新生成 guest thunk，并在生成代码中加入计时标记，然后分别汇总：
+两个函数都只返回第一个参数。runner 重新生成 guest thunk，在两个生成函数中加入相同计时标记，然后按参数数量分别汇总：
 
 1. `gtl_ns`
    - guest thunk 开销。
@@ -56,7 +58,7 @@ int breakdown_test(int first, int second, int third);
 5. `total_ns`
    - 单次调用的总开销。
 
-默认启动 5 个独立 QEMU 进程，每个进程执行 1,000,000 次。可覆盖：
+默认运行 5 轮，每轮分别启动一个 2 参数进程和一个 6 参数进程，每个进程执行 1,000,000 次。可覆盖：
 
 ```bash
 ROUNDS=7 ITERATIONS=2000000 \
@@ -91,7 +93,17 @@ BOX64_CALLBACK_TRACK=/absolute/path/to/box64-callback-track \
 
 `BOX64_CALLBACK_TRACK` 是可执行文件路径，不是启用插桩的布尔开关。默认路径由 `install-tools.sh` 安装，通常不需要设置。
 
-## 5. Hecate 模拟器烟测
+## 5. Hecate callback 地址边界比较
+
+运行：
+
+```bash
+./evaluations/3-breakdown/hecate-callback-track/run.sh
+```
+
+该实验测量 HLR 生成的 callback guard 对 host 地址执行的边界比较。它只代表无需 guest trampoline 重入的快速路径，并与 Box64 callback 地址来源拆分一起生成 callback 图的数据。
+
+## 6. Hecate 模拟器烟测
 
 运行：
 
@@ -114,7 +126,7 @@ ITERATIONS=5000 ./evaluations/3-breakdown/hecate-emulators/run.sh
 
 可使用 `BLINK`、`BOX64` 和 `FEX` 覆盖普通模拟器路径。该烟测不使用插桩 Box64。
 
-## 6. 结果与证据
+## 7. 结果与证据
 
 每次运行写入：
 
@@ -122,7 +134,7 @@ ITERATIONS=5000 ./evaluations/3-breakdown/hecate-emulators/run.sh
 evaluations/3-breakdown/<experiment>/results/<UTC timestamp>/
 ```
 
-三整数函数与 callback 拆分保存：
+函数调用与 callback 拆分保存：
 
 - 每轮 stdout 与 stderr。
 - 迭代次数、进程数、CPU 与工具身份。

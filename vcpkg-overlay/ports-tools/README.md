@@ -6,7 +6,7 @@ This overlay contains executable tools used by the evaluation harness. It is sep
 
 The emulator ports are pinned to reviewed commits in the `mingchaonb` forks. They install only the executables needed by the public evaluation paths under `tools/<port>/`. The repository-level installer also selects the built-in vcpkg FFmpeg port, so the native FFmpeg command is not built from the Hecate library-test recipe.
 
-`box64-ae` is the uninstrumented emulator used by performance evaluations. `box64-callback-track-ae` is a separate measurement build with timing probes for the callback address-origin breakdown. Keeping separate packages prevents the probes from affecting ordinary Box64 measurements.
+`qemu-ae` and `box64-ae` are the uninstrumented emulators used by performance evaluations. `qemu-breakdown-ae` adds four pass-through phase probes, while `box64-callback-track-ae` adds probes for the callback address-origin breakdown. Separate packages prevent instrumentation from affecting ordinary QEMU and Box64 measurements.
 
 Install the host-side build prerequisites once:
 
@@ -24,7 +24,8 @@ Installed executable paths are:
 
 1. `vcpkg/installed/arm64-linux/tools/qemu-ae/qemu-x86_64`
 2. `vcpkg/installed/arm64-linux/tools/blink-ae/blink`
-3. `vcpkg/installed/arm64-linux/tools/box64-ae/box64`
-4. `vcpkg/installed/arm64-linux/tools/box64-callback-track-ae/box64-callback-track`
-5. `vcpkg/installed/arm64-linux/tools/fex-ae/FEX`
-6. `vcpkg/installed/arm64-linux/tools/ffmpeg/ffmpeg`
+3. `vcpkg/installed/arm64-linux/tools/qemu-breakdown-ae/qemu-x86_64`
+4. `vcpkg/installed/arm64-linux/tools/box64-ae/box64`
+5. `vcpkg/installed/arm64-linux/tools/box64-callback-track-ae/box64-callback-track`
+6. `vcpkg/installed/arm64-linux/tools/fex-ae/FEX`
+7. `vcpkg/installed/arm64-linux/tools/ffmpeg/ffmpeg`

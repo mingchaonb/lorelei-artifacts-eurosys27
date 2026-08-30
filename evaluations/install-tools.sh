@@ -14,8 +14,8 @@ usage() {
 Usage: ./evaluations/install-tools.sh [--plain]
 
 Install the released Lorelei devkit, native FFmpeg utility, four pinned AE
-emulators, and the instrumented Box64 breakdown tool. Existing downloads and
-binary packages are reused.
+emulators, plus the instrumented QEMU and Box64 breakdown tools. Existing
+downloads and binary packages are reused.
 
 Environment:
   VCPKG_DEFAULT_TRIPLET  Target triplet, default: arm64-linux
@@ -50,12 +50,13 @@ ffmpeg_features='ffmpeg[avcodec,avdevice,avfilter,avformat,fdk-aac,ffmpeg,ffprob
 packages=(
     "${ffmpeg_features}:${triplet}"
     "qemu-ae:${triplet}"
+    "qemu-breakdown-ae:${triplet}"
     "blink-ae:${triplet}"
     "box64-ae:${triplet}"
     "box64-callback-track-ae:${triplet}"
     "fex-ae:${triplet}"
 )
-package_names=(ffmpeg qemu blink box64 box64-callback-track fex)
+package_names=(ffmpeg qemu qemu-breakdown blink box64 box64-callback-track fex)
 
 echo "Install AE tools with triplet: $triplet"
 install_progress_init Tools "${#packages[@]}" "$plain"
@@ -76,12 +77,13 @@ installed=$repo_root/vcpkg/installed/$triplet/tools
 declare -A expected=(
     [ffmpeg]="$installed/ffmpeg/ffmpeg"
     [qemu]="$installed/qemu-ae/qemu-x86_64"
+    [qemu-breakdown]="$installed/qemu-breakdown-ae/qemu-x86_64"
     [blink]="$installed/blink-ae/blink"
     [box64]="$installed/box64-ae/box64"
     [box64-callback-track]="$installed/box64-callback-track-ae/box64-callback-track"
     [fex]="$installed/fex-ae/FEX"
 )
-for name in ffmpeg qemu blink box64 box64-callback-track fex; do
+for name in ffmpeg qemu qemu-breakdown blink box64 box64-callback-track fex; do
     [[ -x ${expected[$name]} ]] || {
         echo "Installed package is missing $name: ${expected[$name]}" >&2
         exit 1
@@ -90,6 +92,6 @@ done
 
 echo
 echo "AE tools are ready:"
-for name in ffmpeg qemu blink box64 box64-callback-track fex; do
+for name in ffmpeg qemu qemu-breakdown blink box64 box64-callback-track fex; do
     printf '  %-7s %s\n' "$name" "${expected[$name]}"
 done

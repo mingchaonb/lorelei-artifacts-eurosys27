@@ -33,34 +33,38 @@ static inline void breakdown_marker(uint32_t operation)
     "LORE_THUNK_BUILD definition",
 )
 
-text = replace_once(
-    text,
-    """invoke(int arg1, int arg2, int arg3) {
+for function, arguments in (
+    ("breakdown_test_2", "int arg1, int arg2"),
+    ("breakdown_test_6", "int arg1, int arg2, int arg3, int arg4, int arg5, int arg6"),
+):
+    text = replace_once(
+        text,
+        f"""invoke({arguments}) {{
     // prolog
     int ret;
-    void *args[] = {
+    void *args[] = {{
 """,
-    """invoke(int arg1, int arg2, int arg3) {
+        f"""invoke({arguments}) {{
     // prolog
     breakdown_marker(1);
     int ret;
-    void *args[] = {
+    void *args[] = {{
 """,
-    "breakdown_test caller entry",
-)
+        f"{function} caller entry",
+    )
 
-text = replace_once(
-    text,
-    """    // forward
+    text = replace_once(
+        text,
+        f"""    // forward
     // center
-    ProcFn<breakdown_test, GuestToHost, Exec>::invoke(args, &ret, nullptr);
+    ProcFn<{function}, GuestToHost, Exec>::invoke(args, &ret, nullptr);
 """,
-    """    // forward
+        f"""    // forward
     // center
     breakdown_marker(2);
-    ProcFn<breakdown_test, GuestToHost, Exec>::invoke(args, &ret, nullptr);
+    ProcFn<{function}, GuestToHost, Exec>::invoke(args, &ret, nullptr);
 """,
-    "breakdown_test dispatch",
-)
+        f"{function} dispatch",
+    )
 
 path.write_text(text)

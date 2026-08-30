@@ -8,8 +8,9 @@ This group provides directed microbenchmarks for the paper's mechanism-breakdown
 
 | Experiment | Purpose | Default scale | Entry point |
 |---|---|---|---|
-| Three-integer call breakdown | Separately measures GTL, Hecate middle-layer, QEMU, and HTL cost for one call | 5 processes with 1,000,000 calls each | `breakdown-test/run.sh` |
+| Two-argument and six-argument call breakdown | Separately measures GTL, Hecate middle-layer, QEMU, and HTL cost for one call | 5 rounds with 1,000,000 calls per arity in each round | `breakdown-test/run.sh` |
 | Box64 callback address-origin breakdown | Measures each stage used by Box64 to recover a native callback from a guest bridge | 5 processes pinned to CPU 0 with 1,000,000 checks each | `box64-callback-track/run.sh` |
+| Hecate callback boundary comparison | Measures HLR's fast address-boundary decision for a host callback | 5 rounds pinned to CPU 0 with 100,000,000 comparisons each | `hecate-callback-track/run.sh` |
 | Hecate emulator smoke test | Validates direct calls, host callback round trips, and guest callback reentry with Blink, Box64, and FEX | 1,000 guest callback invocations per emulator | `hecate-emulators/run.sh` |
 
 ## 2. Prepare prerequisites
@@ -29,7 +30,7 @@ This provides:
 
 The ordinary and instrumented Box64 packages are independent. `BOX64` selects the ordinary performance build. `BOX64_CALLBACK_TRACK` only overrides the executable path used by the callback breakdown.
 
-## 3. Three-integer call breakdown
+## 3. Two-argument and six-argument call breakdown
 
 Run:
 
@@ -40,10 +41,11 @@ Run:
 The benchmark calls:
 
 ```c
-int breakdown_test(int first, int second, int third);
+int breakdown_test_2(int first, int second);
+int breakdown_test_6(int first, int second, int third, int fourth, int fifth, int sixth);
 ```
 
-The function only returns its first argument. The runner regenerates the guest thunk, instruments the generated code, and reports:
+Both functions return only their first argument. The runner regenerates the guest thunk, instruments both generated functions identically, and reports each argument count separately:
 
 1. `gtl_ns`
    - Guest thunk cost.
@@ -56,7 +58,7 @@ The function only returns its first argument. The runner regenerates the guest t
 5. `total_ns`
    - Total cost per call.
 
-By default, 5 independent QEMU processes each execute 1,000,000 calls. Override the scale with:
+By default, 5 rounds each start one two-argument process and one six-argument process, with 1,000,000 calls per process. Override the scale with:
 
 ```bash
 ROUNDS=7 ITERATIONS=2000000 \
@@ -91,7 +93,17 @@ BOX64_CALLBACK_TRACK=/absolute/path/to/box64-callback-track \
 
 `BOX64_CALLBACK_TRACK` is an executable path, not a Boolean switch. `install-tools.sh` supplies the default path, so it normally does not need to be set.
 
-## 5. Hecate emulator smoke test
+## 5. Hecate callback address-boundary comparison
+
+Run:
+
+```bash
+./evaluations/3-breakdown/hecate-callback-track/run.sh
+```
+
+This experiment measures the boundary comparison performed by an HLR-generated callback guard for a host address. It represents only the fast path that does not reenter a guest trampoline and complements the Box64 callback-origin breakdown in the callback figure.
+
+## 6. Hecate emulator smoke test
 
 Run:
 
@@ -114,7 +126,7 @@ ITERATIONS=5000 ./evaluations/3-breakdown/hecate-emulators/run.sh
 
 `BLINK`, `BOX64`, and `FEX` override the ordinary emulator paths. This smoke test does not use the instrumented Box64.
 
-## 6. Results and evidence
+## 7. Results and evidence
 
 Each run writes:
 

@@ -5,7 +5,7 @@ target_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 repo_root=$(cd "$target_dir/../../.." && pwd)
 [[ $# == 0 ]] || { echo "Unexpected positional argument: $1" >&2; exit 2; }
 devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/.work/devkit}")
-qemu=$(realpath -m "${QEMU:-$repo_root/vcpkg/installed/arm64-linux/tools/qemu-ae/qemu-x86_64}")
+qemu=$(realpath -m "${QEMU_BREAKDOWN:-$repo_root/vcpkg/installed/arm64-linux/tools/qemu-breakdown-ae/qemu-x86_64}")
 iterations=${ITERATIONS:-1000000}
 rounds=${ROUNDS:-5}
 overlay=$repo_root/vcpkg-overlay
@@ -27,7 +27,7 @@ fi
 mkdir -p "$state" "$result_dir/raw"
 host_lib=$(find "$host_prefix/lib" -maxdepth 1 -type f -name 'libbreakdown_test.so.*' | sort | head -n 1)
 test -n "$host_lib"
-printf '[Function]\nbreakdown_test\n' >"$state/Symbols.conf"
+printf '[Function]\nbreakdown_test_2\nbreakdown_test_6\n' >"$state/Symbols.conf"
 
 "$devkit/bin/LoreMakeThunk.py" \
     --name breakdown_test \
@@ -72,17 +72,20 @@ ln -sfn libbreakdown_test.so "$thunk/x86_64/libbreakdown_test.so.1"
     if [[ -d $repo_root/../lorelei-ae/.git ]]; then
         git -C "$repo_root/../lorelei-ae" rev-parse HEAD
     fi
-    printf 'port=breakdown-test\nfunction=breakdown_test\narguments=3\niterations=%s\nrounds=%s\n' "$iterations" "$rounds"
+    printf 'port=breakdown-test\nfunctions=breakdown_test_2,breakdown_test_6\narguments=2,6\niterations=%s\nrounds=%s\n' "$iterations" "$rounds"
 } >"$result_dir/environment.txt" 2>&1
 
-for round in $(seq 1 "$rounds"); do
-    env LD_LIBRARY_PATH="$devkit/lib:$host_prefix/lib:$thunk" \
-        "$qemu" -L "$devkit/x86_64/sysroot" \
-        -E LD_BIND_NOW=1 \
-        -E "LD_LIBRARY_PATH=$devkit/x86_64/lib:$thunk/x86_64" \
-        "$state/benchmark.x86_64" "$iterations" \
-        >"$result_dir/raw/round-$round.stdout" \
-        2>"$result_dir/raw/round-$round.stderr"
+for argument_count in 2 6; do
+    mkdir -p "$result_dir/raw/$argument_count-arg"
+    for round in $(seq 1 "$rounds"); do
+        env LD_LIBRARY_PATH="$devkit/lib:$host_prefix/lib:$thunk" \
+            "$qemu" -L "$devkit/x86_64/sysroot" \
+            -E LD_BIND_NOW=1 \
+            -E "LD_LIBRARY_PATH=$devkit/x86_64/lib:$thunk/x86_64" \
+            "$state/benchmark.x86_64" "$argument_count" "$iterations" \
+            >"$result_dir/raw/$argument_count-arg/round-$round.stdout" \
+            2>"$result_dir/raw/$argument_count-arg/round-$round.stderr"
+    done
 done
 
 python3 - "$result_dir" "$iterations" <<'PY'
@@ -100,27 +103,32 @@ per_call = re.compile(
 )
 counts = re.compile(r"LORELEI_BREAKDOWN .*samples=(\d+) invalid=(\d+)")
 rows = []
-for path in sorted((root / "raw").glob("round-*.stderr")):
-    output = path.read_text()
-    values = per_call.search(output)
-    validity = counts.search(output)
-    if not values or not validity:
-        raise SystemExit(f"missing breakdown output in {path}")
-    samples, invalid = (int(value) for value in validity.groups())
-    if samples != iterations or invalid != 0:
-        raise SystemExit(
-            f"invalid marker sequence in {path}: samples={samples} invalid={invalid}"
-        )
-    rows.append([path.stem, *(float(value) for value in values.groups())])
+for argument_count in (2, 6):
+    case_rows = []
+    for path in sorted((root / "raw" / f"{argument_count}-arg").glob("round-*.stderr")):
+        output = path.read_text()
+        values = per_call.search(output)
+        validity = counts.search(output)
+        if not values or not validity:
+            raise SystemExit(f"missing breakdown output in {path}")
+        samples, invalid = (int(value) for value in validity.groups())
+        if samples != iterations or invalid != 0:
+            raise SystemExit(
+                f"invalid marker sequence in {path}: samples={samples} invalid={invalid}"
+            )
+        row = [f"{argument_count}-arg", path.stem, *(float(value) for value in values.groups())]
+        rows.append(row)
+        case_rows.append(row)
+    rows.append([
+        f"{argument_count}-arg",
+        "median",
+        *(statistics.median(row[column] for row in case_rows) for column in range(2, 7)),
+    ])
 
 with (root / "summary.csv").open("w", newline="") as stream:
     writer = csv.writer(stream, lineterminator="\n")
-    writer.writerow(["round", "gtl_ns", "hecmid_ns", "qemu_ns", "htl_ns", "total_ns"])
+    writer.writerow(["case", "round", "gtl_ns", "hecmid_ns", "qemu_ns", "htl_ns", "total_ns"])
     writer.writerows(rows)
-    writer.writerow([
-        "median",
-        *(statistics.median(row[column] for row in rows) for column in range(1, 6)),
-    ])
 PY
 
 echo "Evidence: $result_dir"

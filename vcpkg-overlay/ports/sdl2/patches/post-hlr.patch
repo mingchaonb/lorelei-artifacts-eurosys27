@@ -90,10 +90,10 @@ index 350b02075..a2be12956 100644
  #include "../SDL_internal.h"
  
  #if defined(__WIN32__) || defined(__GDK__)
-@@ -930,4 +931,3 @@ LORE_FDG_IMPL(8, 4, mem_write)
- LORE_FDG_IMPL(8, 5, mem_writeconst)
- LORE_FDG_IMPL(9, 3, stdio_read)
- LORE_FDG_IMPL(9, 4, mem_read)
+@@ -930,4 +931,3 @@ LORE_FDG_IMPL(8, 2, mem_write)
+ LORE_FDG_IMPL(8, 3, mem_writeconst)
+ LORE_FDG_IMPL(9, 1, stdio_read)
+ LORE_FDG_IMPL(9, 2, mem_read)
 -
 diff --git a/src/joystick/linux/SDL_sysjoystick.c b/src/joystick/linux/SDL_sysjoystick.c
 index b790f50c3..6d422e092 100644
@@ -121,7 +121,7 @@ index 221c86ace..79e50bd67 100644
      SDL_free_func free_func;
      SDL_atomic_t num_allocations;
  } s_mem = {
--    LORE_FDG_15_5(real_malloc), LORE_FDG_16_3(real_calloc), LORE_FDG_17_5(real_realloc), LORE_FDG_11_13(real_free), { 0 }
+-    LORE_FDG_15_1(real_malloc), LORE_FDG_16_1(real_calloc), LORE_FDG_17_1(real_realloc), LORE_FDG_11_3(real_free), { 0 }
 +    real_malloc, real_calloc, real_realloc, real_free, { 0 }
  };
  
@@ -132,33 +132,33 @@ index 221c86ace..79e50bd67 100644
      if (malloc_func) {
 -        *malloc_func = s_mem.malloc_func;
 +        *malloc_func = (s_mem.malloc_func == real_malloc)
-+                           ? LORE_FDG_15_5(real_malloc)
++                           ? LORE_FDG_15_1(real_malloc)
 +                           : s_mem.malloc_func;
      }
      if (calloc_func) {
 -        *calloc_func = s_mem.calloc_func;
 +        *calloc_func = (s_mem.calloc_func == real_calloc)
-+                           ? LORE_FDG_16_3(real_calloc)
++                           ? LORE_FDG_16_1(real_calloc)
 +                           : s_mem.calloc_func;
      }
      if (realloc_func) {
 -        *realloc_func = s_mem.realloc_func;
 +        *realloc_func = (s_mem.realloc_func == real_realloc)
-+                            ? LORE_FDG_17_5(real_realloc)
++                            ? LORE_FDG_17_1(real_realloc)
 +                            : s_mem.realloc_func;
      }
      if (free_func) {
 -        *free_func = s_mem.free_func;
 +        *free_func = (s_mem.free_func == real_free)
-+                         ? LORE_FDG_11_13(real_free)
++                         ? LORE_FDG_11_3(real_free)
 +                         : s_mem.free_func;
      }
  }
  
-@@ -5355,4 +5363,3 @@ LORE_FDG_IMPL(11, 13, real_free)
- LORE_FDG_IMPL(15, 5, real_malloc)
- LORE_FDG_IMPL(16, 3, real_calloc)
- LORE_FDG_IMPL(17, 5, real_realloc)
+@@ -5355,4 +5363,3 @@ LORE_FDG_IMPL(11, 3, real_free)
+ LORE_FDG_IMPL(15, 1, real_malloc)
+ LORE_FDG_IMPL(16, 1, real_calloc)
+ LORE_FDG_IMPL(17, 1, real_realloc)
 -
 diff --git a/src/stdlib/SDL_qsort.c b/src/stdlib/SDL_qsort.c
 index 5d1c7ef94..bcdc54bba 100644

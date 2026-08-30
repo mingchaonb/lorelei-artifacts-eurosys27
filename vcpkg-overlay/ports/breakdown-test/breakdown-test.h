@@ -6,6 +6,8 @@ extern "C" {
 #endif
 
 int breakdown_test(int first, int second, int third);
+int breakdown_test_2(int first, int second);
+int breakdown_test_6(int first, int second, int third, int fourth, int fifth, int sixth);
 
 typedef int (*breakdown_test_callback)(int first, int second, int third);
 

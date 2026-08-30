@@ -1,0 +1,340 @@
+diff --git a/include/lorelei-breakdown.h b/include/lorelei-breakdown.h
+new file mode 100644
+index 0000000000..f3332bc82b
+--- /dev/null
++++ b/include/lorelei-breakdown.h
+@@ -0,0 +1,166 @@
++/*
++ * Lorelei pass-through call breakdown instrumentation.
++ *
++ * SPDX-License-Identifier: GPL-2.0-or-later
++ */
++#ifndef QEMU_LORELEI_BREAKDOWN_H
++#define QEMU_LORELEI_BREAKDOWN_H
++
++#include <inttypes.h>
++#include <stdint.h>
++#include <stdio.h>
++
++enum LoreleiBreakdownPhase {
++    LORELEI_BREAKDOWN_IDLE,
++    LORELEI_BREAKDOWN_GTL_PACKING,
++    LORELEI_BREAKDOWN_HECMID_TRIGGER,
++    LORELEI_BREAKDOWN_QEMU_DISPATCH,
++    LORELEI_BREAKDOWN_HTL_UNPACKING,
++};
++
++enum {
++    LORELEI_BREAKDOWN_MARKER_START = 1,
++    LORELEI_BREAKDOWN_MARKER_END = 2,
++    LORELEI_BREAKDOWN_MARKER_TAG = 0xa001,
++};
++
++struct LoreleiBreakdownData {
++    enum LoreleiBreakdownPhase phase;
++    uint64_t last_tick;
++    uint64_t gtl_ticks;
++    uint64_t hecmid_ticks;
++    uint64_t qemu_ticks;
++    uint64_t htl_ticks;
++    uint64_t samples;
++    uint64_t invalid_sequences;
++    bool reported;
++};
++
++extern __thread struct LoreleiBreakdownData lorelei_breakdown_data;
++
++static inline uint64_t lorelei_breakdown_read_counter(void)
++{
++#if defined(__x86_64__)
++    uint32_t lo, hi;
++
++    __asm__ volatile("rdtsc" : "=a"(lo), "=d"(hi) : : "memory");
++    return ((uint64_t)hi << 32) | lo;
++#elif defined(__aarch64__)
++    uint64_t value;
++
++    __asm__ volatile("mrs %0, cntvct_el0" : "=r"(value) : : "memory");
++    return value;
++#elif defined(__riscv)
++    uint64_t value;
++
++    __asm__ volatile("rdcycle %0" : "=r"(value) : : "memory");
++    return value;
++#else
++#error Unsupported host architecture for Lorelei breakdown instrumentation
++#endif
++}
++
++static inline uint64_t lorelei_breakdown_counter_frequency(void)
++{
++#if defined(__aarch64__)
++    uint64_t value;
++
++    __asm__ volatile("mrs %0, cntfrq_el0" : "=r"(value));
++    return value;
++#else
++    return 0;
++#endif
++}
++
++static inline void lorelei_breakdown_start(void)
++{
++    struct LoreleiBreakdownData *data = &lorelei_breakdown_data;
++
++    if (data->phase != LORELEI_BREAKDOWN_IDLE) {
++        data->invalid_sequences++;
++    }
++    data->last_tick = lorelei_breakdown_read_counter();
++    data->phase = LORELEI_BREAKDOWN_GTL_PACKING;
++}
++
++static inline bool lorelei_breakdown_accumulate(
++    enum LoreleiBreakdownPhase expected,
++    enum LoreleiBreakdownPhase next,
++    uint64_t *total)
++{
++    struct LoreleiBreakdownData *data = &lorelei_breakdown_data;
++    uint64_t tick;
++
++    if (data->phase != expected) {
++        data->invalid_sequences++;
++        return false;
++    }
++    tick = lorelei_breakdown_read_counter();
++    *total += tick - data->last_tick;
++    data->last_tick = tick;
++    data->phase = next;
++    return true;
++}
++
++static inline void lorelei_breakdown_gtl_end(void)
++{
++    lorelei_breakdown_accumulate(LORELEI_BREAKDOWN_GTL_PACKING,
++                                 LORELEI_BREAKDOWN_HECMID_TRIGGER,
++                                 &lorelei_breakdown_data.gtl_ticks);
++}
++
++static inline void lorelei_breakdown_syscall(void)
++{
++    lorelei_breakdown_accumulate(LORELEI_BREAKDOWN_HECMID_TRIGGER,
++                                 LORELEI_BREAKDOWN_QEMU_DISPATCH,
++                                 &lorelei_breakdown_data.hecmid_ticks);
++}
++
++static inline void lorelei_breakdown_dispatch(void)
++{
++    lorelei_breakdown_accumulate(LORELEI_BREAKDOWN_QEMU_DISPATCH,
++                                 LORELEI_BREAKDOWN_HTL_UNPACKING,
++                                 &lorelei_breakdown_data.qemu_ticks);
++}
++
++static inline void lorelei_breakdown_host_end(void)
++{
++    if (lorelei_breakdown_accumulate(LORELEI_BREAKDOWN_HTL_UNPACKING,
++                                     LORELEI_BREAKDOWN_IDLE,
++                                     &lorelei_breakdown_data.htl_ticks)) {
++        lorelei_breakdown_data.samples++;
++    }
++}
++
++static inline void lorelei_breakdown_report(void)
++{
++    struct LoreleiBreakdownData *data = &lorelei_breakdown_data;
++    uint64_t frequency = lorelei_breakdown_counter_frequency();
++
++    if (data->reported || data->samples == 0) {
++        return;
++    }
++    data->reported = true;
++    fprintf(stderr,
++            "LORELEI_BREAKDOWN counter_hz=%" PRIu64
++            " samples=%" PRIu64 " invalid=%" PRIu64 "\n",
++            frequency, data->samples, data->invalid_sequences);
++    fprintf(stderr,
++            "LORELEI_BREAKDOWN_TICKS gtl=%" PRIu64
++            " hecmid=%" PRIu64 " qemu=%" PRIu64 " htl=%" PRIu64 "\n",
++            data->gtl_ticks, data->hecmid_ticks, data->qemu_ticks,
++            data->htl_ticks);
++    if (frequency != 0) {
++        double scale = 1000000000.0 / (double)frequency / data->samples;
++
++        fprintf(stderr,
++                "LORELEI_BREAKDOWN_NS_PER_CALL gtl=%.6f hecmid=%.6f"
++                " qemu=%.6f htl=%.6f total=%.6f\n",
++                data->gtl_ticks * scale, data->hecmid_ticks * scale,
++                data->qemu_ticks * scale, data->htl_ticks * scale,
++                (data->gtl_ticks + data->hecmid_ticks + data->qemu_ticks +
++                 data->htl_ticks) * scale);
++    }
++}
++
++#endif
+diff --git a/linux-user/i386/cpu_loop.c b/linux-user/i386/cpu_loop.c
+index 03dc093962..4e057d5fb8 100644
+--- a/linux-user/i386/cpu_loop.c
++++ b/linux-user/i386/cpu_loop.c
+@@ -24,6 +24,7 @@
+ #include "cpu_loop-common.h"
+ #include "signal-common.h"
+ #include "user-mmap.h"
++#include "lorelei-breakdown.h"
+
+ #include <dlfcn.h>
+
+@@ -284,7 +285,15 @@ static bool lorelei_handle_call(uint64_t request, uint64_t a2, uint64_t a3,
+     bool handled;
+
+     qemu_syscall_number = LORELEI_SYSCALL_NUMBER;
++    if (request == LORELEI_INVOKE_PROC &&
++        lorelei_breakdown_data.phase == LORELEI_BREAKDOWN_QEMU_DISPATCH) {
++        lorelei_breakdown_dispatch();
++    }
+     handled = lorelei_handle_call_inner(request, a2, a3, a4);
++    if (request == LORELEI_INVOKE_PROC &&
++        lorelei_breakdown_data.phase == LORELEI_BREAKDOWN_HTL_UNPACKING) {
++        lorelei_breakdown_host_end();
++    }
+     qemu_syscall_number = saved_syscall_number;
+     return handled;
+ }
+diff --git a/linux-user/main.c b/linux-user/main.c
+index 8a58de42bf..3668c8417e 100644
+--- a/linux-user/main.c
++++ b/linux-user/main.c
+@@ -55,6 +55,7 @@
+ #include "loader.h"
+ #include "user-mmap.h"
+ #include "accel/tcg/perf.h"
++#include "lorelei-breakdown.h"
+
+ #ifdef CONFIG_SEMIHOSTING
+ #include "semihosting/semihost.h"
+@@ -668,6 +669,8 @@ static int parse_args(int argc, char **argv)
+     return optind;
+ }
+
++__thread struct LoreleiBreakdownData lorelei_breakdown_data;
++
+ int main(int argc, char **argv, char **envp)
+ {
+     struct target_pt_regs regs1, *regs = &regs1;
+diff --git a/linux-user/syscall.c b/linux-user/syscall.c
+index a618506a8e..2488cc1812 100644
+--- a/linux-user/syscall.c
++++ b/linux-user/syscall.c
+@@ -132,6 +132,7 @@
+ #include "qemu.h"
+ #include "user-internals.h"
+ #include "strace.h"
++#include "lorelei-breakdown.h"
+ #include "signal-common.h"
+ #include "loader.h"
+ #include "user-mmap.h"
+@@ -9025,6 +9026,7 @@ static abi_long do_syscall1(CPUArchState *cpu_env, int num, abi_long arg1,
+             return -QEMU_ERESTARTSYS;
+         }
+
++        lorelei_breakdown_report();
+         pthread_mutex_lock(&clone_lock);
+
+         if (CPU_NEXT(first_cpu)) {
+@@ -10954,6 +10956,7 @@ static abi_long do_syscall1(CPUArchState *cpu_env, int num, abi_long arg1,
+         /* new thread calls */
+     case TARGET_NR_exit_group:
+         preexit_cleanup(cpu_env, arg1);
++        lorelei_breakdown_report();
+         return get_errno(exit_group(arg1));
+ #endif
+     case TARGET_NR_setdomainname:
+diff --git a/target/i386/helper.h b/target/i386/helper.h
+index ac2b04abd6..1017fe5deb 100644
+--- a/target/i386/helper.h
++++ b/target/i386/helper.h
+@@ -67,6 +67,7 @@ DEF_HELPER_2(into, void, env, int)
+ DEF_HELPER_FLAGS_1(single_step, TCG_CALL_NO_WG, noreturn, env)
+ DEF_HELPER_1(rechecking_single_step, void, env)
+ DEF_HELPER_1(cpuid, void, env)
++DEF_HELPER_1(lorelei_breakdown_marker, void, env)
+ DEF_HELPER_FLAGS_1(rdpid, TCG_CALL_NO_WG, tl, env)
+ DEF_HELPER_1(rdtsc, void, env)
+ DEF_HELPER_FLAGS_1(rdpmc, TCG_CALL_NO_WG, noreturn, env)
+diff --git a/target/i386/tcg/misc_helper.c b/target/i386/tcg/misc_helper.c
+index babff06186..b724b862b9 100644
+--- a/target/i386/tcg/misc_helper.c
++++ b/target/i386/tcg/misc_helper.c
+@@ -23,6 +23,7 @@
+ #include "exec/helper-proto.h"
+ #include "exec/exec-all.h"
+ #include "helper-tcg.h"
++#include "lorelei-breakdown.h"
+
+ /*
+  * NOTE: the translator must set DisasContext.cc_op to CC_OP_EFLAGS
+@@ -61,6 +62,27 @@ void helper_cpuid(CPUX86State *env)
+     env->regs[R_EDX] = edx;
+ }
+
++void helper_lorelei_breakdown_marker(CPUX86State *env)
++{
++    uint32_t operation = env->regs[R_EAX];
++    uint32_t tag = env->regs[R_EBX];
++
++    if (tag != LORELEI_BREAKDOWN_MARKER_TAG) {
++        raise_exception_err_ra(env, EXCP06_ILLOP, 0, GETPC());
++    }
++
++    switch (operation) {
++    case LORELEI_BREAKDOWN_MARKER_START:
++        lorelei_breakdown_start();
++        return;
++    case LORELEI_BREAKDOWN_MARKER_END:
++        lorelei_breakdown_gtl_end();
++        return;
++    default:
++        raise_exception_err_ra(env, EXCP06_ILLOP, 0, GETPC());
++    }
++}
++
+ void helper_rdtsc(CPUX86State *env)
+ {
+     uint64_t val;
+diff --git a/target/i386/tcg/translate.c b/target/i386/tcg/translate.c
+index 037bc47e7c..6e0202e8be 100644
+--- a/target/i386/tcg/translate.c
++++ b/target/i386/tcg/translate.c
+@@ -6744,6 +6744,12 @@ static bool disas_insn(DisasContext *s, CPUState *cpu)
+         }
+         break;
+
++    case 0x10b: /* ud2, reserved as a tagged breakdown marker */
++        if (prefixes != 0) {
++            goto illegal_op;
++        }
++        gen_helper_lorelei_breakdown_marker(tcg_env);
++        break;
+     case 0x10d: /* 3DNow! prefetch(w) */
+         modrm = x86_ldub_code(env, s);
+         mod = (modrm >> 6) & 3;
+diff --git a/target/i386/tcg/user/seg_helper.c b/target/i386/tcg/user/seg_helper.c
+index c45f2ac2ba..41a6009849 100644
+--- a/target/i386/tcg/user/seg_helper.c
++++ b/target/i386/tcg/user/seg_helper.c
+@@ -25,6 +25,7 @@
+ #include "exec/cpu_ldst.h"
+ #include "tcg/helper-tcg.h"
+ #include "tcg/seg_helper.h"
++#include "lorelei-breakdown.h"
+
+ void helper_syscall(CPUX86State *env, int next_eip_addend)
+ {
+@@ -33,6 +34,10 @@ void helper_syscall(CPUX86State *env, int next_eip_addend)
+     cs->exception_index = EXCP_SYSCALL;
+     env->exception_is_int = 0;
+     env->exception_next_eip = env->eip + next_eip_addend;
++    if (env->regs[R_EAX] == 4096 &&
++        lorelei_breakdown_data.phase == LORELEI_BREAKDOWN_HECMID_TRIGGER) {
++        lorelei_breakdown_syscall();
++    }
+     cpu_loop_exit(cs);
+ }
