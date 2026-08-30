@@ -25,7 +25,7 @@ qemu=$(realpath -m "${QEMU:-$repo_root/../qemu-ae/build/qemu-x86_64}")
 vcpkg=$repo_root/vcpkg/vcpkg
 nm_tool=$(command -v llvm-nm-20 || command -v llvm-nm || command -v nm)
 work=$repo_root/.work/evaluations/zstd
-vcpkg_state=$repo_root/.work/vcpkg-state
+vcpkg_state=$repo_root/.work/evaluations/vcpkg-state
 results_root=$recipe_dir/results
 kind=evaluator
 if $reference; then results_root=$recipe_dir/reference-results; kind=reference; fi
