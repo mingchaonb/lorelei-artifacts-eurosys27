@@ -29,7 +29,7 @@ if [[ -z $recipe_dir ]]; then recipe_dir=$(cd "$(dirname "$0")/../sdl2-ttf" && p
 repo_root=$(cd "$(dirname "$0")/../../.." && pwd)
 overlay=$repo_root/vcpkg-overlay
 vcpkg=$repo_root/vcpkg/vcpkg
-qemu=$(realpath -m "${QEMU:-$devkit/bin/qemu-x86_64}")
+qemu=$(realpath -m "$devkit/bin/qemu-x86_64")
 work=$repo_root/.work/evaluations/$package
 results_root=$recipe_dir/results
 result_kind=evaluator
@@ -45,7 +45,7 @@ if ! $install_only; then
     nm -D "$qemu" | grep qemu_lorelei_reentry > /dev/null || { echo "QEMU does not provide qemu_lorelei_reentry: $qemu" >&2; exit 2; }
 fi
 if [[ -e $work && ! -f $work/.lorelei-evaluations-workspace ]]; then echo "Refusing unmarked work directory: $work" >&2; exit 2; fi
-if [[ -e $work ]]; then cmake -E remove_directory "$work"; fi
+# Keep the per-package vcpkg roots so later runs can reuse ABI-matching installs.
 mkdir -p "$work" "$run_dir"/{generated,logs/preparation,logs/native,logs/hecate}
 touch "$work/.lorelei-evaluations-workspace"
 exec > >(tee "$run_dir/commands.log") 2>&1
@@ -156,6 +156,7 @@ comm -12 "$run_dir/generated/guest-undefined.txt" "$run_dir/generated/host-funct
 [[ -s $run_dir/generated/functions.txt ]] || { echo "No tested functions discovered for $package" >&2; exit 1; }
 
 thunk=$work/thunk
+if [[ -e $thunk ]]; then cmake -E remove_directory "$thunk"; fi
 manifest_args=()
 if [[ -f $port_dir/lorelei/Manifest_guest.cpp ]]; then manifest_args+=(--manifest-guest "$port_dir/lorelei/Manifest_guest.cpp"); fi
 if [[ $package == sdl2-ttf ]]; then manifest_args+=(--no-callback-replace); fi
@@ -180,6 +181,7 @@ if [[ $package == sdl2-ttf ]]; then
     sdl_port=$overlay/ports/sdl2
     sdl_library=$(find "$host_prefix/lib" -maxdepth 1 -type f -name 'libSDL2-2.0.so.*' | head -1)
     sdl_thunk=$work/sdl-thunk
+    if [[ -e $sdl_thunk ]]; then cmake -E remove_directory "$sdl_thunk"; fi
     run_logged "$run_dir/logs/preparation/sdl-thunk.log" "$devkit/bin/LoreMakeThunk.py" --name SDL2 --out "$sdl_thunk" \
         --lib "$sdl_library" --symbols "$sdl_port/lorelei/Symbols.conf" --desc "$sdl_port/lorelei/Desc.h" \
         --manifest-host "$sdl_port/lorelei/Manifest_host.cpp" --manifest-guest "$sdl_port/lorelei/Manifest_guest.cpp" \
