@@ -7,18 +7,17 @@ overlay_dir=$repo_root/vcpkg-overlay
 port_dir=$overlay_dir/ports/sdl1
 triplet=arm64-linux-ae
 install_only=false
-if [[ ${1:-} == -h || ${1:-} == --help ]]; then
-    echo "Usage: $0 [--install-only]"
-    exit 0
-fi
-if [[ ${1:-} == --install-only ]]; then
-    install_only=true
+verbose=false
+while (($#)); do
+    case $1 in
+        --install-only) install_only=true ;;
+        --verbose) verbose=true ;;
+        -h|--help) echo "Usage: $0 [--install-only] [--verbose]"; exit 0 ;;
+        --*) echo "Unknown option: $1" >&2; exit 2 ;;
+        *) echo "Unexpected positional argument: $1" >&2; exit 2 ;;
+    esac
     shift
-fi
-if [[ $# != 0 ]]; then
-    echo "Unexpected positional argument: $1" >&2
-    exit 2
-fi
+done
 
 devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/../lorelei-ae/build/install}")
 qemu=$(realpath -m "${QEMU:-$repo_root/vcpkg/installed/arm64-linux/tools/qemu-ae/qemu-x86_64}")
@@ -43,9 +42,6 @@ if [[ -e $work_dir && ! -f $work_dir/.lorelei-evaluations-workspace ]]; then
     echo "Refusing to replace unmarked work directory: $work_dir" >&2
     exit 2
 fi
-if [[ -e $work_dir ]]; then
-    cmake -E remove_directory "$work_dir"
-fi
 mkdir -p "$work_dir" "$run_dir"/logs "$run_dir"/generated
 touch "$work_dir/.lorelei-evaluations-workspace"
 exec > >(tee "$run_dir/commands.log") 2>&1
@@ -56,13 +52,17 @@ prefix=$work_dir/installed/hecate/$triplet
 thunk=$work_dir/thunks/hecate
 
 echo "[build] SDL 1.2 compatibility ABI and HLR source closure"
-"$vcpkg" install "sdl1[hlr]:$triplet" \
+vcpkg_command=("$vcpkg" install "sdl1[hlr]:$triplet" \
     --overlay-ports="$overlay_dir/ports" --overlay-triplets="$overlay_dir/triplets" \
     --x-install-root="$work_dir/installed/hecate" \
     --x-buildtrees-root="$work_dir/vcpkg/hecate/buildtrees" \
     --x-packages-root="$work_dir/vcpkg/hecate/packages" \
-    --downloads-root="$repo_root/vcpkg/downloads" --triplet="$triplet" \
-    >"$run_dir/logs/vcpkg.log" 2>&1
+    --downloads-root="$repo_root/vcpkg/downloads" --triplet="$triplet")
+if $verbose; then
+    "${vcpkg_command[@]}" 2>&1 | tee "$run_dir/logs/vcpkg.log"
+else
+    "${vcpkg_command[@]}" >"$run_dir/logs/vcpkg.log" 2>&1
+fi
 
 echo "[thunk] OpenArena SDL 1.2 ABI surface"
 host_library=$(find "$prefix/lib" -maxdepth 1 -type f -name 'libSDL-1.2.so.*' | head -1)

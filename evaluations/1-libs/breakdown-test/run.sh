@@ -12,8 +12,9 @@ positional=()
 while (($#)); do
     case $1 in
         --install-only) install_only=true ;;
+        --verbose) ;; # This runner already streams vcpkg output.
         -h|--help)
-            echo "Usage: $0 --install-only"
+            echo "Usage: $0 --install-only [--verbose]"
             exit 0
             ;;
         --*) echo "Unknown option: $1" >&2; exit 2 ;;

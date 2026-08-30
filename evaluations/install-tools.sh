@@ -7,10 +7,11 @@ repo_root=$(cd "$evaluations_dir/.." && pwd)
 vcpkg=$repo_root/vcpkg/vcpkg
 tool_ports=$repo_root/vcpkg-overlay/ports-tools
 triplet=${VCPKG_DEFAULT_TRIPLET:-arm64-linux}
+source "$evaluations_dir/common/install-progress.sh"
 
 usage() {
     cat <<'EOF'
-Usage: ./evaluations/install-tools.sh [--verbose]
+Usage: ./evaluations/install-tools.sh [--plain]
 
 Install the native FFmpeg utility and the four pinned AE emulators into the
 repository-local vcpkg/installed tree. Existing binary packages are reused.
@@ -20,10 +21,10 @@ Environment:
 EOF
 }
 
-verbose=false
+plain=false
 while (($#)); do
     case $1 in
-        --verbose) verbose=true ;;
+        --plain) plain=true ;;
         -h|--help) usage; exit 0 ;;
         *) echo "Unknown argument: $1" >&2; usage >&2; exit 2 ;;
     esac
@@ -48,12 +49,21 @@ packages=(
     "box64-ae:${triplet}"
     "fex-ae:${triplet}"
 )
-
-args=(install "${packages[@]}" "--overlay-ports=$tool_ports")
-$verbose && args+=(--debug)
+package_names=(ffmpeg qemu blink box64 fex)
 
 echo "Install AE tools with triplet: $triplet"
-"$vcpkg" "${args[@]}"
+install_progress_init Tools "${#packages[@]}" "$plain"
+install_progress_setup
+for index in "${!packages[@]}"; do
+    args=(install "${packages[$index]}" "--overlay-ports=$tool_ports")
+    install_progress_run "${package_names[$index]}" "$((index + 1))" \
+        "$vcpkg" "${args[@]}" || true
+done
+install_progress_finish
+if ((install_progress_failed)); then
+    echo "One or more AE tools failed to install." >&2
+    exit 1
+fi
 
 # Fail immediately if a port reported success without installing its public tool.
 installed=$repo_root/vcpkg/installed/$triplet/tools

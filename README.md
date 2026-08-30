@@ -26,8 +26,17 @@ Clone the pinned vcpkg release into the artifact repository root, then bootstrap
 git clone https://github.com/microsoft/vcpkg.git vcpkg
 git -C vcpkg checkout 2026.07.29
 ./vcpkg/bootstrap-vcpkg.sh -disableMetrics
-./evaluations/install-tools.sh
 ```
+
+Prepare the complete artifact with the following three installation commands. They install the shared tools, every library recipe, and the packaged games in dependency order:
+
+```bash
+./evaluations/install-tools.sh
+./evaluations/install-libs.sh
+./evaluations/install-games.sh
+```
+
+These are the only artifact installation commands. Existing vcpkg packages, downloads, and build state are reused. The tool and library installers keep the full vcpkg output visible above a two-line progress display. Add `--plain` when redirecting output or when terminal control sequences are undesirable.
 
 Run the verified library set sequentially:
 

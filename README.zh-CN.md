@@ -26,8 +26,17 @@ sudo apt install -y build-essential cmake ninja-build gcc-x86-64-linux-gnu g++-x
 git clone https://github.com/microsoft/vcpkg.git vcpkg
 git -C vcpkg checkout 2026.07.29
 ./vcpkg/bootstrap-vcpkg.sh -disableMetrics
-./evaluations/install-tools.sh
 ```
+
+随后只需依次运行下面三个安装命令，即可准备完整 artifact。它们按依赖顺序安装共享工具、全部 library 配方和打包后的游戏：
+
+```bash
+./evaluations/install-tools.sh
+./evaluations/install-libs.sh
+./evaluations/install-games.sh
+```
+
+这三个脚本是 artifact 的全部安装入口。已有的 vcpkg package、下载和构建状态都会复用。工具和 library 安装脚本在终端底部显示两行进度，同时在上方保留完整 vcpkg 输出。重定向输出或不希望出现终端控制序列时可添加 `--plain`。
 
 依次运行已经验证的 library 集合：
 
