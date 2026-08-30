@@ -20,6 +20,11 @@ Package recipes do not clone upstream projects. A port pins the upstream release
 vcpkg-overlay/
 ├── ports/
 │   └── sdl2/
+├── ports-tools/
+│   ├── blink-ae/
+│   ├── box64-ae/
+│   ├── fex-ae/
+│   └── qemu-ae/
 └── triplets/
     ├── arm64-linux-ae.cmake
     ├── x64-linux-ae.cmake
@@ -47,4 +52,10 @@ export LORELEI_DEVKIT=/path/to/devkit
   'sdl2[tests]:x64-linux-ae' \
   --overlay-ports=vcpkg-overlay/ports \
   --overlay-triplets=vcpkg-overlay/triplets
+```
+
+Executable infrastructure is kept in the separate `ports-tools` overlay. The public installer combines those pinned emulator ports with vcpkg's built-in native FFmpeg port:
+
+```bash
+./evaluations/install-tools.sh
 ```

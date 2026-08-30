@@ -9,6 +9,16 @@
 3. `3-breakdown` measures individual call, callback, and mechanism costs.
 4. `4-games` measures game performance and playability.
 
+## Evaluation tools
+
+The native FFmpeg utility and the four pinned emulator forks are packaged separately from the libraries under test. Install all of them into the repository-local vcpkg tree from any working directory:
+
+```bash
+./evaluations/install-tools.sh
+```
+
+The installer reuses packages already present in vcpkg and places the public executables below `vcpkg/installed/arm64-linux/tools/`. The emulator recipes live in `vcpkg-overlay/ports-tools`. Native FFmpeg comes from the built-in vcpkg port, not from the Hecate FFmpeg library-test recipe.
+
 ## Directory contract
 
 ```text

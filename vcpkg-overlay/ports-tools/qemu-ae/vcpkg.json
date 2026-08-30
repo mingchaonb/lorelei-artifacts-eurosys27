@@ -1,0 +1,8 @@
+{
+  "name": "qemu-ae",
+  "version-date": "2026-08-30",
+  "description": "Pinned Hecate-enabled QEMU linux-user executable for the Lorelei AE",
+  "homepage": "https://github.com/mingchaonb/qemu",
+  "license": "GPL-2.0-only",
+  "supports": "linux & arm64"
+}

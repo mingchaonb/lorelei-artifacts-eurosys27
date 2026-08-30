@@ -1,0 +1,15 @@
+{
+  "name": "fex-ae",
+  "version-date": "2026-08-30",
+  "description": "Pinned Hecate-enabled FEX executable for the Lorelei AE",
+  "homepage": "https://github.com/mingchaonb/FEX",
+  "license": "MIT",
+  "supports": "linux & arm64",
+  "dependencies": [
+    "xxhash",
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    }
+  ]
+}
