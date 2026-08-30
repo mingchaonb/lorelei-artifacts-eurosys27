@@ -57,7 +57,7 @@ echo "[build] SDL 1.2 compatibility ABI and HLR source closure"
     --x-install-root="$work_dir/installed/hecate" \
     --x-buildtrees-root="$work_dir/vcpkg/hecate/buildtrees" \
     --x-packages-root="$work_dir/vcpkg/hecate/packages" \
-    --downloads-root="$work_dir/vcpkg/downloads" --triplet="$triplet" \
+    --downloads-root="$repo_root/vcpkg/downloads" --triplet="$triplet" \
     >"$run_dir/logs/vcpkg.log" 2>&1
 
 echo "[thunk] OpenArena SDL 1.2 ABI surface"

@@ -36,7 +36,7 @@ exec > >(tee "$run_dir/commands.log") 2>&1
 export LORELEI_DEVKIT=$devkit
 install_lane() {
     local lane=$1 triplet=$2
-    "$vcpkg" install "monocypher:$triplet" --overlay-ports="$overlay/ports" --overlay-triplets="$overlay/triplets" --x-install-root="$work/installed/$lane" --x-buildtrees-root="$work/vcpkg/$lane/buildtrees" --x-packages-root="$work/vcpkg/$lane/packages" --downloads-root="$work/vcpkg/downloads" >"$run_dir/logs/preparation/vcpkg-$lane.log" 2>&1
+    "$vcpkg" install "monocypher:$triplet" --overlay-ports="$overlay/ports" --overlay-triplets="$overlay/triplets" --x-install-root="$work/installed/$lane" --x-buildtrees-root="$work/vcpkg/$lane/buildtrees" --x-packages-root="$work/vcpkg/$lane/packages" --downloads-root="$repo_root/vcpkg/downloads" >"$run_dir/logs/preparation/vcpkg-$lane.log" 2>&1
 }
 install_lane native arm64-linux-ae
 install_lane guest x64-linux-ae

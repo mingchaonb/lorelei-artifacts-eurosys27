@@ -128,7 +128,7 @@ install_lane() {
         --x-install-root="$work/installed/$lane" \
         --x-buildtrees-root="$work/vcpkg/$lane/buildtrees" \
         --x-packages-root="$work/vcpkg/$lane/packages" \
-        --downloads-root="$work/vcpkg/downloads" --triplet="$triplet" --binarysource=clear
+        --downloads-root="$repo_root/vcpkg/downloads" --triplet="$triplet" --binarysource=clear
 }
 
 stage "Install the SpeexDSP DSO and all five upstream test programs"

@@ -161,7 +161,7 @@ install_lane() {
         --x-install-root="$work_dir/installed/$lane" \
         --x-buildtrees-root="$work_dir/vcpkg/$lane/buildtrees" \
         --x-packages-root="$work_dir/vcpkg/$lane/packages" \
-        --downloads-root="$work_dir/vcpkg/downloads" --triplet="$lane_triplet"
+        --downloads-root="$repo_root/vcpkg/downloads" --triplet="$lane_triplet"
 }
 
 stage "Install native, guest, and Hecate FFmpeg packages"

@@ -53,7 +53,7 @@ install_lane()
         --x-install-root="$state/installed/$lane" \
         --x-buildtrees-root="$state/vcpkg/$lane/buildtrees" \
         --x-packages-root="$state/vcpkg/$lane/packages" \
-        --downloads-root="$state/vcpkg/downloads" \
+        --downloads-root="$repo_root/vcpkg/downloads" \
         --triplet="$triplet"
 }
 

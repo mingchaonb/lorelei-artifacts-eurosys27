@@ -139,7 +139,7 @@ install_lane() {
         --x-install-root="$work_dir/installed/$name" \
         --x-buildtrees-root="$work_dir/vcpkg/$name/buildtrees" \
         --x-packages-root="$work_dir/vcpkg/$name/packages" \
-        --downloads-root="$work_dir/vcpkg/downloads" --triplet="$triplet"
+        --downloads-root="$repo_root/vcpkg/downloads" --triplet="$triplet"
 }
 
 stage "Build pinned SQLite packages through the repository overlay"

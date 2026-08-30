@@ -26,7 +26,7 @@ export LORELEI_DEVKIT=$devkit
 "$vcpkg" install vulkan-loader:arm64-linux-ae \
     --editable \
     --overlay-ports="$overlay/ports" --overlay-triplets="$overlay/triplets" \
-    --downloads-root="$repo_root/.work/vcpkg-downloads" \
+    --downloads-root="$repo_root/vcpkg/downloads" \
     --x-install-root="$work_dir/installed" --x-buildtrees-root="$work_dir/buildtrees" \
     --x-packages-root="$work_dir/packages"
 

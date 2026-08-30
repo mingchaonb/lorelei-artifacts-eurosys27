@@ -17,6 +17,7 @@ Each library directory must provide:
 9. Append-only raw logs, environment identity, configuration LOC, HLR and TLC audit records, and a machine-readable summary.
 10. Package-local result and reference-result policies. Generated evidence rules must not be placed in the repository root ignore file.
 11. `[ALL TESTS PASSED]` on the first README title line only when every non-excluded configured test has no failure in both lanes.
+12. One repository-wide source archive cache at `vcpkg/downloads`. Per-library and per-lane install, buildtree, and package roots remain isolated under `.work/evaluations`.
 
 ## Migration order
 
