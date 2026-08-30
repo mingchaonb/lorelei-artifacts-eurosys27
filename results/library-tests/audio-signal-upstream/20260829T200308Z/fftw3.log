@@ -1,7 +1,0 @@
-RUN 32x64
-Problem: 32x64, setup: 771.00 us, time: 7.57 us, ``mflops'': 14870.542
-PASS 32x64
-RUN ib256
-Problem: ib256, setup: 1.18 ms, time: 630.55 ns, ``mflops'': 16239.683
-PASS ib256
-SUMMARY pass=2

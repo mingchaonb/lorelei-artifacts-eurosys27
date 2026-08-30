@@ -1,3 +1,0 @@
-upstream_release=libvorbis-1.3.7
-registered_libvorbisfile_tests=0
-ov_imports_in_registered_test=directed_ov_workload_reference=evaluations/1-libs/libvorbisfile/reference-results/20260829T190120Z
