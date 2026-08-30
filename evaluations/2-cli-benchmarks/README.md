@@ -45,7 +45,23 @@ The system `yt-dlp` must be recent enough to read current YouTube metadata. Ubun
 
 ## Running
 
-Individual workload runners and the aggregate runner will be listed here as they are calibrated. Local output is written below each workload's `results/`. Reference output uses `reference-results/` and can be committed explicitly.
+Run every available workload sequentially:
+
+```bash
+./evaluations/2-cli-benchmarks/run-all.sh
+```
+
+The aggregate runner keeps controller state below `.work/evaluations/2-cli-benchmarks-batch/`. Repeating the same command skips successful workloads and retries failures or interruptions. Use `--restart` to archive that state and start again. Interactive terminals show the three most recent results, the active workload, and aggregate progress at the bottom. Use `--plain` for ordinary log output.
+
+The same runner can create author-side evidence, select lanes, or only prepare workload prerequisites:
+
+```bash
+./evaluations/2-cli-benchmarks/run-all.sh --reference
+./evaluations/2-cli-benchmarks/run-all.sh --lanes native,qemu,qemu-hecate
+./evaluations/2-cli-benchmarks/run-all.sh --install-only
+```
+
+Local output is written below each workload's `results/`. Reference output uses `reference-results/` and can be committed explicitly.
 
 Remove generated evaluator or author-side result directories with the matching guarded cleanup script. Pass `--dry-run` to inspect the exact targets first.
 
