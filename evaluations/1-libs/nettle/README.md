@@ -1,5 +1,7 @@
 # nettle evaluation (TLC Only)
 
+[中文版](README.zh-CN.md)
+
 This recipe pins nettle 3.10.2 and runs every test selected by the configured upstream `make check` suite. The production target is `libnettle.so.8`. Native AArch64 and x86-64 guest packages are built as shared libraries from the same official source input.
 
 The two execution lanes are:

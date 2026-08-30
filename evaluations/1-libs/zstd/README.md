@@ -1,5 +1,7 @@
 # zstd 1.5.7 validation (TLC Only)
 
+[中文版](README.zh-CN.md)
+
 Public commands use the repository-local `.work/devkit` by default. Set `LORELEI_DEVKIT=/absolute/path/to/devkit` to override it.
 
 This recipe installs zstd 1.5.7 and its upstream tests through the pinned vcpkg overlay, generates TLC thunks, then executes the selected installed test in native and Hecate lanes.

@@ -1,5 +1,7 @@
 # mhash evaluation (TLC Only) [ALL TESTS PASSED]
 
+[中文版](README.zh-CN.md)
+
 This recipe pins mhash 0.9.9.9 and validates the APIs used by driver, HMAC, keygen, restart, and fragmentation tests. The production target is libmhash.so.2. Native AArch64 and x86-64 guest packages are built as shared libraries from the same official source input.
 
 The Hecate lane uses TLC-generated GTL and HTL libraries. It does not enable an `hlr` feature, invoke LoreHLR, load either HLR extension, or claim APIs outside this workload. The port refreshes GNU config.guess and config.sub for AArch64.

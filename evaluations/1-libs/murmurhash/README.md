@@ -1,5 +1,7 @@
 # murmurhash evaluation (TLC Only) [ALL TESTS PASSED]
 
+[中文版](README.zh-CN.md)
+
 This recipe pins murmurhash 0.2.0 and validates the APIs used by the 19 upstream known-answer cases. The production target is libmurmurhash.so. Native AArch64 and x86-64 guest packages are built as shared libraries from the same official source input.
 
 The Hecate lane uses TLC-generated GTL and HTL libraries. It does not enable an `hlr` feature, invoke LoreHLR, load either HLR extension, or claim APIs outside this workload. The test executable is linked dynamically against the shared library.

@@ -1,5 +1,7 @@
 # qrencode 4.1.1 validation (TLC Only) [ALL TESTS PASSED]
 
+[中文版](README.zh-CN.md)
+
 Public commands use the repository-local `.work/devkit` by default. Set `LORELEI_DEVKIT=/absolute/path/to/devkit` to override it.
 
 This recipe builds only the shared QR encoding library with PNG and command-line tools disabled. The port installs and runs all 12 configured upstream algorithm tests in both native and Hecate lanes. No configured test is excluded.

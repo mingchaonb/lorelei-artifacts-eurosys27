@@ -1,5 +1,7 @@
 # libthai 0.1.30 validation (TLC Only) [ALL TESTS PASSED]
 
+[中文版](README.zh-CN.md)
+
 Public commands use the repository-local `.work/devkit` by default. Set `LORELEI_DEVKIT=/absolute/path/to/devkit` to override it.
 
 This recipe consumes the single shared `libdatrie` overlay dependency and builds libthai as a shared DSO. The port uses the host `trietool` while packaging so the target package contains the generated upstream dictionary. It runs the nine upstream character, cell, input, rendering, string, wide-character, sorting, and word-break tests. The sorting output must match the pinned expected file.

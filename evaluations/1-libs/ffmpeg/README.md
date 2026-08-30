@@ -1,5 +1,7 @@
 # FFmpeg 7.1.5 validation (TLC + HLR)
 
+[中文版](README.zh-CN.md)
+
 Public commands use the repository-local `.work/devkit` by default. Set `LORELEI_DEVKIT=/absolute/path/to/devkit` to override it.
 
 This recipe installs FFmpeg 7.1.5 through one repository overlay port and three architecture-role roots:

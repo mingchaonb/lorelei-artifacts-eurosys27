@@ -1,5 +1,7 @@
 # SQLite 3.53.4 validation (TLC + HLR)
 
+[中文版](README.zh-CN.md)
+
 Public commands use the repository-local `.work/devkit` by default. Set `LORELEI_DEVKIT=/absolute/path/to/devkit` to override it.
 
 This recipe downloads SQLite's official 3.53.4 amalgamation and builds `sqlite3.c` as the only production translation unit. The directed in-memory workload covers the `sqlite3_exec` row callback, a custom SQL scalar function, and an update hook. Native and Hecate paths must both report one row, one update, and result 42.

@@ -1,5 +1,7 @@
 # libpcap 1.10.6 validation (TLC + HLR)
 
+[中文版](README.zh-CN.md)
+
 Public commands use the repository-local `.work/devkit` by default. Set `LORELEI_DEVKIT=/absolute/path/to/devkit` to override it.
 
 This recipe fetches the official libpcap release through the repository vcpkg overlay, rewrites its exact shared-library closure with HLR, generates a TLC thunk with callback replacement disabled, and runs one offline-capture workload in native and Hecate paths.

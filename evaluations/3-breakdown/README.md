@@ -1,5 +1,7 @@
 # Mechanism breakdown
 
+[中文版](README.zh-CN.md)
+
 This group contains reproducible recipes and evidence for individual call, callback, and mechanism costs.
 
 - [`breakdown-test/`](breakdown-test/) measures a synthetic three-integer function that returns its first argument.

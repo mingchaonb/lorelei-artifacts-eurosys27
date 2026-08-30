@@ -1,5 +1,7 @@
 # WavPack 5.9.0 validation (TLC + HLR)
 
+[中文版](README.zh-CN.md)
+
 Public commands use the repository-local `.work/devkit` by default. Set `LORELEI_DEVKIT=/absolute/path/to/devkit` to override it.
 
 This recipe builds the official WavPack 5.9.0 shared library and installs its configured upstream `wvtest` exerciser under `tools/wavpack/upstream-tests`. It runs `wvtest --exhaustive --short --no-extras` against both the native library and the Hecate path. A pass requires the contiguous sequence from `test 0001` through `test 0164`, an exit status of zero, and the terminal result `all tests pass` in both lanes.

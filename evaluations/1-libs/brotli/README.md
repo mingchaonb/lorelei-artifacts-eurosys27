@@ -1,5 +1,7 @@
 # brotli 1.2.0 validation (TLC Only) [ALL TESTS PASSED]
 
+[中文版](README.zh-CN.md)
+
 Public commands use the repository-local `.work/devkit` by default. Set `LORELEI_DEVKIT=/absolute/path/to/devkit` to override it.
 
 This recipe installs brotli 1.2.0 and its upstream tests through the pinned vcpkg overlay, generates TLC thunks, then executes the installed tests in native and Hecate lanes.

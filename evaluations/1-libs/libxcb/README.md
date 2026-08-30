@@ -1,5 +1,7 @@
 # libxcb 1.15 validation
 
+[中文版](README.zh-CN.md)
+
 Public commands use the repository-local `.work/devkit` by default. Set `LORELEI_DEVKIT=/absolute/path/to/devkit` to override it.
 
 `tests/TestXcb.c` is a directed native and Hecate smoke workload for the Ubuntu 24.04 libxcb core port. It connects to a real X server, reads the setup record, allocates an XID, creates and maps a window, performs a checked request, obtains a reply, and destroys the window.

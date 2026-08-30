@@ -1,5 +1,7 @@
 # libtasn1 evaluation (TLC Only) [ALL TESTS PASSED]
 
+[中文版](README.zh-CN.md)
+
 This recipe pins libtasn1 4.21.0 and runs all 40 tests discovered by the selected upstream configuration. The production target is `libtasn1.so.6`. Native AArch64 and x86-64 guest packages are built as shared libraries from the same official source input.
 
 The Hecate lane uses TLC-generated GTL and HTL libraries. It does not enable an `hlr` feature, invoke LoreHLR, load either HLR extension, or claim APIs outside this workload. FILE ownership uses the shared libc shim, which does not change the TLC Only mechanism classification.

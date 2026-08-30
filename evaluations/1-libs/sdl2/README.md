@@ -1,5 +1,7 @@
 # SDL2 2.28.5 validation (TLC + HLR)
 
+[中文版](README.zh-CN.md)
+
 Public commands use the repository-local `.work/devkit` by default. Set `LORELEI_DEVKIT=/absolute/path/to/devkit` to override it.
 
 This recipe is the reference implementation of the library evaluation contract. The repository-level vcpkg overlay pins and builds the official SDL release. The recipe then creates SDL and libc-shim thunks and runs the same selected tests in the native baseline and the Hecate path. Hecate is the anonymous submission name for Lorelei. Its SDL path combines TLC thunk generation with HLR rewriting and runtime extensions.

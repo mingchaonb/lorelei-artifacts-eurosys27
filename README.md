@@ -2,25 +2,59 @@
 
 [中文版](README.zh-CN.md)
 
-This repository is the evaluator-facing build, test, and evidence workspace for the EuroSys 2027 Lorelei submission. Lorelei is the public project name. Hecate is the anonymized name used by the paper and by some runtime interfaces. They refer to the same system unless a recipe says otherwise.
+This repository is the evaluator-facing build, test, and evidence workspace for the EuroSys 2027 Lorelei submission. Lorelei is the public project name. Hecate is the anonymized name used during paper submission. They refer to the same system.
 
-## Quick start
-
-Install the host build tools and the GNU x86-64 cross compiler. The zlib guest package uses the GNU compiler to avoid a data-dependent Blink JIT incompatibility observed with the devkit Clang build.
-
-```bash
-sudo apt install -y build-essential cmake ninja-build gcc-x86-64-linux-gnu g++-x86-64-linux-gnu python3
-```
-
-The default setup keeps all generated dependencies inside the artifact repository:
+## 1. Repository layout
 
 ```text
 eurosys-lorelei-artifacts/
-├── .work/devkit/
-└── vcpkg/
+├── evaluations/
+│   ├── 1-libs/                 upstream library tests and native versus Hecate comparisons
+│   ├── 2-cli-benchmarks/       the eight command-line workloads in the paper
+│   ├── 3-breakdown/            function-call and callback cost breakdowns
+│   ├── 4-games/                game playability and frame-rate evaluations
+│   ├── install-devkit.sh       install the pinned Lorelei devkit
+│   ├── install-tools.sh        install FFmpeg, four DBTs, and the Box64 breakdown tool
+│   ├── install-libs.sh         install every library-test package
+│   └── install-games.sh        install redistributable game packages
+├── vcpkg-overlay/
+│   ├── ports/                  vcpkg recipes for evaluated libraries and games
+│   ├── ports-tools/            recipes for FFmpeg, four DBTs, and instrumented tools
+│   └── triplets/               native AArch64 and guest x86-64 build configurations
+├── vcpkg/
+│   ├── downloads/              source archive cache shared by every recipe
+│   └── installed/              installation root for common tools
+└── .work/
+    ├── devkit/                 released Lorelei AE devkit
+    └── evaluations/            isolated build, package, and install state for each evaluation
 ```
 
-Clone the pinned vcpkg release into the artifact repository root, then bootstrap it once:
+`vcpkg-overlay/ports/` contains recipes that obtain source from each project's official repository and build, install, and deploy its tests. Every recipe pins an upstream release or commit and verifies the downloaded content. When an upstream build system does not install its tests, the recipe uses a patch under `patches/` or logic in `portfile.cmake` to install the built tests under `tools/<port>/upstream-tests/`. These patches support reproducible builds, test installation, and necessary Hecate adaptation. They do not replace the evaluated library algorithms.
+
+The four numbered directories below `evaluations/` correspond to four groups of paper evidence. Each evaluation keeps its entry point, scope, and results in its own directory. Evaluator-generated evidence goes to `results/<run-id>/`, while author-generated reference evidence goes to `reference-results/<run-id>/`. `.work/`, vcpkg build trees, and download caches are reusable intermediate state rather than experimental results.
+
+## 2. Prepare the environment
+
+### 2.1 System and dependencies
+
+This artifact requires an Ubuntu 24.04 AArch64 host. Library and command-line evaluations do not require a graphical desktop. Game evaluations additionally require a working X11 session, OpenGL or Vulkan drivers, and MangoHud.
+
+Install the build tools, x86-64 cross compiler, input downloader, and game measurement tool:
+
+```bash
+sudo apt update
+sudo apt install -y \
+  build-essential cmake ninja-build git curl ca-certificates \
+  xz-utils zip unzip tar pkg-config python3 python3-venv \
+  gcc-x86-64-linux-gnu g++-x86-64-linux-gnu \
+  yt-dlp mangohud
+```
+
+The command-line workloads use `yt-dlp` to obtain public media input. If the Ubuntu package cannot read current YouTube metadata, install a newer version and select it with `YT_DLP=/absolute/path/to/yt-dlp`.
+
+### 2.2 Install vcpkg
+
+Clone and bootstrap the pinned vcpkg release at the repository root:
 
 ```bash
 git clone https://github.com/microsoft/vcpkg.git vcpkg
@@ -28,74 +62,120 @@ git -C vcpkg checkout 2026.07.29
 ./vcpkg/bootstrap-vcpkg.sh -disableMetrics
 ```
 
-Prepare the complete artifact with the following three installation commands. The first command downloads the released Lorelei devkit and installs the shared tools. The remaining commands install every library recipe and packaged game in dependency order:
+All ports share `vcpkg/downloads/`, so different libraries do not download the same source archive repeatedly. Evaluations still keep isolated build, package, and install trees below `.work/evaluations/`.
+
+### 2.3 Install evaluation content
+
+Run these four installation scripts from the repository root:
 
 ```bash
+./evaluations/install-devkit.sh
 ./evaluations/install-tools.sh
 ./evaluations/install-libs.sh
 ./evaluations/install-games.sh
 ```
 
-These are the only artifact installation commands. Existing devkit downloads, vcpkg packages, downloads, and build state are reused. The devkit can also be installed independently with `./evaluations/install-devkit.sh`. The tool and library installers keep the full vcpkg output visible above a two-line progress display. Add `--plain` when redirecting output or when terminal control sequences are undesirable.
+`install-devkit.sh` downloads the architecture-matched EuroSys 2027 AE release, verifies its SHA-256, and installs it under `.work/devkit/`. `install-tools.sh` also verifies and reuses this devkit. It installs both the ordinary Box64 used for performance evaluation and a separately instrumented Box64 used only for the callback breakdown. The remaining scripts reuse installed vcpkg packages, downloads, and build state. They do not clear caches before each invocation.
 
-Run the verified library set sequentially:
+Installation keeps complete vcpkg output visible and displays progress at the bottom of the terminal. Add `--plain` when redirecting output or when terminal control sequences are undesirable. Every public script resolves paths relative to its own location and can be started from any current directory.
+
+## 3. Validate the artifact
+
+The commands below read the Lorelei devkit from `.work/devkit/` and use the QEMU, Blink, Box64, and FEX executables installed by `install-tools.sh`. Select another installation with `LORELEI_DEVKIT`, `QEMU`, `BLINK`, `BOX64`, or `FEX` when necessary.
+
+### 3.1 Validate library correctness
+
+Our correctness claim is the following. For every package marked `[ALL TESTS PASSED]`, all upstream tests that are discoverable in the current shared-library configuration, belong to the target public C ABI, and are not explicitly excluded pass against the same upstream version in both the native AArch64 and Hecate x86-64 paths. This claim does not extend to other build configurations, static or private ABI tests, atomics and locks, signals, real devices, fuzzing, sanitizers, or stress tests that do not fit the AE time budget.
+
+The complete installation audit on August 30, 2026 is:
+
+| Audited object | To validate | Passed the complete upstream suite | Ratio |
+|---|---:|---:|---:|
+| library package | 79 | 54 | 68.35% |
+| production shared object | 97 | 63 | 64.95% |
+
+Shared-library counts include real production ELF files in each package and do not count `.so` symlink aliases repeatedly. The synthetic `breakdown-test` prerequisite is not counted as a library package. `glvnd` and `vulkan-loader` use Ubuntu system DSOs and do not copy those DSOs into their vcpkg packages, so they increase the package count but not the packaged shared-object count.
+
+After installing every library, reproduce this table with:
+
+```bash
+./evaluations/1-libs/_common/summarize-library-inventory.sh
+```
+
+Run the set verified to pass all tests:
 
 ```bash
 ./evaluations/1-libs/run-all.sh --verbose
 ```
 
-The batch runner continues after a failed library. Running the same command again skips successful recipes and retries failed or interrupted recipes. `--restart` archives the controller state and starts the selected set again. `--all` includes recipes with documented exclusions in addition to those marked `[ALL TESTS PASSED]`.
+Each recipe runs its upstream tests from the vcpkg installation and compares the native AArch64 path with the x86-64 Hecate path. The default command runs only the 54 packages whose README title contains `[ALL TESTS PASSED]`.
 
-Run one library directly:
-
-```bash
-./evaluations/1-libs/sdl2/run.sh --verbose
-```
-
-All public recipes read the devkit from `LORELEI_DEVKIT`, which defaults to `.work/devkit` resolved from this repository. The four pinned emulators default to the executables installed by `evaluations/install-tools.sh` under `vcpkg/installed/arm64-linux/tools/`. They can be overridden with `QEMU`, `BLINK`, `BOX64`, and `FEX`:
+Run every library package with:
 
 ```bash
-LORELEI_DEVKIT=/absolute/path/to/devkit \
-QEMU=/absolute/path/to/qemu-x86_64 \
-BLINK=/absolute/path/to/blink \
-BOX64=/absolute/path/to/box64 \
-FEX=/absolute/path/to/FEX \
-  ./evaluations/1-libs/sdl2/run.sh --verbose
+./evaluations/1-libs/run-all.sh --all --verbose
 ```
 
-Use `--install-only` when a supported library recipe should prepare its vcpkg packages and mechanism files without running tests. Use `--reference` only to create author-side reference evidence.
+The complete set also includes packages with explicit exclusions or directed validation only. Each package README and result summary documents its scope and exclusion reasons.
 
-## Repository layout
+- Both batch modes continue after failures.
+- Repeating the same command skips successful libraries and retries failed or interrupted entries.
 
-1. [`evaluations/1-libs/`](evaluations/1-libs/) contains installed upstream library tests and native versus Hecate correctness comparisons.
-2. [`evaluations/2-cli-benchmarks/`](evaluations/2-cli-benchmarks/) is reserved for the eight command-line performance workloads.
-3. [`evaluations/3-breakdown/`](evaluations/3-breakdown/) contains call, callback, emulator, and mechanism breakdowns.
-4. [`evaluations/4-games/`](evaluations/4-games/) contains game preflight, playability, and frame-rate recipes.
-5. [`vcpkg-overlay/`](vcpkg-overlay/) contains library ports, pinned AE tool ports, reviewed patches, Lorelei metadata, and the native and guest triplets.
-6. `vcpkg/` is the repository-local package manager and shared source archive cache.
-7. `.work/evaluations/` contains reusable package, build, install, and generated mechanism state. It is not evidence.
+### 3.2 Validate command-line programs
 
-Each library port installs every configured upstream test under `tools/<port>/upstream-tests`. Its `run.sh` executes that upstream suite only from installed native and guest prefixes. It does not rebuild upstream tests from a source tree after installation. Library evaluation uses two symmetric lanes:
+Run the eight command-line workloads:
 
-1. native AArch64
-2. x86-64 through Hecate, using TLC and HLR where the library requires HLR
+```bash
+./evaluations/2-cli-benchmarks/run-all.sh
+```
 
-The artifact never runs a pure-QEMU full-emulation comparison lane.
+The runner prepares deterministic compression inputs and public media input, then measures FFTW, zlib, zstd, OpenSSL, and four FFmpeg encoding workloads. Every workload records at least five measurements, complete commands, input hashes, tool versions, and raw times. The batch runner supports recovery and skips successful workloads when invoked again. See [`evaluations/2-cli-benchmarks/README.md`](evaluations/2-cli-benchmarks/README.md) for the complete lane, input, and result definitions.
 
-## Results and claims
+### 3.3 Validate breakdowns
 
-Generated evaluator evidence is stored beside its recipe under `results/<run-id>/`. Author-generated evidence uses `reference-results/<run-id>/`. Result directories contain raw logs, commands, environment identity, source and patch audits, configuration LOC, test classification, and a machine-readable summary where applicable.
+Run the callback address-origin check and three-integer function-call breakdown:
 
-A library README starts with `[ALL TESTS PASSED]` only when every configured, non-excluded upstream test passes in both native and Hecate lanes. Exclusions must be explicit. Typical out-of-scope categories include atomics and locks, signals, device integration, fuzzing, sanitizers, private ABI tests, and impractical stress tests. A build success or a thunk count alone is not correctness evidence.
+```bash
+./evaluations/3-breakdown/box64-callback-track/run.sh
+./evaluations/3-breakdown/breakdown-test/run.sh
+```
 
-## Reproducibility contract
+Both experiments use the `breakdown-test` package installed by `install-libs.sh`. The callback experiment uses the independently instrumented Box64 executable installed by `install-tools.sh`. It does not read a source tree or rebuild Box64 at evaluation time. Adjust the sample count, iteration count, and CPU with `ROUNDS`, `ITERATIONS`, and `CPU`. The two experiment READMEs document the exact measurement points.
 
-1. Recipes pin upstream releases or commits and verify downloaded archives.
-2. vcpkg owns source acquisition, patching, compilation, and installation.
-3. All ports share `vcpkg/downloads`, while per-library build and install roots remain isolated under `.work/evaluations`.
-4. Scripts resolve repository files from their own location and can be launched from any current directory.
-5. Test failures and interrupted runs remain visible. A replacement run creates a new result directory.
-6. Performance experiments retain raw samples, input identity, environment state, and the command used to derive aggregates.
-7. Generated build trees, installed prefixes, downloaded archives, credentials, proprietary inputs, and temporary files are not committed.
+### 3.4 Validate games
 
-See [`evaluations/README.md`](evaluations/README.md) for the common recipe contract and each evaluation directory for package-specific scope and commands.
+An evaluator may select any installed game. The argument is the run duration in seconds and defaults to 30:
+
+```bash
+./evaluations/4-games/assaultcube/run.sh 30
+./evaluations/4-games/openarena/run.sh 30
+./evaluations/4-games/redeclipse/run.sh 30
+./evaluations/4-games/supertux/run.sh 30
+./evaluations/4-games/supertuxkart/run.sh 30
+```
+
+The game runner performs graphics, window-system, and thunk preflight checks before starting an unmodified x86-64 game through Hecate. MangoHud collects frame-rate and frame-time samples on the host and stores raw samples and a summary under the game's `results/<run-id>/`. Every game supports `GAME_DIR` as an override for the selected game's installation directory. A Hollow Knight runner is also provided under `evaluations/4-games/hollow-knight/`, but its proprietary game files cannot be redistributed with this artifact. The evaluator must provide a legally obtained copy. `GAME_DIR` must directly contain the `Hollow Knight` executable and `Hollow Knight_Data/`:
+
+```bash
+GAME_DIR="/absolute/path/to/Hollow Knight" ./evaluations/4-games/hollow-knight/run.sh 30
+```
+
+## 4. Results and claims
+
+1. Evaluator-generated evidence is stored under the corresponding recipe's `results/<run-id>/`. Author-provided reference evidence is stored under `reference-results/<run-id>/`. New runs create new timestamped directories and do not overwrite prior results.
+2. A library README title contains `[ALL TESTS PASSED]` only when every non-excluded upstream test passes in both the native and Hecate paths under the current configuration.
+3. Tests that do not represent the Lorelei mechanism claim are explicitly excluded rather than counted as Hecate failures. These include atomics and locks, signals, real-device integration, fuzzing, sanitizers, private ABI tests, and stress tests that do not fit the AE time budget.
+4. Library evidence retains native and Hecate raw output, exit status, test classification, source and patch identity, and TLC and HLR configuration line counts. A successful build or thunk generation alone is not correctness evidence.
+5. Performance evidence retains every raw measurement, input size and SHA-256, complete command, environment and tool versions, and the method used to derive summaries. Performance conclusions in the paper should be recomputed from this raw evidence.
+6. Game evidence retains preflight status, run logs, raw MangoHud samples, and frame-rate summaries. Proprietary Hollow Knight files are not part of the artifact or its availability claim.
+
+## 5. Reproducibility contract
+
+1. Every public command resolves repository paths from its own script location and can be launched from any current directory.
+2. The Lorelei devkit, upstream libraries, tools, and redistributable games are pinned to releases, commits, or archive checksums. Downloads are verified before use.
+3. vcpkg owns official upstream source acquisition, versioned patch application, compilation, and test installation. The test stage runs only from installation prefixes and never rebuilds tests temporarily from a source tree.
+4. Native AArch64 and Hecate x86-64 use the same upstream version and corresponding build configuration. Library correctness evaluation never runs a pure-QEMU full-emulation lane.
+5. Every port shares `vcpkg/downloads/`, while each evaluation keeps isolated build, package, install, and generated mechanism state under `.work/evaluations/`.
+6. Installation and batch scripts reuse successful state. Failures and interruptions remain visible. Repeating a command skips successful entries and retries incomplete entries unless the evaluator explicitly requests a restart.
+7. `results/` contains removable evidence generated locally by evaluators. `reference-results/` contains reference evidence provided by the authors. Cleanup scripts remove only the result directories they explicitly own and never clear shared vcpkg downloads or package caches.
+8. Build trees, installation prefixes, download caches, credentials, proprietary inputs, and other temporary files are not committed to the artifact repository.

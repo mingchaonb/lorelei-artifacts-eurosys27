@@ -1,5 +1,7 @@
 # Reproducible evaluations
 
+[中文版](README.zh-CN.md)
+
 `evaluations` contains evaluator-facing recipes organized by the claims they support. Each recipe owns its reproducible command, reviewed inputs, raw evidence, and machine-readable summary.
 
 ## Evaluation groups

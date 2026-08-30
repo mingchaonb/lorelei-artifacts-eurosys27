@@ -1,5 +1,7 @@
 # AE tool ports
 
+[中文版](README.zh-CN.md)
+
 This overlay contains executable tools used by the evaluation harness. It is separate from `../ports`, which contains the libraries under test and their Hecate build recipes.
 
 The emulator ports are pinned to reviewed commits in the `mingchaonb` forks. They install only the executables needed by the public evaluation paths under `tools/<port>/`. The repository-level installer also selects the built-in vcpkg FFmpeg port, so the native FFmpeg command is not built from the Hecate library-test recipe.

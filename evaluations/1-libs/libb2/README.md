@@ -1,5 +1,7 @@
 # libb2 evaluation (TLC Only) [ALL TESTS PASSED]
 
+[中文版](README.zh-CN.md)
+
 This recipe pins libb2 0.98.1 and runs all four upstream BLAKE2 known-answer executables selected by the shared-library configuration. The production target is `libb2.so.1`. Native AArch64 and x86-64 guest packages are built as shared libraries from the same official source input.
 
 The Hecate lane uses TLC-generated GTL and HTL libraries. It does not enable an `hlr` feature, invoke LoreHLR, load either HLR extension, or claim APIs outside this workload. OpenMP and architecture dispatch are disabled.

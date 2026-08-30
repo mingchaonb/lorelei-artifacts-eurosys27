@@ -1,5 +1,7 @@
 # monocypher evaluation (TLC Only) [ALL TESTS PASSED]
 
+[中文版](README.zh-CN.md)
+
 This recipe pins monocypher 4.0.3 and validates the APIs used by the upstream test.out vector suite. The production target is libmonocypher.so.4. Native AArch64 and x86-64 guest packages are built as shared libraries from the same official source input.
 
 The Hecate lane uses TLC-generated GTL and HTL libraries. It does not enable an `hlr` feature, invoke LoreHLR, load either HLR extension, or claim APIs outside this workload. The core and optional Ed25519 implementation are in the tested DSO.

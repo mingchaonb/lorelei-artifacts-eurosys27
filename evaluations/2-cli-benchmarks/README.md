@@ -1,5 +1,7 @@
 # Command-line workload reproduction
 
+[中文版](README.zh-CN.md)
+
 This evaluation reproduces the eight command-line workloads used by the paper. Every timed program and shared library comes from the matching `evaluations/1-libs` installation. The separate official FFmpeg under `vcpkg/installed/arm64-linux` is an input-preparation tool and is never timed.
 
 The workloads are:

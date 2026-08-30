@@ -1,5 +1,7 @@
 # Game evaluations
 
+[中文版](README.zh-CN.md)
+
 This group contains reproducible recipes and evidence for game performance and playability. Library-level GLVND and Vulkan validation belongs under `evaluations/1-libs`.
 
 Each game has the same recipe layout as a library evaluation and is started by its own `run.sh`. `LORELEI_DEVKIT` follows the repository-wide default. The optional `SECONDS` argument sets the watchdog duration. `GAME_DIR` overrides the selected game's default installation directory and skips installation of that game's vcpkg package.

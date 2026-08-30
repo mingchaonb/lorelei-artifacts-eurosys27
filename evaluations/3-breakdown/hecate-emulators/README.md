@@ -1,5 +1,7 @@
 # Blink、Box64 与 FEX 的 Hecate 支持烟测
 
+[中文版](README.zh-CN.md)
+
 Public commands use the repository-local `.work/devkit` by default. Set `LORELEI_DEVKIT=/absolute/path/to/devkit` to override it.
 
 该测试复用 `breakdown-test` 的三参数整数接口，并增加两个 callback 检查。第一个检查把 host callback 返回 guest 后再传回 host，验证地址来源判断不会重复包装 host 地址。第二个检查把 guest callback 传给 host 并实际调用 1000 次，验证 callback trampoline、emulator 重入口和 magic syscall resume 路径。

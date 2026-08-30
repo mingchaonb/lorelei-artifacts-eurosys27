@@ -1,5 +1,7 @@
 # System Vulkan loader validation
 
+[中文版](README.zh-CN.md)
+
 Public commands use the repository-local `.work/devkit` by default. Set `LORELEI_DEVKIT=/absolute/path/to/devkit` to override it.
 
 This recipe uses the installed Ubuntu 24.04 Vulkan loader and ICDs. The `vulkan-loader` overlay port does not build or copy the loader. Its CMake project generates and installs the thunk pack, native and x86_64 validation programs, `ThunkDB.json`, and TLC audit output into the vcpkg package tree. The evaluation script only installs that port, runs the packaged programs, and collects evidence.

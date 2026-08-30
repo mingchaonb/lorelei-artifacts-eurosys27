@@ -1,5 +1,7 @@
 # rhash evaluation (TLC Only) [ALL TESTS PASSED]
 
+[中文版](README.zh-CN.md)
+
 This recipe pins RHash 1.4.6 and runs the complete upstream shared-library self-test selected by this configuration. The production target is `librhash.so.1`. Native AArch64 and x86-64 guest packages are built as shared libraries from the same official source input.
 
 The Hecate lane uses TLC-generated GTL and HTL libraries. It does not enable an `hlr` feature, invoke LoreHLR, load either HLR extension, or claim APIs outside this workload. OpenSSL integration, gettext, and the CLI are excluded.

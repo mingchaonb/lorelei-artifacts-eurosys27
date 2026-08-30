@@ -1,5 +1,7 @@
 # Library evaluations
 
+[中文版](README.zh-CN.md)
+
 This group aims to run every upstream test discoverable after each selected library configuration is built. A documented lower-level exclusion is acceptable when a test fundamentally requires unsupported atomics, locks, signals, devices, or a similarly out-of-scope mechanism.
 
 ## Per-library contract

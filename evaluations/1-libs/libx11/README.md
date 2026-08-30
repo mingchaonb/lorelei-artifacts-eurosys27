@@ -1,5 +1,7 @@
 # libX11 1.8.7
 
+[中文版](README.zh-CN.md)
+
 Public commands use the repository-local `.work/devkit` by default. Set `LORELEI_DEVKIT=/absolute/path/to/devkit` to override it.
 
 This recipe builds the pinned Ubuntu 24.04 libX11 source as native AArch64, x86-64 guest, and HLR-rewritten AArch64 packages. The directed X11 test checks non-variadic keysym and Xrm calls, opens the active X11 display, and exercises resource-name variadic calls for XIM and XIC objects.

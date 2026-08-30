@@ -1,5 +1,7 @@
 # libsodium evaluation (TLC Only) [ALL TESTS PASSED]
 
+[中文版](README.zh-CN.md)
+
 This recipe pins libsodium 1.0.20 and validates the APIs used by the configured upstream make check suite. The production target is libsodium.so.26. Native AArch64 and x86-64 guest packages are built as shared libraries from the same official source input.
 
 The Hecate lane uses TLC-generated GTL and HTL libraries. It does not enable an `hlr` feature, invoke LoreHLR, load either HLR extension, or claim APIs outside this workload. Assembly dispatch is disabled so both lanes use the claimed portable implementation.

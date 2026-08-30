@@ -1,5 +1,7 @@
 # libmaxminddb 1.13.3 validation (TLC Only) [ALL TESTS PASSED]
 
+[中文版](README.zh-CN.md)
+
 Public commands use the repository-local `.work/devkit` by default. Set `LORELEI_DEVKIT=/absolute/path/to/devkit` to override it.
 
 This recipe builds the pinned shared library for AArch64 and x86-64, generates thunks for the APIs used by the upstream 26-test CTest suite, and runs the suite in native and Hecate lanes. `MMDB_get_value` uses a null-terminated custom variadic path extractor. `MMDB_vget_value` converts the guest `va_list` to the array-form API before crossing the ABI boundary. The private `data-pool-t` executable contributes four additional exported test symbols.

@@ -1,5 +1,7 @@
 # libcurl 8.20.0 validation (TLC + HLR)
 
+[中文版](README.zh-CN.md)
+
 Public commands use the repository-local `.work/devkit` by default. Set `LORELEI_DEVKIT=/absolute/path/to/devkit` to override it.
 
 This recipe builds a minimal HTTP-only `libcurl.so.4` from the official curl 8.20.0 release. The directed workload sends one request to a loopback server, passes a guest write callback through `curl_easy_setopt`, and requires exactly 11 response bytes with `CURLE_OK` in both native and Hecate paths.

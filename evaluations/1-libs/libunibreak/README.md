@@ -1,5 +1,7 @@
 # libunibreak 7.0 validation (TLC Only) [ALL TESTS PASSED]
 
+[中文版](README.zh-CN.md)
+
 Public commands use the repository-local `.work/devkit` by default. Set `LORELEI_DEVKIT=/absolute/path/to/devkit` to override it.
 
 The workload runs the upstream `tests` executable in line, word, and grapheme modes using the release conformance vectors. Each mode must exit successfully in native and Hecate lanes.
