@@ -85,13 +85,14 @@ if(RUN_HLR)
     vcpkg_cmake_build()
 endif()
 
-# Install the public library package and preserve wvtest as an AE-only tool.
+# Install the public library package and preserve the configured upstream test
+# under the common library-evaluation layout.
 vcpkg_cmake_install()
 vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/WavPack)
 vcpkg_copy_pdbs()
 vcpkg_fixup_pkgconfig()
 file(INSTALL "${WAVPACK_BUILD}/wvtest"
-    DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}/ae-tools"
+    DESTINATION "${CURRENT_PACKAGES_DIR}/tools/${PORT}/upstream-tests/bin"
     FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
 )
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/bin")

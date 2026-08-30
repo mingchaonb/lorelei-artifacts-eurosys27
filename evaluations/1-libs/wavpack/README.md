@@ -1,6 +1,6 @@
 # WavPack 5.9.0 validation (TLC + HLR)
 
-This recipe builds the official WavPack 5.9.0 shared library and its upstream `wvtest` exerciser. It runs `wvtest --exhaustive --short --no-extras` against both the native library and the Hecate path. A pass requires the contiguous sequence from `test 0001` through `test 0164`, an exit status of zero, and the terminal result `all tests pass` in both lanes.
+This recipe builds the official WavPack 5.9.0 shared library and installs its configured upstream `wvtest` exerciser under `tools/wavpack/upstream-tests`. It runs `wvtest --exhaustive --short --no-extras` against both the native library and the Hecate path. A pass requires the contiguous sequence from `test 0001` through `test 0164`, an exit status of zero, and the terminal result `all tests pass` in both lanes.
 
 ```bash
 ./evaluations/1-libs/wavpack/run.sh --reference --verbose /path/to/lorelei-devkit

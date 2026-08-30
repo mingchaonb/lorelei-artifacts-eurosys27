@@ -1,6 +1,7 @@
 {
   "name": "wavpack",
   "version": "5.9.0",
+  "port-version": 1,
   "description": "WavPack shared-library and wvtest build used by the Lorelei AE evaluation",
   "homepage": "https://github.com/dbry/WavPack",
   "license": "BSD-3-Clause",

@@ -57,7 +57,8 @@ if [[ -e $work_dir && ! -f $work_dir/.lorelei-evaluations-workspace ]]; then
     echo "Refusing to replace unmarked work directory: $work_dir" >&2
     exit 2
 fi
-if [[ -e $work_dir ]]; then cmake -E remove_directory "$work_dir"; fi
+# Preserve ABI-matching vcpkg installs across runs. Reset only generated thunks.
+if [[ -e $work_dir/thunks ]]; then cmake -E remove_directory "$work_dir/thunks"; fi
 mkdir -p "$work_dir" "$run_dir"/{generated/targets/wavpack,logs/preparation,logs/native,logs/hecate}
 touch "$work_dir/.lorelei-evaluations-workspace"
 exec > >(tee "$run_dir/commands.log") 2>&1
@@ -172,8 +173,8 @@ fi
 # Use upstream's same wvtest executable source in the native and guest lanes.
 native_prefix=$work_dir/installed/native/$triplet_native
 guest_prefix=$work_dir/installed/guest/$triplet_guest
-native_wvtest=$native_prefix/share/wavpack/ae-tools/wvtest
-guest_wvtest=$guest_prefix/share/wavpack/ae-tools/wvtest
+native_wvtest=$native_prefix/tools/wavpack/upstream-tests/bin/wvtest
+guest_wvtest=$guest_prefix/tools/wavpack/upstream-tests/bin/wvtest
 [[ -x $native_wvtest ]] || { echo "Native wvtest not found: $native_wvtest" >&2; exit 2; }
 [[ -x $guest_wvtest ]] || { echo "Guest wvtest not found: $guest_wvtest" >&2; exit 2; }
 
