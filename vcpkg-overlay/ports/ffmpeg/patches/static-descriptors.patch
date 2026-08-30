@@ -1,0 +1,1115 @@
+--- a/libavcodec/aac/aacdec.c	2026-08-30 08:27:39.133025156 +0000
++++ b/libavcodec/aac/aacdec.c	2026-08-30 08:28:37.424951797 +0000
+@@ -2575,7 +2575,7 @@
+ 
+ static const AVClass decoder_class = {
+     .class_name = "AAC decoder",
+-    .item_name  = LORE_FDG_2_4(av_default_item_name),
++    .item_name  = av_default_item_name,
+     .option     = options,
+     .version    = LIBAVUTIL_VERSION_INT,
+ };
+--- a/libavcodec/aac_parser.c	2026-08-30 08:27:35.896602045 +0000
++++ b/libavcodec/aac_parser.c	2026-08-30 08:28:37.425863161 +0000
+@@ -63,9 +63,9 @@
+ const AVCodecParser ff_aac_parser = {
+     .codec_ids      = { AV_CODEC_ID_AAC },
+     .priv_data_size = sizeof(AACAC3ParseContext),
+-    .parser_init    = LORE_FDG_10_1(aac_parse_init),
+-    .parser_parse   = LORE_FDG_11_1(ff_aac_ac3_parse),
+-    .parser_close   = LORE_FDG_12_2(ff_parse_close),
++    .parser_init    = aac_parse_init,
++    .parser_parse   = ff_aac_ac3_parse,
++    .parser_close   = ff_parse_close,
+ };
+ 
+ LORE_FDG_IMPL(10, 1, aac_parse_init)
+--- a/libavcodec/bsf.c	2026-08-30 08:27:36.114441993 +0000
++++ b/libavcodec/bsf.c	2026-08-30 08:28:38.141516203 +0000
+@@ -98,10 +98,10 @@
+ 
+ static const AVClass bsf_class = {
+     .class_name       = "AVBSFContext",
+-    .item_name        = LORE_FDG_2_2(bsf_to_name),
++    .item_name        = bsf_to_name,
+     .version          = LIBAVUTIL_VERSION_INT,
+-    .child_next       = LORE_FDG_13_1(bsf_child_next),
+-    .child_class_iterate = LORE_FDG_3_1(ff_bsf_child_class_iterate),
++    .child_next       = bsf_child_next,
++    .child_class_iterate = ff_bsf_child_class_iterate,
+     .category         = AV_CLASS_CATEGORY_BITSTREAM_FILTER,
+ };
+ 
+@@ -407,7 +407,7 @@
+ 
+ static const AVClass bsf_list_class = {
+         .class_name = "bsf_list",
+-        .item_name  = LORE_FDG_2_1(bsf_list_item_name),
++        .item_name  = bsf_list_item_name,
+         .version    = LIBAVUTIL_VERSION_INT,
+ };
+ 
+--- a/libavcodec/h264_parser.c	2026-08-30 08:27:36.792922264 +0000
++++ b/libavcodec/h264_parser.c	2026-08-30 08:28:38.142319662 +0000
+@@ -700,9 +700,9 @@
+ const AVCodecParser ff_h264_parser = {
+     .codec_ids      = { AV_CODEC_ID_H264 },
+     .priv_data_size = sizeof(H264ParseContext),
+-    .parser_init    = LORE_FDG_10_2(init),
+-    .parser_parse   = LORE_FDG_11_2(h264_parse),
+-    .parser_close   = LORE_FDG_12_1(h264_close),
++    .parser_init    = init,
++    .parser_parse   = h264_parse,
++    .parser_close   = h264_close,
+ };
+ 
+ LORE_FDG_IMPL(10, 2, init)
+--- a/libavcodec/h264dec.c	2026-08-30 08:27:37.375371033 +0000
++++ b/libavcodec/h264dec.c	2026-08-30 08:28:38.142576160 +0000
+@@ -1125,7 +1125,7 @@
+ 
+ static const AVClass h264_class = {
+     .class_name = "H264 Decoder",
+-    .item_name  = LORE_FDG_2_4(av_default_item_name),
++    .item_name  = av_default_item_name,
+     .option     = h264_options,
+     .version    = LIBAVUTIL_VERSION_INT,
+ };
+--- a/libavcodec/libfdk-aacenc.c	2026-08-30 08:27:37.623995016 +0000
++++ b/libavcodec/libfdk-aacenc.c	2026-08-30 08:28:38.142813361 +0000
+@@ -96,7 +96,7 @@
+ 
+ static const AVClass aac_enc_class = {
+     .class_name = "libfdk_aac",
+-    .item_name  = LORE_FDG_2_4(av_default_item_name),
++    .item_name  = av_default_item_name,
+     .option     = aac_enc_options,
+     .version    = LIBAVUTIL_VERSION_INT,
+ };
+--- a/libavcodec/libmp3lame.c	2026-08-30 08:27:37.861743850 +0000
++++ b/libavcodec/libmp3lame.c	2026-08-30 08:28:38.142991842 +0000
+@@ -331,7 +331,7 @@
+ 
+ static const AVClass libmp3lame_class = {
+     .class_name = "libmp3lame encoder",
+-    .item_name  = LORE_FDG_2_4(av_default_item_name),
++    .item_name  = av_default_item_name,
+     .option     = options,
+     .version    = LIBAVUTIL_VERSION_INT,
+ };
+--- a/libavcodec/libvorbisenc.c	2026-08-30 08:27:37.960231413 +0000
++++ b/libavcodec/libvorbisenc.c	2026-08-30 08:28:38.143174866 +0000
+@@ -77,7 +77,7 @@
+ 
+ static const AVClass vorbis_class = {
+     .class_name = "libvorbis",
+-    .item_name  = LORE_FDG_2_4(av_default_item_name),
++    .item_name  = av_default_item_name,
+     .option     = options,
+     .version    = LIBAVUTIL_VERSION_INT,
+ };
+--- a/libavcodec/libx264.c	2026-08-30 08:27:38.224265607 +0000
++++ b/libavcodec/libx264.c	2026-08-30 08:28:38.143469300 +0000
+@@ -1619,7 +1619,7 @@
+ #if CONFIG_LIBX264_ENCODER
+ static const AVClass x264_class = {
+     .class_name = "libx264",
+-    .item_name  = LORE_FDG_2_4(av_default_item_name),
++    .item_name  = av_default_item_name,
+     .option     = options,
+     .version    = LIBAVUTIL_VERSION_INT,
+ };
+--- a/libavcodec/mpegaudio_parser.c	2026-08-30 08:27:38.316960763 +0000
++++ b/libavcodec/mpegaudio_parser.c	2026-08-30 08:28:38.143915270 +0000
+@@ -148,8 +148,8 @@
+ const AVCodecParser ff_mpegaudio_parser = {
+     .codec_ids      = { AV_CODEC_ID_MP1, AV_CODEC_ID_MP2, AV_CODEC_ID_MP3, AV_CODEC_ID_MP3ADU },
+     .priv_data_size = sizeof(MpegAudioParseContext),
+-    .parser_parse   = LORE_FDG_11_3(mpegaudio_parse),
+-    .parser_close   = LORE_FDG_12_2(ff_parse_close),
++    .parser_parse   = mpegaudio_parse,
++    .parser_close   = ff_parse_close,
+ };
+ 
+ LORE_FDG_IMPL(11, 3, mpegaudio_parse)
+--- a/libavcodec/options.c	2026-08-30 08:27:38.461176678 +0000
++++ b/libavcodec/options.c	2026-08-30 08:28:38.144719577 +0000
+@@ -86,14 +86,14 @@
+ 
+ static const AVClass av_codec_context_class = {
+     .class_name              = "AVCodecContext",
+-    .item_name               = LORE_FDG_2_3(context_to_name),
++    .item_name               = context_to_name,
+     .option                  = avcodec_options,
+     .version                 = LIBAVUTIL_VERSION_INT,
+     .log_level_offset_offset = offsetof(AVCodecContext, log_level_offset),
+-    .child_next              = LORE_FDG_13_2(codec_child_next),
+-    .child_class_iterate     = LORE_FDG_3_2(codec_child_class_iterate),
++    .child_next              = codec_child_next,
++    .child_class_iterate     = codec_child_class_iterate,
+     .category                = AV_CLASS_CATEGORY_ENCODER,
+-    .get_category            = LORE_FDG_1_1(get_category),
++    .get_category            = get_category,
+ };
+ 
+ static int init_context_defaults(AVCodecContext *s, const AVCodec *codec)
+--- a/libavcodec/vorbis_parser.c	2026-08-30 08:27:39.132894164 +0000
++++ b/libavcodec/vorbis_parser.c	2026-08-30 08:28:38.532053148 +0000
+@@ -45,7 +45,7 @@
+ 
+ static const AVClass vorbis_parser_class = {
+     .class_name = "Vorbis parser",
+-    .item_name  = LORE_FDG_2_4(av_default_item_name),
++    .item_name  = av_default_item_name,
+     .version    = LIBAVUTIL_VERSION_INT,
+ };
+ 
+@@ -347,8 +347,8 @@
+ const AVCodecParser ff_vorbis_parser = {
+     .codec_ids      = { AV_CODEC_ID_VORBIS },
+     .priv_data_size = sizeof(VorbisParseContext),
+-    .parser_parse   = LORE_FDG_11_4(vorbis_parse),
+-    .parser_close   = LORE_FDG_12_3(vorbis_parser_close),
++    .parser_parse   = vorbis_parse,
++    .parser_close   = vorbis_parser_close,
+ };
+ #endif /* CONFIG_VORBIS_PARSER */
+ 
+--- a/libavdevice/lavfi.c	2026-08-30 08:27:57.012568626 +0000
++++ b/libavdevice/lavfi.c	2026-08-30 08:28:35.700999583 +0000
+@@ -497,7 +497,7 @@
+ 
+ static const AVClass lavfi_class = {
+     .class_name = "lavfi indev",
+-    .item_name  = LORE_FDG_1_1(av_default_item_name),
++    .item_name  = av_default_item_name,
+     .option     = options,
+     .version    = LIBAVUTIL_VERSION_INT,
+     .category   = AV_CLASS_CATEGORY_DEVICE_INPUT,
+--- a/libavfilter/af_aformat.c	2026-08-30 08:27:55.369014886 +0000
++++ b/libavfilter/af_aformat.c	2026-08-30 08:28:35.701787267 +0000
+@@ -77,7 +77,7 @@
+     { NULL }
+ };
+ 
+-static const AVClass aformat_class = { .class_name = "aformat", .item_name = LORE_FDG_1_3(av_default_item_name), .option = aformat_options, .version = ((59)<<16 | (39)<<8 | (100)), .category = AV_CLASS_CATEGORY_FILTER, };
++static const AVClass aformat_class = { .class_name = "aformat", .item_name = av_default_item_name, .option = aformat_options, .version = ((59)<<16 | (39)<<8 | (100)), .category = AV_CLASS_CATEGORY_FILTER, };
+ 
+ static av_cold int init(AVFilterContext *ctx)
+ {
+@@ -144,13 +144,13 @@
+ const AVFilter ff_af_aformat = {
+     .name          = "aformat",
+     .description   = NULL_IF_CONFIG_SMALL("Convert the input audio to one of the specified formats."),
+-    .init          = LORE_FDG_4_1(init),
++    .init          = init,
+     .priv_size     = sizeof(AFormatContext),
+     .priv_class    = &aformat_class,
+     .flags         = AVFILTER_FLAG_METADATA_ONLY,
+     FILTER_INPUTS(ff_audio_default_filterpad),
+     FILTER_OUTPUTS(ff_audio_default_filterpad),
+-    .formats.query_func2 = LORE_FDG_3_1(query_formats), .formats_state = FF_FILTER_FORMATS_QUERY_FUNC2,
++    .formats.query_func2 = query_formats, .formats_state = FF_FILTER_FORMATS_QUERY_FUNC2,
+ };
+ 
+ LORE_FDG_IMPL(1, 3, av_default_item_name)
+--- a/libavfilter/af_aresample.c	2026-08-30 08:27:53.358701173 +0000
++++ b/libavfilter/af_aresample.c	2026-08-30 08:28:35.703780268 +0000
+@@ -355,11 +355,11 @@
+ 
+ static const AVClass aresample_class = {
+     .class_name       = "aresample",
+-    .item_name        = LORE_FDG_1_3(av_default_item_name),
++    .item_name        = av_default_item_name,
+     .option           = options,
+     .version          = LIBAVUTIL_VERSION_INT,
+-    .child_class_iterate = LORE_FDG_2_1(resample_child_class_iterate),
+-    .child_next       = LORE_FDG_9_1(resample_child_next),
++    .child_class_iterate = resample_child_class_iterate,
++    .child_next       = resample_child_next,
+ };
+ 
+ static const AVFilterPad aresample_outputs[] = {
+@@ -373,14 +373,14 @@
+ const AVFilter ff_af_aresample = {
+     .name          = "aresample",
+     .description   = NULL_IF_CONFIG_SMALL("Resample audio data."),
+-    .preinit       = LORE_FDG_4_3(preinit),
+-    .activate      = LORE_FDG_4_2(activate),
+-    .uninit        = LORE_FDG_8_1(uninit),
++    .preinit       = preinit,
++    .activate      = activate,
++    .uninit        = uninit,
+     .priv_size     = sizeof(AResampleContext),
+     .priv_class    = &aresample_class,
+     FILTER_INPUTS(ff_audio_default_filterpad),
+     FILTER_OUTPUTS(aresample_outputs),
+-    .formats.query_func2 = LORE_FDG_3_2(query_formats), .formats_state = FF_FILTER_FORMATS_QUERY_FUNC2,
++    .formats.query_func2 = query_formats, .formats_state = FF_FILTER_FORMATS_QUERY_FUNC2,
+ };
+ 
+ LORE_FDG_IMPL(2, 1, resample_child_class_iterate)
+--- a/libavfilter/asrc_sine.c	2026-08-30 08:27:53.469854978 +0000
++++ b/libavfilter/asrc_sine.c	2026-08-30 08:28:35.704985569 +0000
+@@ -90,7 +90,7 @@
+     {NULL}
+ };
+ 
+-static const AVClass sine_class = { .class_name = "sine", .item_name = LORE_FDG_1_3(av_default_item_name), .option = sine_options, .version = ((59)<<16 | (39)<<8 | (100)), .category = AV_CLASS_CATEGORY_FILTER, };
++static const AVClass sine_class = { .class_name = "sine", .item_name = av_default_item_name, .option = sine_options, .version = ((59)<<16 | (39)<<8 | (100)), .category = AV_CLASS_CATEGORY_FILTER, };
+ 
+ #define LOG_PERIOD 15
+ #define AMPLITUDE 4095
+@@ -274,13 +274,13 @@
+ const AVFilter ff_asrc_sine = {
+     .name          = "sine",
+     .description   = NULL_IF_CONFIG_SMALL("Generate sine wave audio signal."),
+-    .init          = LORE_FDG_4_4(init),
+-    .uninit        = LORE_FDG_8_2(uninit),
+-    .activate      = LORE_FDG_4_6(activate),
++    .init          = init,
++    .uninit        = uninit,
++    .activate      = activate,
+     .priv_size     = sizeof(SineContext),
+     .inputs        = NULL,
+     FILTER_OUTPUTS(sine_outputs),
+-    .formats.query_func = LORE_FDG_4_5(query_formats), .formats_state = FF_FILTER_FORMATS_QUERY_FUNC,
++    .formats.query_func = query_formats, .formats_state = FF_FILTER_FORMATS_QUERY_FUNC,
+     .priv_class    = &sine_class,
+ };
+ 
+--- a/libavfilter/avfilter.c	2026-08-30 08:27:53.587958429 +0000
++++ b/libavfilter/avfilter.c	2026-08-30 08:28:35.706000342 +0000
+@@ -679,11 +679,11 @@
+ 
+ static const AVClass avfilter_class = {
+     .class_name = "AVFilter",
+-    .item_name  = LORE_FDG_1_1(default_filter_name),
++    .item_name  = default_filter_name,
+     .version    = LIBAVUTIL_VERSION_INT,
+     .category   = AV_CLASS_CATEGORY_FILTER,
+-    .child_next = LORE_FDG_9_2(filter_child_next),
+-    .child_class_iterate = LORE_FDG_2_2(filter_child_class_iterate),
++    .child_next = filter_child_next,
++    .child_class_iterate = filter_child_class_iterate,
+     .option           = avfilter_options,
+ };
+ 
+--- a/libavfilter/avfiltergraph.c	2026-08-30 08:27:53.703466765 +0000
++++ b/libavfilter/avfiltergraph.c	2026-08-30 08:28:35.706309655 +0000
+@@ -70,7 +70,7 @@
+ 
+ static const AVClass filtergraph_class = {
+     .class_name = "AVFilterGraph",
+-    .item_name  = LORE_FDG_1_3(av_default_item_name),
++    .item_name  = av_default_item_name,
+     .version    = LIBAVUTIL_VERSION_INT,
+     .option     = filtergraph_options,
+     .category   = AV_CLASS_CATEGORY_FILTER,
+--- a/libavfilter/buffersink.c	2026-08-30 08:27:53.800569374 +0000
++++ b/libavfilter/buffersink.c	2026-08-30 08:28:35.709183108 +0000
+@@ -361,20 +361,20 @@
+ };
+ #undef FLAGS
+ 
+-static const AVClass buffersink_class = { .class_name = "buffersink", .item_name = LORE_FDG_1_3(av_default_item_name), .option = buffersink_options, .version = ((59)<<16 | (39)<<8 | (100)), .category = AV_CLASS_CATEGORY_FILTER, };
+-static const AVClass abuffersink_class = { .class_name = "abuffersink", .item_name = LORE_FDG_1_3(av_default_item_name), .option = abuffersink_options, .version = ((59)<<16 | (39)<<8 | (100)), .category = AV_CLASS_CATEGORY_FILTER, };
++static const AVClass buffersink_class = { .class_name = "buffersink", .item_name = av_default_item_name, .option = buffersink_options, .version = ((59)<<16 | (39)<<8 | (100)), .category = AV_CLASS_CATEGORY_FILTER, };
++static const AVClass abuffersink_class = { .class_name = "abuffersink", .item_name = av_default_item_name, .option = abuffersink_options, .version = ((59)<<16 | (39)<<8 | (100)), .category = AV_CLASS_CATEGORY_FILTER, };
+ 
+ const AVFilter ff_vsink_buffer = {
+     .name          = "buffersink",
+     .description   = NULL_IF_CONFIG_SMALL("Buffer video frames, and make them available to the end of the filter graph."),
+     .priv_size     = sizeof(BufferSinkContext),
+     .priv_class    = &buffersink_class,
+-    .init          = LORE_FDG_4_7(common_init),
+-    .uninit        = LORE_FDG_8_3(uninit),
+-    .activate      = LORE_FDG_4_8(activate),
++    .init          = common_init,
++    .uninit        = uninit,
++    .activate      = activate,
+     FILTER_INPUTS(ff_video_default_filterpad),
+     .outputs       = NULL,
+-    .formats.query_func = LORE_FDG_4_9(vsink_query_formats), .formats_state = FF_FILTER_FORMATS_QUERY_FUNC,
++    .formats.query_func = vsink_query_formats, .formats_state = FF_FILTER_FORMATS_QUERY_FUNC,
+ };
+ 
+ const AVFilter ff_asink_abuffer = {
+@@ -382,12 +382,12 @@
+     .description   = NULL_IF_CONFIG_SMALL("Buffer audio frames, and make them available to the end of the filter graph."),
+     .priv_class    = &abuffersink_class,
+     .priv_size     = sizeof(BufferSinkContext),
+-    .init          = LORE_FDG_4_7(common_init),
+-    .uninit        = LORE_FDG_8_3(uninit),
+-    .activate      = LORE_FDG_4_8(activate),
++    .init          = common_init,
++    .uninit        = uninit,
++    .activate      = activate,
+     FILTER_INPUTS(ff_audio_default_filterpad),
+     .outputs       = NULL,
+-    .formats.query_func = LORE_FDG_4_10(asink_query_formats), .formats_state = FF_FILTER_FORMATS_QUERY_FUNC,
++    .formats.query_func = asink_query_formats, .formats_state = FF_FILTER_FORMATS_QUERY_FUNC,
+ };
+ 
+ LORE_FDG_IMPL(4, 7, common_init)
+--- a/libavfilter/buffersrc.c	2026-08-30 08:27:53.887217442 +0000
++++ b/libavfilter/buffersrc.c	2026-08-30 08:28:35.712084530 +0000
+@@ -376,7 +376,7 @@
+     { NULL },
+ };
+ 
+-static const AVClass buffer_class = { .class_name = "buffer", .item_name = LORE_FDG_1_3(av_default_item_name), .option = buffer_options, .version = ((59)<<16 | (39)<<8 | (100)), .category = AV_CLASS_CATEGORY_FILTER, };
++static const AVClass buffer_class = { .class_name = "buffer", .item_name = av_default_item_name, .option = buffer_options, .version = ((59)<<16 | (39)<<8 | (100)), .category = AV_CLASS_CATEGORY_FILTER, };
+ 
+ static const AVOption abuffer_options[] = {
+     { "time_base",      NULL, OFFSET(time_base),           AV_OPT_TYPE_RATIONAL, { .dbl = 0 }, 0, INT_MAX, A },
+@@ -387,7 +387,7 @@
+     { NULL },
+ };
+ 
+-static const AVClass abuffer_class = { .class_name = "abuffer", .item_name = LORE_FDG_1_3(av_default_item_name), .option = abuffer_options, .version = ((59)<<16 | (39)<<8 | (100)), .category = AV_CLASS_CATEGORY_FILTER, };
++static const AVClass abuffer_class = { .class_name = "abuffer", .item_name = av_default_item_name, .option = abuffer_options, .version = ((59)<<16 | (39)<<8 | (100)), .category = AV_CLASS_CATEGORY_FILTER, };
+ 
+ static av_cold int init_audio(AVFilterContext *ctx)
+ {
+@@ -584,13 +584,13 @@
+     .name      = "buffer",
+     .description = NULL_IF_CONFIG_SMALL("Buffer video frames, and make them accessible to the filterchain."),
+     .priv_size = sizeof(BufferSourceContext),
+-    .activate  = LORE_FDG_4_14(activate),
+-    .init      = LORE_FDG_4_11(init_video),
+-    .uninit    = LORE_FDG_8_4(uninit),
++    .activate  = activate,
++    .init      = init_video,
++    .uninit    = uninit,
+ 
+     .inputs    = NULL,
+     FILTER_OUTPUTS(avfilter_vsrc_buffer_outputs),
+-    .formats.query_func = LORE_FDG_4_13(query_formats), .formats_state = FF_FILTER_FORMATS_QUERY_FUNC,
++    .formats.query_func = query_formats, .formats_state = FF_FILTER_FORMATS_QUERY_FUNC,
+     .priv_class = &buffer_class,
+ };
+ 
+@@ -606,13 +606,13 @@
+     .name          = "abuffer",
+     .description   = NULL_IF_CONFIG_SMALL("Buffer audio frames, and make them accessible to the filterchain."),
+     .priv_size     = sizeof(BufferSourceContext),
+-    .activate  = LORE_FDG_4_14(activate),
+-    .init      = LORE_FDG_4_12(init_audio),
+-    .uninit    = LORE_FDG_8_4(uninit),
++    .activate  = activate,
++    .init      = init_audio,
++    .uninit    = uninit,
+ 
+     .inputs    = NULL,
+     FILTER_OUTPUTS(avfilter_asrc_abuffer_outputs),
+-    .formats.query_func = LORE_FDG_4_13(query_formats), .formats_state = FF_FILTER_FORMATS_QUERY_FUNC,
++    .formats.query_func = query_formats, .formats_state = FF_FILTER_FORMATS_QUERY_FUNC,
+     .priv_class = &abuffer_class,
+ };
+ 
+--- a/libavfilter/framesync.c	2026-08-30 08:27:53.973902310 +0000
++++ b/libavfilter/framesync.c	2026-08-30 08:28:35.712275282 +0000
+@@ -63,7 +63,7 @@
+ const AVClass ff_framesync_class = {
+     .version                   = LIBAVUTIL_VERSION_INT,
+     .class_name                = "framesync",
+-    .item_name                 = LORE_FDG_1_2(framesync_name),
++    .item_name                 = framesync_name,
+     .category                  = AV_CLASS_CATEGORY_FILTER,
+     .option                    = framesync_options,
+     .parent_log_context_offset = OFFSET(parent),
+--- a/libavfilter/trim.c	2026-08-30 08:27:54.182354774 +0000
++++ b/libavfilter/trim.c	2026-08-30 08:28:35.713881210 +0000
+@@ -355,7 +355,7 @@
+ };
+ #undef FLAGS
+ 
+-static const AVClass trim_class = { .class_name = "trim", .item_name = LORE_FDG_1_3(av_default_item_name), .option = trim_options, .version = ((59)<<16 | (39)<<8 | (100)), .category = AV_CLASS_CATEGORY_FILTER, };
++static const AVClass trim_class = { .class_name = "trim", .item_name = av_default_item_name, .option = trim_options, .version = ((59)<<16 | (39)<<8 | (100)), .category = AV_CLASS_CATEGORY_FILTER, };
+ 
+ static const AVFilterPad trim_inputs[] = {
+     {
+@@ -368,8 +368,8 @@
+ const AVFilter ff_vf_trim = {
+     .name        = "trim",
+     .description = NULL_IF_CONFIG_SMALL("Pick one continuous section from the input, drop the rest."),
+-    .init        = LORE_FDG_4_16(init),
+-    .activate    = LORE_FDG_4_15(activate),
++    .init        = init,
++    .activate    = activate,
+     .priv_size   = sizeof(TrimContext),
+     .priv_class  = &trim_class,
+     .flags       = AVFILTER_FLAG_METADATA_ONLY,
+@@ -391,7 +391,7 @@
+ };
+ #undef FLAGS
+ 
+-static const AVClass atrim_class = { .class_name = "atrim", .item_name = LORE_FDG_1_3(av_default_item_name), .option = atrim_options, .version = ((59)<<16 | (39)<<8 | (100)), .category = AV_CLASS_CATEGORY_FILTER, };
++static const AVClass atrim_class = { .class_name = "atrim", .item_name = av_default_item_name, .option = atrim_options, .version = ((59)<<16 | (39)<<8 | (100)), .category = AV_CLASS_CATEGORY_FILTER, };
+ 
+ static const AVFilterPad atrim_inputs[] = {
+     {
+@@ -404,8 +404,8 @@
+ const AVFilter ff_af_atrim = {
+     .name        = "atrim",
+     .description = NULL_IF_CONFIG_SMALL("Pick one continuous section from the input, drop the rest."),
+-    .init        = LORE_FDG_4_16(init),
+-    .activate    = LORE_FDG_4_15(activate),
++    .init        = init,
++    .activate    = activate,
+     .priv_size   = sizeof(TrimContext),
+     .priv_class  = &atrim_class,
+     .flags       = AVFILTER_FLAG_METADATA_ONLY,
+--- a/libavfilter/vf_crop.c	2026-08-30 08:27:54.285447457 +0000
++++ b/libavfilter/vf_crop.c	2026-08-30 08:28:35.714780910 +0000
+@@ -387,7 +387,7 @@
+     { NULL }
+ };
+ 
+-static const AVClass crop_class = { .class_name = "crop", .item_name = LORE_FDG_1_3(av_default_item_name), .option = crop_options, .version = ((59)<<16 | (39)<<8 | (100)), .category = AV_CLASS_CATEGORY_FILTER, };
++static const AVClass crop_class = { .class_name = "crop", .item_name = av_default_item_name, .option = crop_options, .version = ((59)<<16 | (39)<<8 | (100)), .category = AV_CLASS_CATEGORY_FILTER, };
+ 
+ static const AVFilterPad avfilter_vf_crop_inputs[] = {
+     {
+@@ -411,11 +411,11 @@
+     .description     = NULL_IF_CONFIG_SMALL("Crop the input video."),
+     .priv_size       = sizeof(CropContext),
+     .priv_class      = &crop_class,
+-    .uninit          = LORE_FDG_8_5(uninit),
++    .uninit          = uninit,
+     FILTER_INPUTS(avfilter_vf_crop_inputs),
+     FILTER_OUTPUTS(avfilter_vf_crop_outputs),
+-    .formats.query_func = LORE_FDG_4_17(query_formats), .formats_state = FF_FILTER_FORMATS_QUERY_FUNC,
+-    .process_command = LORE_FDG_5_1(process_command),
++    .formats.query_func = query_formats, .formats_state = FF_FILTER_FORMATS_QUERY_FUNC,
++    .process_command = process_command,
+ };
+ 
+ LORE_FDG_IMPL(4, 17, query_formats)
+--- a/libavfilter/vf_format.c	2026-08-30 08:27:54.386208706 +0000
++++ b/libavfilter/vf_format.c	2026-08-30 08:28:35.715700594 +0000
+@@ -180,7 +180,7 @@
+     { NULL }
+ };
+ 
+-static const AVClass format_class = { .class_name = "(no)format", .item_name = LORE_FDG_1_3(av_default_item_name), .option = options, .version = ((59)<<16 | (39)<<8 | (100)), .category = AV_CLASS_CATEGORY_FILTER, };
++static const AVClass format_class = { .class_name = "(no)format", .item_name = av_default_item_name, .option = options, .version = ((59)<<16 | (39)<<8 | (100)), .category = AV_CLASS_CATEGORY_FILTER, };
+ 
+ static const AVFilterPad inputs[] = {
+     {
+@@ -195,8 +195,8 @@
+     .name          = "format",
+     .description   = NULL_IF_CONFIG_SMALL("Convert the input video to one of the specified pixel formats."),
+ 
+-    .init          = LORE_FDG_4_18(init),
+-    .uninit        = LORE_FDG_8_6(uninit),
++    .init          = init,
++    .uninit        = uninit,
+ 
+     .priv_size     = sizeof(FormatContext),
+     .priv_class    = &format_class,
+@@ -206,7 +206,7 @@
+     FILTER_INPUTS(inputs),
+     FILTER_OUTPUTS(ff_video_default_filterpad),
+ 
+-    .formats.query_func = LORE_FDG_4_19(query_formats), .formats_state = FF_FILTER_FORMATS_QUERY_FUNC,
++    .formats.query_func = query_formats, .formats_state = FF_FILTER_FORMATS_QUERY_FUNC,
+ };
+ #endif /* CONFIG_FORMAT_FILTER */
+ 
+--- a/libavfilter/vf_hflip.c	2026-08-30 08:27:54.610199765 +0000
++++ b/libavfilter/vf_hflip.c	2026-08-30 08:28:35.715858851 +0000
+@@ -159,7 +159,7 @@
+     .priv_size     = sizeof(FlipContext),
+     FILTER_INPUTS(avfilter_vf_hflip_inputs),
+     FILTER_OUTPUTS(ff_video_default_filterpad),
+-    .formats.query_func = LORE_FDG_4_20(query_formats), .formats_state = FF_FILTER_FORMATS_QUERY_FUNC,
++    .formats.query_func = query_formats, .formats_state = FF_FILTER_FORMATS_QUERY_FUNC,
+     .flags         = AVFILTER_FLAG_SLICE_THREADS | AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC,
+ };
+ 
+--- a/libavfilter/vf_rotate.c	2026-08-30 08:27:54.834502825 +0000
++++ b/libavfilter/vf_rotate.c	2026-08-30 08:28:35.716925208 +0000
+@@ -118,7 +118,7 @@
+     { NULL }
+ };
+ 
+-static const AVClass rotate_class = { .class_name = "rotate", .item_name = LORE_FDG_1_3(av_default_item_name), .option = rotate_options, .version = ((59)<<16 | (39)<<8 | (100)), .category = AV_CLASS_CATEGORY_FILTER, };
++static const AVClass rotate_class = { .class_name = "rotate", .item_name = av_default_item_name, .option = rotate_options, .version = ((59)<<16 | (39)<<8 | (100)), .category = AV_CLASS_CATEGORY_FILTER, };
+ 
+ static av_cold int init(AVFilterContext *ctx)
+ {
+@@ -606,9 +606,9 @@
+     .name          = "rotate",
+     .description   = NULL_IF_CONFIG_SMALL("Rotate the input image."),
+     .priv_size     = sizeof(RotContext),
+-    .init          = LORE_FDG_4_21(init),
+-    .uninit        = LORE_FDG_8_7(uninit),
+-    .process_command = LORE_FDG_5_2(process_command),
++    .init          = init,
++    .uninit        = uninit,
++    .process_command = process_command,
+     FILTER_INPUTS(rotate_inputs),
+     FILTER_OUTPUTS(rotate_outputs),
+     FILTER_PIXFMTS_ARRAY(pix_fmts),
+--- a/libavfilter/vf_scale.c	2026-08-30 08:27:54.933459363 +0000
++++ b/libavfilter/vf_scale.c	2026-08-30 08:28:35.722084975 +0000
+@@ -1307,12 +1307,12 @@
+ 
+ static const AVClass scale_class = {
+     .class_name       = "scale",
+-    .item_name        = LORE_FDG_1_3(av_default_item_name),
++    .item_name        = av_default_item_name,
+     .option           = scale_options,
+     .version          = LIBAVUTIL_VERSION_INT,
+     .category         = AV_CLASS_CATEGORY_FILTER,
+-    .child_class_iterate = LORE_FDG_2_3(child_class_iterate),
+-    .child_next          = LORE_FDG_9_3(child_next),
++    .child_class_iterate = child_class_iterate,
++    .child_next          = child_next,
+ };
+ 
+ static const AVFilterPad avfilter_vf_scale_inputs[] = {
+@@ -1333,16 +1333,16 @@
+ const AVFilter ff_vf_scale = {
+     .name            = "scale",
+     .description     = NULL_IF_CONFIG_SMALL("Scale the input video size and/or convert the image format."),
+-    .preinit         = LORE_FDG_4_23(preinit),
+-    .init            = LORE_FDG_4_24(init),
+-    .uninit          = LORE_FDG_8_8(uninit),
++    .preinit         = preinit,
++    .init            = init,
++    .uninit          = uninit,
+     .priv_size       = sizeof(ScaleContext),
+     .priv_class      = &scale_class,
+     FILTER_INPUTS(avfilter_vf_scale_inputs),
+     FILTER_OUTPUTS(avfilter_vf_scale_outputs),
+-    .formats.query_func = LORE_FDG_4_25(query_formats), .formats_state = FF_FILTER_FORMATS_QUERY_FUNC,
+-    .activate        = LORE_FDG_4_22(activate),
+-    .process_command = LORE_FDG_5_3(process_command),
++    .formats.query_func = query_formats, .formats_state = FF_FILTER_FORMATS_QUERY_FUNC,
++    .activate        = activate,
++    .process_command = process_command,
+     .flags           = AVFILTER_FLAG_DYNAMIC_INPUTS,
+ };
+ 
+@@ -1363,12 +1363,12 @@
+ 
+ static const AVClass scale2ref_class = {
+     .class_name       = "scale(2ref)",
+-    .item_name        = LORE_FDG_1_3(av_default_item_name),
++    .item_name        = av_default_item_name,
+     .option           = scale_options,
+     .version          = LIBAVUTIL_VERSION_INT,
+     .category         = AV_CLASS_CATEGORY_FILTER,
+-    .child_class_iterate = LORE_FDG_2_4(scale2ref_child_class_iterate),
+-    .child_next          = LORE_FDG_9_4(scale2ref_child_next),
++    .child_class_iterate = scale2ref_child_class_iterate,
++    .child_next          = scale2ref_child_next,
+ };
+ 
+ static const AVFilterPad avfilter_vf_scale2ref_inputs[] = {
+@@ -1402,15 +1402,15 @@
+ const AVFilter ff_vf_scale2ref = {
+     .name            = "scale2ref",
+     .description     = NULL_IF_CONFIG_SMALL("Scale the input video size and/or convert the image format to the given reference."),
+-    .preinit         = LORE_FDG_4_23(preinit),
+-    .init            = LORE_FDG_4_24(init),
+-    .uninit          = LORE_FDG_8_8(uninit),
++    .preinit         = preinit,
++    .init            = init,
++    .uninit          = uninit,
+     .priv_size       = sizeof(ScaleContext),
+     .priv_class      = &scale2ref_class,
+     FILTER_INPUTS(avfilter_vf_scale2ref_inputs),
+     FILTER_OUTPUTS(avfilter_vf_scale2ref_outputs),
+-    .formats.query_func = LORE_FDG_4_25(query_formats), .formats_state = FF_FILTER_FORMATS_QUERY_FUNC,
+-    .process_command = LORE_FDG_5_3(process_command),
++    .formats.query_func = query_formats, .formats_state = FF_FILTER_FORMATS_QUERY_FUNC,
++    .process_command = process_command,
+ };
+ 
+ LORE_FDG_IMPL(2, 3, child_class_iterate)
+--- a/libavfilter/vf_transpose.c	2026-08-30 08:27:55.147859550 +0000
++++ b/libavfilter/vf_transpose.c	2026-08-30 08:28:35.722585090 +0000
+@@ -395,7 +395,7 @@
+     { NULL }
+ };
+ 
+-static const AVClass transpose_class = { .class_name = "transpose", .item_name = LORE_FDG_1_3(av_default_item_name), .option = transpose_options, .version = ((59)<<16 | (39)<<8 | (100)), .category = AV_CLASS_CATEGORY_FILTER, };
++static const AVClass transpose_class = { .class_name = "transpose", .item_name = av_default_item_name, .option = transpose_options, .version = ((59)<<16 | (39)<<8 | (100)), .category = AV_CLASS_CATEGORY_FILTER, };
+ 
+ static const AVFilterPad avfilter_vf_transpose_inputs[] = {
+     {
+@@ -421,7 +421,7 @@
+     .priv_class    = &transpose_class,
+     FILTER_INPUTS(avfilter_vf_transpose_inputs),
+     FILTER_OUTPUTS(avfilter_vf_transpose_outputs),
+-    .formats.query_func = LORE_FDG_4_26(query_formats), .formats_state = FF_FILTER_FORMATS_QUERY_FUNC,
++    .formats.query_func = query_formats, .formats_state = FF_FILTER_FORMATS_QUERY_FUNC,
+     .flags         = AVFILTER_FLAG_SLICE_THREADS,
+ };
+ 
+--- a/libavfilter/vsrc_testsrc.c	2026-08-30 08:27:55.368860933 +0000
++++ b/libavfilter/vsrc_testsrc.c	2026-08-30 08:28:35.725281118 +0000
+@@ -461,7 +461,7 @@
+ };
+ #endif /* CONFIG_HALDCLUTSRC_FILTER */
+ 
+-static const AVClass nullsrc_yuvtestsrc_class = { .class_name = "nullsrc/yuvtestsrc", .item_name = LORE_FDG_1_3(av_default_item_name), .option = options, .version = ((59)<<16 | (39)<<8 | (100)), .category = AV_CLASS_CATEGORY_FILTER, };
++static const AVClass nullsrc_yuvtestsrc_class = { .class_name = "nullsrc/yuvtestsrc", .item_name = av_default_item_name, .option = options, .version = ((59)<<16 | (39)<<8 | (100)), .category = AV_CLASS_CATEGORY_FILTER, };
+ 
+ #if CONFIG_NULLSRC_FILTER
+ 
+@@ -722,7 +722,7 @@
+     { NULL }
+ };
+ 
+-static const AVClass testsrc2_class = { .class_name = "testsrc2", .item_name = LORE_FDG_1_3(av_default_item_name), .option = testsrc2_options, .version = ((59)<<16 | (39)<<8 | (100)), .category = AV_CLASS_CATEGORY_FILTER, };
++static const AVClass testsrc2_class = { .class_name = "testsrc2", .item_name = av_default_item_name, .option = testsrc2_options, .version = ((59)<<16 | (39)<<8 | (100)), .category = AV_CLASS_CATEGORY_FILTER, };
+ 
+ static uint32_t color_gradient(unsigned index)
+ {
+@@ -968,12 +968,12 @@
+     .description   = NULL_IF_CONFIG_SMALL("Generate another test pattern."),
+     .priv_size     = sizeof(TestSourceContext),
+     .priv_class    = &testsrc2_class,
+-    .init          = LORE_FDG_4_28(test2_init),
+-    .uninit        = LORE_FDG_8_9(uninit),
+-    .activate      = LORE_FDG_4_27(activate),
++    .init          = test2_init,
++    .uninit        = uninit,
++    .activate      = activate,
+     .inputs        = NULL,
+     FILTER_OUTPUTS(avfilter_vsrc_testsrc2_outputs),
+-    .formats.query_func = LORE_FDG_4_29(test2_query_formats), .formats_state = FF_FILTER_FORMATS_QUERY_FUNC,
++    .formats.query_func = test2_query_formats, .formats_state = FF_FILTER_FORMATS_QUERY_FUNC,
+ };
+ 
+ #endif /* CONFIG_TESTSRC2_FILTER */
+@@ -1690,7 +1690,7 @@
+ #endif  /* CONFIG_SMPTEHDBARS_FILTER */
+ #endif  /* CONFIG_SMPTEBARS_FILTER || CONFIG_SMPTEHDBARS_FILTER */
+ 
+-static const AVClass allyuv_allrgb_class = { .class_name = "allyuv/allrgb", .item_name = LORE_FDG_1_3(av_default_item_name), .option = &options[2], .version = ((59)<<16 | (39)<<8 | (100)), .category = AV_CLASS_CATEGORY_FILTER, };
++static const AVClass allyuv_allrgb_class = { .class_name = "allyuv/allrgb", .item_name = av_default_item_name, .option = &options[2], .version = ((59)<<16 | (39)<<8 | (100)), .category = AV_CLASS_CATEGORY_FILTER, };
+ 
+ #if CONFIG_ALLYUV_FILTER
+ 
+--- a/libavformat/adtsenc.c	2026-08-30 08:27:50.161774962 +0000
++++ b/libavformat/adtsenc.c	2026-08-30 08:28:36.751175365 +0000
+@@ -233,7 +233,7 @@
+ 
+ static const AVClass adts_muxer_class = {
+     .class_name     = "ADTS muxer",
+-    .item_name      = LORE_FDG_2_3(av_default_item_name),
++    .item_name      = av_default_item_name,
+     .option         = options,
+     .version        = LIBAVUTIL_VERSION_INT,
+ };
+--- a/libavformat/avio.c	2026-08-30 08:27:47.982042921 +0000
++++ b/libavformat/avio.c	2026-08-30 08:28:36.752673772 +0000
+@@ -75,11 +75,11 @@
+ 
+ static const AVClass url_context_class = {
+     .class_name       = "URLContext",
+-    .item_name        = LORE_FDG_2_1(urlcontext_to_name),
++    .item_name        = urlcontext_to_name,
+     .option           = options,
+     .version          = LIBAVUTIL_VERSION_INT,
+-    .child_next       = LORE_FDG_11_1(urlcontext_child_next),
+-    .child_class_iterate = LORE_FDG_3_4(ff_urlcontext_child_class_iterate),
++    .child_next       = urlcontext_child_next,
++    .child_class_iterate = ff_urlcontext_child_class_iterate,
+ };
+ /*@}*/
+ 
+@@ -106,11 +106,11 @@
+ 
+ const AVClass ff_avio_class = {
+     .class_name = "AVIOContext",
+-    .item_name  = LORE_FDG_2_3(av_default_item_name),
++    .item_name  = av_default_item_name,
+     .version    = LIBAVUTIL_VERSION_INT,
+     .option     = avio_options,
+-    .child_next = LORE_FDG_11_2(avio_child_next),
+-    .child_class_iterate = LORE_FDG_3_1(child_class_iterate),
++    .child_next = avio_child_next,
++    .child_class_iterate = child_class_iterate,
+ };
+ 
+ URLContext *ffio_geturlcontext(AVIOContext *s)
+--- a/libavformat/file.c	2026-08-30 08:27:48.607358463 +0000
++++ b/libavformat/file.c	2026-08-30 08:28:36.753169246 +0000
+@@ -126,21 +126,21 @@
+ 
+ static const AVClass file_class = {
+     .class_name = "file",
+-    .item_name  = LORE_FDG_2_3(av_default_item_name),
++    .item_name  = av_default_item_name,
+     .option     = file_options,
+     .version    = LIBAVUTIL_VERSION_INT,
+ };
+ 
+ static const AVClass pipe_class = {
+     .class_name = "pipe",
+-    .item_name  = LORE_FDG_2_3(av_default_item_name),
++    .item_name  = av_default_item_name,
+     .option     = pipe_options,
+     .version    = LIBAVUTIL_VERSION_INT,
+ };
+ 
+ static const AVClass fd_class = {
+     .class_name = "fd",
+-    .item_name  = LORE_FDG_2_3(av_default_item_name),
++    .item_name  = av_default_item_name,
+     .option     = pipe_options,
+     .version    = LIBAVUTIL_VERSION_INT,
+ };
+--- a/libavformat/matroskaenc.c	2026-08-30 08:27:48.888925341 +0000
++++ b/libavformat/matroskaenc.c	2026-08-30 08:28:36.753451760 +0000
+@@ -3565,7 +3565,7 @@
+ 
+ static const AVClass matroska_webm_class = {
+     .class_name = "matroska/webm muxer",
+-    .item_name  = LORE_FDG_2_3(av_default_item_name),
++    .item_name  = av_default_item_name,
+     .option     = options,
+     .version    = LIBAVUTIL_VERSION_INT,
+ };
+--- a/libavformat/mp3dec.c	2026-08-30 08:27:49.132390379 +0000
++++ b/libavformat/mp3dec.c	2026-08-30 08:28:37.426042394 +0000
+@@ -610,7 +610,7 @@
+ 
+ static const AVClass demuxer_class = {
+     .class_name = "mp3",
+-    .item_name  = LORE_FDG_2_3(av_default_item_name),
++    .item_name  = av_default_item_name,
+     .option     = options,
+     .version    = LIBAVUTIL_VERSION_INT,
+     .category   = AV_CLASS_CATEGORY_DEMUXER,
+--- a/libavformat/mp3enc.c	2026-08-30 08:27:49.377353167 +0000
++++ b/libavformat/mp3enc.c	2026-08-30 08:28:37.426229850 +0000
+@@ -529,7 +529,7 @@
+ 
+ static const AVClass mp3_muxer_class = {
+     .class_name     = "MP3 muxer",
+-    .item_name      = LORE_FDG_2_3(av_default_item_name),
++    .item_name      = av_default_item_name,
+     .option         = options,
+     .version        = LIBAVUTIL_VERSION_INT,
+ };
+--- a/libavformat/oggenc.c	2026-08-30 08:27:49.952793397 +0000
++++ b/libavformat/oggenc.c	2026-08-30 08:28:37.426440219 +0000
+@@ -107,7 +107,7 @@
+ 
+ static const AVClass ogg_muxer_class = {
+     .class_name = "Ogg (audio/video/Speex/Opus) muxer",
+-    .item_name  = LORE_FDG_2_3(av_default_item_name),
++    .item_name  = av_default_item_name,
+     .option     = options,
+     .version    = LIBAVUTIL_VERSION_INT,
+ };
+--- a/libavformat/options.c	2026-08-30 08:27:50.053830085 +0000
++++ b/libavformat/options.c	2026-08-30 08:28:37.428542869 +0000
+@@ -135,13 +135,13 @@
+ 
+ static const AVClass av_format_context_class = {
+     .class_name     = "AVFormatContext",
+-    .item_name      = LORE_FDG_2_2(format_to_name),
++    .item_name      = format_to_name,
+     .option         = avformat_options,
+     .version        = LIBAVUTIL_VERSION_INT,
+-    .child_next     = LORE_FDG_11_4(format_child_next),
+-    .child_class_iterate = LORE_FDG_3_3(format_child_class_iterate),
++    .child_next     = format_child_next,
++    .child_class_iterate = format_child_class_iterate,
+     .category       = AV_CLASS_CATEGORY_MUXER,
+-    .get_category   = LORE_FDG_1_1(get_category),
++    .get_category   = get_category,
+ };
+ 
+ static int io_open_default(AVFormatContext *s, AVIOContext **pb,
+@@ -247,7 +247,7 @@
+ 
+ static const AVClass stream_class = {
+     .class_name     = "AVStream",
+-    .item_name      = LORE_FDG_2_3(av_default_item_name),
++    .item_name      = av_default_item_name,
+     .version        = LIBAVUTIL_VERSION_INT,
+     .option         = stream_options,
+ };
+@@ -439,11 +439,11 @@
+ 
+ static const AVClass stream_group_class = {
+     .class_name     = "AVStreamGroup",
+-    .item_name      = LORE_FDG_2_3(av_default_item_name),
++    .item_name      = av_default_item_name,
+     .version        = LIBAVUTIL_VERSION_INT,
+     .option         = stream_group_options,
+-    .child_next     = LORE_FDG_11_3(stream_group_child_next),
+-    .child_class_iterate = LORE_FDG_3_2(stream_group_child_iterate),
++    .child_next     = stream_group_child_next,
++    .child_class_iterate = stream_group_child_iterate,
+ };
+ 
+ const AVClass *av_stream_group_get_class(void)
+--- a/libavformat/rawdec.c	2026-08-30 08:27:50.161628449 +0000
++++ b/libavformat/rawdec.c	2026-08-30 08:28:37.428938951 +0000
+@@ -136,7 +136,7 @@
+ 
+ const AVClass ff_rawvideo_demuxer_class = {
+     .class_name = "generic raw video demuxer",
+-    .item_name  = LORE_FDG_2_3(av_default_item_name),
++    .item_name  = av_default_item_name,
+     .option     = rawvideo_options,
+     .version    = LIBAVUTIL_VERSION_INT,
+ };
+@@ -149,7 +149,7 @@
+ 
+ const AVClass ff_raw_demuxer_class = {
+     .class_name = "generic raw demuxer",
+-    .item_name  = LORE_FDG_2_3(av_default_item_name),
++    .item_name  = av_default_item_name,
+     .option     = raw_options,
+     .version    = LIBAVUTIL_VERSION_INT,
+ };
+--- a/libavutil/cpu.c	2026-08-30 08:27:14.900337691 +0000
++++ b/libavutil/cpu.c	2026-08-30 08:28:36.043551997 +0000
+@@ -212,7 +212,7 @@
+     };
+     static const AVClass class = {
+         .class_name = "cpuflags",
+-        .item_name  = LORE_FDG_1_2(av_default_item_name),
++        .item_name  = av_default_item_name,
+         .option     = cpuflags_opts,
+         .version    = LIBAVUTIL_VERSION_INT,
+     };
+--- a/libavutil/eval.c	2026-08-30 08:27:14.999660394 +0000
++++ b/libavutil/eval.c	2026-08-30 08:28:36.043668254 +0000
+@@ -71,7 +71,7 @@
+ 
+ static const AVClass eval_class = {
+     .class_name                = "Eval",
+-    .item_name                 = LORE_FDG_1_2(av_default_item_name),
++    .item_name                 = av_default_item_name,
+     .option                    = NULL,
+     .version                   = LIBAVUTIL_VERSION_INT,
+     .log_level_offset_offset   = offsetof(Parser, log_offset),
+--- a/libavutil/file.c	2026-08-30 08:27:15.106984505 +0000
++++ b/libavutil/file.c	2026-08-30 08:28:36.043738046 +0000
+@@ -54,7 +54,7 @@
+ 
+ static const AVClass file_log_ctx_class = {
+     .class_name                = "FILE",
+-    .item_name                 = LORE_FDG_1_2(av_default_item_name),
++    .item_name                 = av_default_item_name,
+     .option                    = NULL,
+     .version                   = LIBAVUTIL_VERSION_INT,
+     .log_level_offset_offset   = offsetof(FileLogContext, log_offset),
+--- a/libavutil/file_open.c	2026-08-30 08:27:15.202740266 +0000
++++ b/libavutil/file_open.c	2026-08-30 08:28:36.753570464 +0000
+@@ -110,7 +110,7 @@
+ 
+ static const AVClass file_log_ctx_class = {
+     .class_name                = "TEMPFILE",
+-    .item_name                 = LORE_FDG_1_2(av_default_item_name),
++    .item_name                 = av_default_item_name,
+     .option                    = NULL,
+     .version                   = LIBAVUTIL_VERSION_INT,
+     .log_level_offset_offset   = offsetof(FileLogContext, log_offset),
+--- a/libavutil/hwcontext.c	2026-08-30 08:27:15.365028838 +0000
++++ b/libavutil/hwcontext.c	2026-08-30 08:28:46.433615975 +0000
+@@ -144,7 +144,7 @@
+ 
+ static const AVClass hwdevice_ctx_class = {
+     .class_name = "AVHWDeviceContext",
+-    .item_name  = LORE_FDG_1_2(av_default_item_name),
++    .item_name  = av_default_item_name,
+     .version    = LIBAVUTIL_VERSION_INT,
+ };
+ 
+@@ -228,7 +228,7 @@
+ 
+ static const AVClass hwframe_ctx_class = {
+     .class_name = "AVHWFramesContext",
+-    .item_name  = LORE_FDG_1_2(av_default_item_name),
++    .item_name  = av_default_item_name,
+     .version    = LIBAVUTIL_VERSION_INT,
+ };
+ 
+@@ -767,7 +767,7 @@
+     hwmap->priv  = priv;
+ 
+     dst->buf[0] = av_buffer_create((uint8_t*)hwmap, sizeof(*hwmap),
+-                                   &LORE_FDG_7_6(ff_hwframe_unmap), ctx, 0);
++                                   &ff_hwframe_unmap, ctx, 0);
+     if (!dst->buf[0]) {
+         ret = AVERROR(ENOMEM);
+         goto fail;
+@@ -948,4 +948,3 @@
+ LORE_FDG_IMPL(7, 4, hwdevice_ctx_free)
+ LORE_FDG_IMPL(7, 5, hwframe_ctx_free)
+ LORE_FDG_IMPL(7, 6, ff_hwframe_unmap)
+-
+--- a/libavutil/iamf.c	2026-08-30 08:27:15.481298633 +0000
++++ b/libavutil/iamf.c	2026-08-30 08:28:36.757067856 +0000
+@@ -84,7 +84,7 @@
+ 
+ static const AVClass mix_gain_class = {
+     .class_name     = "AVIAMFMixGain",
+-    .item_name      = LORE_FDG_1_2(av_default_item_name),
++    .item_name      = av_default_item_name,
+     .version        = LIBAVUTIL_VERSION_INT,
+     .option         = mix_gain_options,
+ };
+@@ -99,7 +99,7 @@
+ 
+ static const AVClass demixing_info_class = {
+     .class_name     = "AVIAMFDemixingInfo",
+-    .item_name      = LORE_FDG_1_2(av_default_item_name),
++    .item_name      = av_default_item_name,
+     .version        = LIBAVUTIL_VERSION_INT,
+     .option         = demixing_info_options,
+ };
+@@ -113,7 +113,7 @@
+ 
+ static const AVClass recon_gain_class = {
+     .class_name     = "AVIAMFReconGain",
+-    .item_name      = LORE_FDG_1_2(av_default_item_name),
++    .item_name      = av_default_item_name,
+     .version        = LIBAVUTIL_VERSION_INT,
+     .option         = recon_gain_options,
+ };
+@@ -154,10 +154,10 @@
+ 
+ static const AVClass param_definition_class = {
+     .class_name          = "AVIAMFParamDefinition",
+-    .item_name           = LORE_FDG_1_2(av_default_item_name),
++    .item_name           = av_default_item_name,
+     .version             = LIBAVUTIL_VERSION_INT,
+     .option              = param_definition_options,
+-    .child_class_iterate = LORE_FDG_2_1(param_definition_child_iterate),
++    .child_class_iterate = param_definition_child_iterate,
+ };
+ 
+ const AVClass *av_iamf_param_definition_get_class(void)
+@@ -283,7 +283,7 @@
+ 
+ static const AVClass layer_class = {
+     .class_name     = "AVIAMFLayer",
+-    .item_name      = LORE_FDG_1_2(av_default_item_name),
++    .item_name      = av_default_item_name,
+     .version        = LIBAVUTIL_VERSION_INT,
+     .option         = layer_options,
+ };
+@@ -317,10 +317,10 @@
+ 
+ static const AVClass audio_element_class = {
+     .class_name          = "AVIAMFAudioElement",
+-    .item_name           = LORE_FDG_1_2(av_default_item_name),
++    .item_name           = av_default_item_name,
+     .version             = LIBAVUTIL_VERSION_INT,
+     .option              = audio_element_options,
+-    .child_class_iterate = LORE_FDG_2_2(audio_element_child_iterate),
++    .child_class_iterate = audio_element_child_iterate,
+ };
+ 
+ const AVClass *av_iamf_audio_element_get_class(void)
+@@ -404,11 +404,11 @@
+ 
+ static const AVClass element_class = {
+     .class_name          = "AVIAMFSubmixElement",
+-    .item_name           = LORE_FDG_1_2(av_default_item_name),
++    .item_name           = av_default_item_name,
+     .version             = LIBAVUTIL_VERSION_INT,
+     .option              = submix_element_options,
+-    .child_next          = LORE_FDG_8_1(submix_element_child_next),
+-    .child_class_iterate = LORE_FDG_2_3(submix_element_child_iterate),
++    .child_next          = submix_element_child_next,
++    .child_class_iterate = submix_element_child_iterate,
+ };
+ 
+ IAMF_ADD_FUNC_TEMPLATE(AVIAMFSubmix, submix, AVIAMFSubmixElement, element, s)
+@@ -434,7 +434,7 @@
+ 
+ static const AVClass layout_class = {
+     .class_name     = "AVIAMFSubmixLayout",
+-    .item_name      = LORE_FDG_1_2(av_default_item_name),
++    .item_name      = av_default_item_name,
+     .version        = LIBAVUTIL_VERSION_INT,
+     .option         = submix_layout_options,
+ };
+@@ -483,11 +483,11 @@
+ 
+ static const AVClass submix_class = {
+     .class_name          = "AVIAMFSubmix",
+-    .item_name           = LORE_FDG_1_2(av_default_item_name),
++    .item_name           = av_default_item_name,
+     .version             = LIBAVUTIL_VERSION_INT,
+     .option              = submix_presentation_options,
+-    .child_next          = LORE_FDG_8_2(submix_presentation_child_next),
+-    .child_class_iterate = LORE_FDG_2_4(submix_presentation_child_iterate),
++    .child_next          = submix_presentation_child_next,
++    .child_class_iterate = submix_presentation_child_iterate,
+ };
+ 
+ #undef OFFSET
+@@ -515,10 +515,10 @@
+ 
+ static const AVClass mix_presentation_class = {
+     .class_name          = "AVIAMFMixPresentation",
+-    .item_name           = LORE_FDG_1_2(av_default_item_name),
++    .item_name           = av_default_item_name,
+     .version             = LIBAVUTIL_VERSION_INT,
+     .option              = mix_presentation_options,
+-    .child_class_iterate = LORE_FDG_2_5(mix_presentation_child_iterate),
++    .child_class_iterate = mix_presentation_child_iterate,
+ };
+ 
+ const AVClass *av_iamf_mix_presentation_get_class(void)
+--- a/libavutil/imgutils.c	2026-08-30 08:27:15.700678011 +0000
++++ b/libavutil/imgutils.c	2026-08-30 08:28:36.757138144 +0000
+@@ -288,7 +288,7 @@
+ 
+ static const AVClass imgutils_class = {
+     .class_name                = "IMGUTILS",
+-    .item_name                 = LORE_FDG_1_2(av_default_item_name),
++    .item_name                 = av_default_item_name,
+     .option                    = NULL,
+     .version                   = LIBAVUTIL_VERSION_INT,
+     .log_level_offset_offset   = offsetof(ImgUtils, log_offset),
+--- a/libavutil/log.c	2026-08-30 08:27:15.806818725 +0000
++++ b/libavutil/log.c	2026-08-30 08:28:36.757201761 +0000
+@@ -418,7 +418,7 @@
+ }
+ 
+ static void (*av_log_callback)(void*, int, const char*, va_list) =
+-    LORE_FDG_6_1(av_log_default_callback);
++    av_log_default_callback;
+ 
+ void av_log(void* avcl, int level, const char *fmt, ...)
+ {
+--- a/libswresample/options.c	2026-08-30 08:27:17.843825779 +0000
++++ b/libswresample/options.c	2026-08-30 08:28:36.757269713 +0000
+@@ -141,7 +141,7 @@
+ 
+ static const AVClass av_class = {
+     .class_name                = "SWResampler",
+-    .item_name                 = LORE_FDG_1_1(context_to_name),
++    .item_name                 = context_to_name,
+     .option                    = options,
+     .version                   = LIBAVUTIL_VERSION_INT,
+     .log_level_offset_offset   = OFFSET(log_level_offset),
+--- a/libswscale/options.c	2026-08-30 08:27:22.165840220 +0000
++++ b/libswscale/options.c	2026-08-30 08:28:35.725524927 +0000
+@@ -96,7 +96,7 @@
+ 
+ const AVClass ff_sws_context_class = {
+     .class_name = "SWScaler",
+-    .item_name  = LORE_FDG_1_1(sws_context_to_name),
++    .item_name  = sws_context_to_name,
+     .option     = swscale_options,
+     .parent_log_context_offset = OFFSET(parent),
+     .category   = AV_CLASS_CATEGORY_SWSCALER,

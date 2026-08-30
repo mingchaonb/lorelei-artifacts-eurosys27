@@ -1,0 +1,84 @@
+diff --git a/libavcodec/libavcodec.v b/libavcodec/libavcodec.v
+index b27e4d06f8..485ab9f957 100644
+--- a/libavcodec/libavcodec.v
++++ b/libavcodec/libavcodec.v
+@@ -4,6 +4,7 @@ LIBAVCODEC_MAJOR {
+         avcodec_*;
+         avpriv_*;
+         avsubtitle_free;
++        LoreGetFileContext;
+     local:
+         *;
+ };
+diff --git a/libavdevice/libavdevice.v b/libavdevice/libavdevice.v
+index 05612f7141..25e565f78a 100644
+--- a/libavdevice/libavdevice.v
++++ b/libavdevice/libavdevice.v
+@@ -2,6 +2,7 @@ LIBAVDEVICE_MAJOR {
+     global:
+         avdevice_*;
+         av_*;
++        LoreGetFileContext;
+     local:
+         *;
+ };
+diff --git a/libavfilter/libavfilter.v b/libavfilter/libavfilter.v
+index 5f12f77a7b..4f8aa7495e 100644
+--- a/libavfilter/libavfilter.v
++++ b/libavfilter/libavfilter.v
+@@ -2,6 +2,7 @@ LIBAVFILTER_MAJOR {
+     global:
+         avfilter_*;
+         av_*;
++        LoreGetFileContext;
+     local:
+         *;
+ };
+diff --git a/libavformat/libavformat.v b/libavformat/libavformat.v
+index 2bfbe1fe4d..74b52b0e2f 100644
+--- a/libavformat/libavformat.v
++++ b/libavformat/libavformat.v
+@@ -1,6 +1,7 @@
+ LIBAVFORMAT_MAJOR {
+     global:
+         av*;
++        LoreGetFileContext;
+     local:
+         *;
+ };
+diff --git a/libavutil/libavutil.v b/libavutil/libavutil.v
+index 8a71967cdb..a502fe8cac 100644
+--- a/libavutil/libavutil.v
++++ b/libavutil/libavutil.v
+@@ -1,6 +1,7 @@
+ LIBAVUTIL_MAJOR {
+     global:
+         av*;
++        LoreGetFileContext;
+     local:
+         *;
+ };
+diff --git a/libswresample/libswresample.v b/libswresample/libswresample.v
+index 8d736d12d5..7cfe993aa2 100644
+--- a/libswresample/libswresample.v
++++ b/libswresample/libswresample.v
+@@ -2,6 +2,7 @@ LIBSWRESAMPLE_MAJOR {
+     global:
+         swr_*;
+         swresample_*;
++        LoreGetFileContext;
+     local:
+         *;
+ };
+diff --git a/libswscale/libswscale.v b/libswscale/libswscale.v
+index 4ac1f3b13a..9dc0e5bc04 100644
+--- a/libswscale/libswscale.v
++++ b/libswscale/libswscale.v
+@@ -2,6 +2,7 @@ LIBSWSCALE_MAJOR {
+     global:
+         swscale_*;
+         sws_*;
++        LoreGetFileContext;
+     local:
+         *;
+ };
