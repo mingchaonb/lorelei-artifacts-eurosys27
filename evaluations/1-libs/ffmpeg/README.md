@@ -1,5 +1,7 @@
 # FFmpeg 7.1.5 validation (TLC + HLR)
 
+Public commands use the sibling `../lorelei-ae/build/install` devkit by default. Set `LORELEI_DEVKIT=/absolute/path/to/devkit` to override it.
+
 This recipe installs FFmpeg 7.1.5 through one repository overlay port and three architecture-role roots:
 
 1. `native` contains the seven upstream AArch64 shared libraries, `ffmpeg`, `ffprobe`, and its configured FATE tree.
@@ -9,7 +11,7 @@ This recipe installs FFmpeg 7.1.5 through one repository overlay port and three 
 Every package installs its configured tests at `tools/ffmpeg/upstream-tests`.
 
 ```bash
-./evaluations/1-libs/ffmpeg/run.sh --reference --verbose /path/to/lorelei-devkit
+./evaluations/1-libs/ffmpeg/run.sh --reference --verbose
 ```
 
 The evaluator sees two result lanes only:

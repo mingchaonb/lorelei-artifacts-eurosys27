@@ -3,17 +3,18 @@ set -euo pipefail
 
 usage() {
     cat <<EOF
-Usage: ${GAME_RUNNER_NAME:-run.sh} /path/to/lorelei-devkit [SECONDS]
+Usage: ${GAME_RUNNER_NAME:-run.sh} [SECONDS]
 
 Run one packaged x86-64 game through QEMU plus Hecate. SECONDS is the
 watchdog duration and defaults to 30.
 
 Common environment overrides:
-  QEMU               Patched qemu-x86_64 executable
-  GAMES_ROOT         Packaged game directory
-  GUI_ENV            File containing DISPLAY and XAUTHORITY
-  RUNTIME_HOME_ROOT  Per-game writable home directories
-  MANGOHUD_ENABLED   Set to 0 to disable FPS collection
+  LORELEI_DEVKIT        Lorelei devkit installation
+  QEMU                  Patched qemu-x86_64 executable
+  GAMES_ROOT            Packaged game directory
+  GUI_ENV               File containing DISPLAY and XAUTHORITY
+  RUNTIME_HOME_ROOT     Per-game writable home directories
+  MANGOHUD_ENABLED      Set to 0 to disable FPS collection
   MANGOHUD_CONFIG_EXTRA  Additional comma-separated MangoHud options
   HOLLOW_USE_VULKAN  Set to 1 for Hollow Knight's optional Vulkan path
 
@@ -28,20 +29,20 @@ if [[ ${1:-} == -h || ${1:-} == --help ]]; then
     usage
     exit 0
 fi
-if (($# < 1 || $# > 2)); then
+if (($# > 1)); then
     usage >&2
     exit 2
 fi
 
-devkit=$(realpath "$1")
-run_seconds=${2:-30}
+run_seconds=${1:-30}
 if [[ ! $run_seconds =~ ^[1-9][0-9]*$ ]]; then
     echo "SECONDS must be a positive integer: $run_seconds" >&2
     exit 2
 fi
-recipe_dir=$(cd "$(dirname "$0")" && pwd)
+recipe_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 repo_root=$(cd "$recipe_dir/../../.." && pwd)
 rover_root=$(cd "$repo_root/.." && pwd)
+devkit=$(realpath -m "${LORELEI_DEVKIT:-$rover_root/lorelei-ae/build/install}")
 qemu=${QEMU:-$rover_root/qemu-ae/build/qemu-x86_64}
 games_root=${GAMES_ROOT:-$rover_root/ae-games}
 gui_env=${GUI_ENV:-$HOME/Desktop/spark-gui-env.txt}

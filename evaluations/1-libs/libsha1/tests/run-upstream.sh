@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
-: "${DEVKIT:?}" "${QEMU:?}" "${WORK:?}" "${NATIVE_PREFIX:?}" "${GUEST_PREFIX:?}"
-devkit=$DEVKIT
+: "${LORELEI_DEVKIT:?}" "${QEMU:?}" "${WORK:?}" "${NATIVE_PREFIX:?}" "${GUEST_PREFIX:?}"
+devkit=$LORELEI_DEVKIT
 qemu=$QEMU
 work=$WORK
 cmake -E remove_directory "$work"

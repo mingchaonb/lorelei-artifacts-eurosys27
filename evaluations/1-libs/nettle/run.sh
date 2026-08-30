@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-recipe_dir=$(cd "$(dirname "$0")" && pwd)
+recipe_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 repo_root=$(cd "$recipe_dir/../../.." && pwd)
 overlay=$repo_root/vcpkg-overlay
 reference=false
@@ -12,15 +12,14 @@ while (($#)); do
         --reference) reference=true ;;
         --install-only) install_only=true ;;
         --verbose) verbose=true ;;
-        -h|--help) echo "Usage: $0 [--reference] [--install-only] [--verbose] /path/to/lorelei-devkit"; exit 0 ;;
+        -h|--help) echo "Usage: $0 [--reference] [--install-only] [--verbose]"; exit 0 ;;
         --*) echo "Unknown option: $1" >&2; exit 2 ;;
-        *) args+=("$1") ;;
+        *) echo "Unexpected positional argument: $1" >&2; exit 2 ;;
     esac
     shift
 done
-[[ ${#args[@]} == 1 ]] || { echo "Expected one devkit path" >&2; exit 2; }
-devkit=$(realpath "${args[0]}")
-qemu=$(realpath -m "${QEMU:-$devkit/bin/qemu-x86_64}")
+devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/../lorelei-ae/build/install}")
+qemu=$(realpath -m "${QEMU:-$repo_root/../qemu-ae/build/qemu-x86_64}")
 vcpkg=$repo_root/vcpkg/vcpkg
 [[ -x $vcpkg ]] || { echo "Bootstrap ./vcpkg first" >&2; exit 2; }
 [[ -x $devkit/bin/x86_64-linux-gnu-clang ]] || { echo "Invalid devkit: $devkit" >&2; exit 2; }
@@ -152,7 +151,7 @@ if ! $install_only; then
             else
                 (
                     cd "$root/$group"
-                    QEMU="$qemu" DEVKIT="$devkit" LORE_AE_HECATE=1 \
+                    QEMU="$qemu" LORELEI_DEVKIT="$devkit" LORE_AE_HECATE=1 \
                         HOST_LIB_DIR="$native_prefix/lib" THUNK_DIR="$upstream/thunk" \
                         TEST_SHLIB_DIR="$upstream/thunk/x86_64" srcdir="$root/$group" \
                         EMULATOR="$bench/QEMUWrapper.sh" \

@@ -7,7 +7,7 @@ This group aims to run every upstream test discoverable after each selected libr
 Each library directory must provide:
 
 1. A README that identifies the pinned upstream release, mechanism path, configured upstream suite, expected result, and exclusions.
-2. A self-contained `run.sh` entry point with a devkit path as its only positional argument.
+2. A self-contained `run.sh` entry point that reads `LORELEI_DEVKIT`, defaulting to the sibling `../lorelei-ae/build/install` checkout, and accepts no devkit positional argument.
 3. `--install-only`, `--reference`, and `--verbose` where the mode is applicable.
 4. A repository-level vcpkg overlay port that fetches the official release and applies reviewed patches from its own `patches/` directory.
 5. Every configured upstream test installed by the port under `tools/<port>/upstream-tests`. If upstream has no test installation rule, the port adds one or applies a minimal patch stored under `vcpkg-overlay/ports/<port>/patches/`.
@@ -69,7 +69,13 @@ During the 2026-08-30 non-graphics audit, `glvnd` and `vulkan-loader` were being
 The batch runner executes the verified all-tests set sequentially. It records controller logs and per-library status under `.work/evaluations/1-libs-batch/verified`. A library failure is recorded without stopping later libraries. Repeating the command skips successful libraries and retries failed, interrupted, or pending libraries:
 
 ```bash
-./evaluations/1-libs/run-all.sh --verbose /home/functioner/Documents/rover2024/lorelei-ae/build/install
+./evaluations/1-libs/run-all.sh --verbose
+```
+
+Override the repository-relative devkit only when needed:
+
+```bash
+LORELEI_DEVKIT=/path/to/devkit ./evaluations/1-libs/run-all.sh --verbose
 ```
 
 An interactive terminal keeps the three most recently completed results, active recipe, and aggregate progress fixed at the bottom while test output scrolls above them. Redirected output automatically uses plain text. Use `--plain` to disable the terminal display explicitly. Use `--verbose` to forward verbose mode into every per-library runner. Use `--restart` to archive the saved controller state and start the verified set again without deleting append-only per-library results. Use `--all` to select every real library recipe, including recipes with documented exclusions, while still excluding the synthetic `breakdown-test` package.

@@ -1,23 +1,27 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-recipe_dir=$(cd "$(dirname "$0")" && pwd)
+recipe_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 repo_root=$(cd "$recipe_dir/../../.." && pwd)
 overlay_dir=$repo_root/vcpkg-overlay
 port_dir=$overlay_dir/ports/sdl1
 triplet=arm64-linux-ae
 install_only=false
+if [[ ${1:-} == -h || ${1:-} == --help ]]; then
+    echo "Usage: $0 [--install-only]"
+    exit 0
+fi
 if [[ ${1:-} == --install-only ]]; then
     install_only=true
     shift
 fi
-if [[ $# != 1 ]]; then
-    echo "Usage: $0 [--install-only] /path/to/lorelei-devkit" >&2
+if [[ $# != 0 ]]; then
+    echo "Unexpected positional argument: $1" >&2
     exit 2
 fi
 
-devkit=$(realpath "$1")
-qemu=$(realpath -m "${QEMU:-$devkit/bin/qemu-x86_64}")
+devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/../lorelei-ae/build/install}")
+qemu=$(realpath -m "${QEMU:-$repo_root/../qemu-ae/build/qemu-x86_64}")
 vcpkg=$repo_root/vcpkg/vcpkg
 work_dir=${LORELEI_EVALUATION_WORK_DIR:-$repo_root/.work/evaluations/sdl1}
 work_dir=$(realpath -m "$work_dir")

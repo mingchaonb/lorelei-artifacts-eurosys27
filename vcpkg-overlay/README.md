@@ -39,10 +39,10 @@ The public library recipe normally runs these commands. They are also available 
   --overlay-triplets=vcpkg-overlay/triplets
 ```
 
-The guest and HLR package builds require `LORELEI_DEVKIT`:
+Public evaluation runners read `LORELEI_DEVKIT` and export the internal `LORELEI_DEVKIT` value for vcpkg. Direct guest and HLR package commands require `LORELEI_DEVKIT` explicitly:
 
 ```bash
-export LORELEI_DEVKIT=/path/to/lorelei-devkit
+export LORELEI_DEVKIT=/path/to/devkit
 ./vcpkg/vcpkg install \
   'sdl2[tests]:x64-linux-ae' \
   --overlay-ports=vcpkg-overlay/ports \

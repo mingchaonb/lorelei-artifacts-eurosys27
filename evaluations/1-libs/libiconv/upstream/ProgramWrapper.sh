@@ -2,7 +2,7 @@
 
 set -euo pipefail
 : "${QEMU_WRAPPER:?QEMU_WRAPPER is required}"
-directory=$(dirname "$0")
+directory=$(dirname "${BASH_SOURCE[0]}")
 name=$(basename "$0")
 real="$directory/.libs/$name"
 if [[ ! -x "$real" ]]; then

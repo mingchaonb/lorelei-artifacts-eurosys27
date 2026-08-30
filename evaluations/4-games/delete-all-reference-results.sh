@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-base_dir=$(cd "$(dirname "$0")" && pwd)
+base_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 dry_run=false
 if [[ ${1:-} == --dry-run ]]; then
     dry_run=true

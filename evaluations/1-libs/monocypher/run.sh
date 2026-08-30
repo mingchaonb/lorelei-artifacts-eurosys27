@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-recipe_dir=$(cd "$(dirname "$0")" && pwd)
+recipe_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 repo_root=$(cd "$recipe_dir/../../.." && pwd)
 overlay=$repo_root/vcpkg-overlay
 reference=false
@@ -12,15 +12,14 @@ while (($#)); do
         --reference) reference=true ;;
         --install-only) install_only=true ;;
         --verbose) verbose=true ;;
-        -h|--help) echo "Usage: $0 [--reference] [--install-only] [--verbose] /path/to/lorelei-devkit"; exit 0 ;;
+        -h|--help) echo "Usage: $0 [--reference] [--install-only] [--verbose]"; exit 0 ;;
         --*) echo "Unknown option: $1" >&2; exit 2 ;;
-        *) args+=("$1") ;;
+        *) echo "Unexpected positional argument: $1" >&2; exit 2 ;;
     esac
     shift
 done
-[[ ${#args[@]} == 1 ]] || { echo "Expected one devkit path" >&2; exit 2; }
-devkit=$(realpath "${args[0]}")
-qemu=$(realpath -m "${QEMU:-$devkit/bin/qemu-x86_64}")
+devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/../lorelei-ae/build/install}")
+qemu=$(realpath -m "${QEMU:-$repo_root/../qemu-ae/build/qemu-x86_64}")
 vcpkg=$repo_root/vcpkg/vcpkg
 [[ -x $vcpkg ]] || { echo "Bootstrap ./vcpkg first" >&2; exit 2; }
 [[ -x $devkit/bin/x86_64-linux-gnu-clang ]] || { echo "Invalid devkit: $devkit" >&2; exit 2; }
@@ -49,7 +48,7 @@ summary = {"schema_version": 2, "package": "monocypher", "status": "installed", 
 pathlib.Path(sys.argv[2]).write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n")
 PY
 if ! $install_only; then
-    DEVKIT="$devkit" QEMU="$qemu" WORK="$work/upstream" \
+    LORELEI_DEVKIT="$devkit" QEMU="$qemu" WORK="$work/upstream" \
         NATIVE_PREFIX="$work/installed/native/arm64-linux-ae" \
         GUEST_PREFIX="$work/installed/guest/x64-linux-ae" "$recipe_dir/tests/run-upstream.sh"
     mkdir -p "$run_dir/logs/upstream"

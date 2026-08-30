@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-recipe_dir=$(cd "$(dirname "$0")" && pwd)
+recipe_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 repo_root=$(cd "$recipe_dir/../../.." && pwd)
 port_dir=$repo_root/vcpkg-overlay/ports/opus
 reference=false
@@ -14,17 +14,16 @@ while (($#)); do
         --install-only) install_only=true ;;
         --verbose) verbose=true ;;
         -h|--help)
-            echo "Usage: $0 [--reference] [--install-only] [--verbose] /path/to/lorelei-devkit"
+            echo "Usage: $0 [--reference] [--install-only] [--verbose]"
             exit 0
             ;;
         --*) echo "Unknown option: $1" >&2; exit 2 ;;
-        *) positional+=("$1") ;;
+        *) echo "Unexpected positional argument: $1" >&2; exit 2 ;;
     esac
     shift
 done
-[[ ${#positional[@]} == 1 ]] || { echo "Expected one devkit path" >&2; exit 2; }
 
-devkit=$(realpath "${positional[0]}")
+devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/../lorelei-ae/build/install}")
 vcpkg=$repo_root/vcpkg/vcpkg
 work=$repo_root/.work/evaluations/opus
 results_root=$recipe_dir/results
@@ -42,11 +41,10 @@ mkdir -p "$work" "$run_dir"/{generated,logs}
 touch "$work/.lorelei-evaluations-workspace"
 exec > >(tee "$run_dir/commands.log") 2>&1
 
-invocation=("$0")
+invocation=(env "LORELEI_DEVKIT=$devkit" "$recipe_dir/run.sh")
 if $reference; then invocation+=(--reference); fi
 if $install_only; then invocation+=(--install-only); fi
 if $verbose; then invocation+=(--verbose); fi
-invocation+=("$devkit")
 printf '%q ' "${invocation[@]}" >"$run_dir/invocation.txt"
 printf '\n' >>"$run_dir/invocation.txt"
 find "$port_dir" -type f -print0 | sort -z | xargs -0 sha256sum >"$run_dir/generated/port-inputs.sha256"

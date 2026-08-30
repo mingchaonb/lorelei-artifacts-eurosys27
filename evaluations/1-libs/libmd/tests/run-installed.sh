@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-: "${DEVKIT:?}" "${QEMU:?}" "${WORK:?}" "${NATIVE_PREFIX:?}" "${GUEST_PREFIX:?}" "${BENCH:?}"
+: "${LORELEI_DEVKIT:?}" "${QEMU:?}" "${WORK:?}" "${NATIVE_PREFIX:?}" "${GUEST_PREFIX:?}" "${BENCH:?}"
 cmake -E remove_directory "$WORK"
 mkdir -p "$WORK/results" "$WORK/dump"
 tests=(md2 md4 md5 rmd160 sha1 sha2 sha3)
@@ -28,8 +28,8 @@ for version in LIBMD_0.0 LIBMD_0.1 LIBMD_0.2; do
   if [[ -z $parent ]]; then printf 'local:\n  *;\n};\n' >> "$version_map"; else echo "} $parent;" >> "$version_map"; fi
   parent=$version
 done
-"$DEVKIT/bin/LoreMakeThunk.py" --name md -o "$WORK/thunk" --lib "$host_lib" \
-  --symbols "$WORK/dump/Symbols.conf" --desc "$BENCH/Desc.h" --devkit "$DEVKIT" \
+"$LORELEI_DEVKIT/bin/LoreMakeThunk.py" --name md -o "$WORK/thunk" --lib "$host_lib" \
+  --symbols "$WORK/dump/Symbols.conf" --desc "$BENCH/Desc.h" --devkit "$LORELEI_DEVKIT" \
   --keep-intermediates --gtl-arg="-Wl,--undefined-version" \
   --gtl-arg="-Wl,--version-script=$version_map" -- -I"$NATIVE_PREFIX/include" \
   > "$WORK/results/thunk.log" 2>&1
@@ -39,9 +39,9 @@ for name in "${tests[@]}"; do
   echo "RUN $name" >> "$WORK/results/native.log"
   LD_LIBRARY_PATH="$NATIVE_PREFIX/lib" "$NATIVE_PREFIX/tools/libmd/upstream-tests/$name" >> "$WORK/results/native.log" 2>&1
   echo "RUN $name" >> "$WORK/results/hecate.log"
-  env LD_LIBRARY_PATH="$DEVKIT/lib:$NATIVE_PREFIX/lib:$WORK/thunk" \
-    "$QEMU" -L "$DEVKIT/x86_64/sysroot" -E LD_BIND_NOW=1 \
-    -E "LD_LIBRARY_PATH=$DEVKIT/x86_64/lib:$WORK/thunk/x86_64" \
+  env LD_LIBRARY_PATH="$LORELEI_DEVKIT/lib:$NATIVE_PREFIX/lib:$WORK/thunk" \
+    "$QEMU" -L "$LORELEI_DEVKIT/x86_64/sysroot" -E LD_BIND_NOW=1 \
+    -E "LD_LIBRARY_PATH=$LORELEI_DEVKIT/x86_64/lib:$WORK/thunk/x86_64" \
     "$GUEST_PREFIX/tools/libmd/upstream-tests/$name" >> "$WORK/results/hecate.log" 2>&1
 done
 cmp "$WORK/results/native.log" "$WORK/results/hecate.log"

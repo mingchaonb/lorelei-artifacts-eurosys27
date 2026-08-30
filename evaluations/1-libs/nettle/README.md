@@ -17,8 +17,8 @@ The pre-cleanup validation reported identical native and Hecate classifications:
 
 The shared configuration disables public-key support, assembler, OpenSSL integration, documentation, and static libraries. Consequently, the public-key helper and three RSA examples are skipped in both lanes. The x86 IBT probe is also skipped in both lanes because assembler is disabled. These are configuration exclusions rather than Hecate failures.
 
-The runner accepts one devkit path. `--install-only` stops after both packages are installed and audited. `--reference` writes append-only reference evidence. `--verbose` streams vcpkg preparation while preserving the raw log files.
+The runner reads the devkit from `LORELEI_DEVKIT`, defaulting to `../lorelei-ae/build/install` relative to the artifact repository. `--install-only` stops after both packages are installed and audited. `--reference` writes append-only reference evidence. `--verbose` streams vcpkg preparation while preserving the raw log files.
 
 ```bash
-./run.sh --reference /path/to/lorelei-devkit
+./run.sh --reference
 ```

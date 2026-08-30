@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-recipe_dir=$(cd "$(dirname "$0")" && pwd)
+recipe_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 repo_root=$(cd "$recipe_dir/../../.." && pwd)
 overlay_dir=$repo_root/vcpkg-overlay
 port_dir=$overlay_dir/ports/libpcap
@@ -18,19 +18,18 @@ while (($#)); do
         --install-only) install_only=true ;;
         --verbose) verbose=true ;;
         -h|--help)
-            echo "Usage: $0 [--reference] [--install-only] [--verbose] /path/to/lorelei-devkit"
+            echo "Usage: $0 [--reference] [--install-only] [--verbose]"
             echo "Set QEMU=/path/to/qemu-x86_64 only for a development devkit."
             exit 0
             ;;
         --*) echo "Unknown option: $1" >&2; exit 2 ;;
-        *) positional+=("$1") ;;
+        *) echo "Unexpected positional argument: $1" >&2; exit 2 ;;
     esac
     shift
 done
-[[ ${#positional[@]} == 1 ]] || { echo "Expected one devkit path" >&2; exit 2; }
 
-devkit=$(realpath "${positional[0]}")
-qemu=$(realpath -m "${QEMU:-$devkit/bin/qemu-x86_64}")
+devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/../lorelei-ae/build/install}")
+qemu=$(realpath -m "${QEMU:-$repo_root/../qemu-ae/build/qemu-x86_64}")
 vcpkg=$repo_root/vcpkg/vcpkg
 work_dir=$repo_root/.work/evaluations/libpcap
 results_root=$recipe_dir/results
@@ -77,11 +76,10 @@ run_logged() {
 }
 
 stage "Record invocation and environment"
-invocation=("$0")
+invocation=(env "LORELEI_DEVKIT=$devkit" "$recipe_dir/run.sh")
 if $reference; then invocation+=(--reference); fi
 if $install_only; then invocation+=(--install-only); fi
 if $verbose; then invocation+=(--verbose); fi
-invocation+=("$devkit")
 printf '%q ' "${invocation[@]}" >"$run_dir/invocation.txt"
 printf '\n' >>"$run_dir/invocation.txt"
 {

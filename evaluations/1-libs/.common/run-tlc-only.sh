@@ -14,23 +14,22 @@ while (($#)); do
         --reference) reference=true ;;
         --install-only) install_only=true ;;
         --verbose) verbose=true ;;
-        -h|--help) echo "Usage: run.sh [--reference] [--install-only] [--verbose] /path/to/lorelei-devkit"; exit 0 ;;
+        -h|--help) echo "Usage: run.sh [--reference] [--install-only] [--verbose]"; exit 0 ;;
         --*) echo "Unknown option: $1" >&2; exit 2 ;;
-        *) positional+=("$1") ;;
+        *) echo "Unexpected positional argument: $1" >&2; exit 2 ;;
     esac
     shift
 done
-[[ ${#positional[@]} == 1 ]] || { echo "Expected one devkit path" >&2; exit 2; }
 
-devkit=$(realpath "${positional[0]}")
+recipe_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")/../$package" 2>/dev/null && pwd || true)
+if [[ -z $recipe_dir ]]; then recipe_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")/../sdl2-ttf" && pwd); fi
+repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)
+devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/../lorelei-ae/build/install}")
 export LORELEI_DEVKIT=$devkit
-recipe_dir=$(cd "$(dirname "$0")/../$package" 2>/dev/null && pwd || true)
-if [[ -z $recipe_dir ]]; then recipe_dir=$(cd "$(dirname "$0")/../sdl2-ttf" && pwd); fi
-repo_root=$(cd "$(dirname "$0")/../../.." && pwd)
 common_dir=$repo_root/evaluations/common
 overlay=$repo_root/vcpkg-overlay
 vcpkg=$repo_root/vcpkg/vcpkg
-qemu=$(realpath -m "${QEMU:-$devkit/bin/qemu-x86_64}")
+qemu=$(realpath -m "${QEMU:-$repo_root/../qemu-ae/build/qemu-x86_64}")
 work=$repo_root/.work/evaluations/$package
 results_root=$recipe_dir/results
 result_kind=evaluator

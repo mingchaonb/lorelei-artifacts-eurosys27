@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 set -euo pipefail
-exec "$(dirname "$0")/../.common/run-tlc-only.sh" libthai thai libthai.so.0 "$@"
+exec "$(dirname "${BASH_SOURCE[0]}")/../.common/run-tlc-only.sh" libthai thai libthai.so.0 "$@"

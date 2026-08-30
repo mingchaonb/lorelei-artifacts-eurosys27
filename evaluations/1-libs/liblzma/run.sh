@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-recipe_dir=$(cd "$(dirname "$0")" && pwd)
+recipe_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 repo_root=$(cd "$recipe_dir/../../.." && pwd)
 overlay_dir=$repo_root/vcpkg-overlay
 devkit=
@@ -13,14 +13,13 @@ while (($#)); do
     --reference) reference=true ;;
     --install-only) install_only=true ;;
     --verbose) verbose=true ;;
-    -h|--help) echo "Usage: $0 [--reference] [--install-only] [--verbose] /path/to/lorelei-devkit"; exit 0 ;;
+    -h|--help) echo "Usage: $0 [--reference] [--install-only] [--verbose]"; exit 0 ;;
     --*) echo "Unknown option: $1" >&2; exit 2 ;;
-    *) positional+=("$1") ;;
+    *) echo "Unexpected positional argument: $1" >&2; exit 2 ;;
   esac
   shift
 done
-[[ ${#positional[@]} == 1 ]] || { echo "Expected one devkit path" >&2; exit 2; }
-devkit=$(realpath "${positional[0]}")
+devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/../lorelei-ae/build/install}")
 qemu=$(realpath -m "${QEMU:-$repo_root/../qemu-ae/build/qemu-x86_64}")
 vcpkg=$repo_root/vcpkg/vcpkg
 nm_tool=$(command -v llvm-nm-20 || command -v llvm-nm || command -v nm)
@@ -146,7 +145,7 @@ run_upstream_suite() {
     if [[ $lane == native ]]; then
       env LD_LIBRARY_PATH="$prefix/lib" srcdir="$suite/source" "$suite/tests_bin/$name" >"$run_dir/logs/$lane/$name.log" 2>&1
     else
-      env QEMU="$qemu" DEVKIT="$devkit" LORE_AE_HECATE=1 HOST_LIB_DIR="$hecate_prefix/lib" THUNK_DIR="$work/thunks/lzma" LIBC_SHIM_DIR="$libc_shim" GUEST_LIB_DIR="$guest_prefix/lib" srcdir="$suite/source" "$qemu_wrapper" "$suite/tests_bin/$name" >"$run_dir/logs/$lane/$name.log" 2>&1
+      env QEMU="$qemu" LORELEI_DEVKIT="$devkit" LORE_AE_HECATE=1 HOST_LIB_DIR="$hecate_prefix/lib" THUNK_DIR="$work/thunks/lzma" LIBC_SHIM_DIR="$libc_shim" GUEST_LIB_DIR="$guest_prefix/lib" srcdir="$suite/source" "$qemu_wrapper" "$suite/tests_bin/$name" >"$run_dir/logs/$lane/$name.log" 2>&1
     fi
     status=$?
     set -e
@@ -159,14 +158,14 @@ run_upstream_suite() {
     if [[ $lane == native ]]; then
       env LD_LIBRARY_PATH="$prefix/lib" srcdir="$suite/source" "$suite/tests_bin/test_index" "$index_case" >"$run_dir/logs/$lane/test_index-$index_case.log" 2>&1
     else
-      env QEMU="$qemu" DEVKIT="$devkit" LORE_AE_HECATE=1 HOST_LIB_DIR="$hecate_prefix/lib" THUNK_DIR="$work/thunks/lzma" LIBC_SHIM_DIR="$libc_shim" GUEST_LIB_DIR="$guest_prefix/lib" srcdir="$suite/source" "$qemu_wrapper" "$suite/tests_bin/test_index" "$index_case" >"$run_dir/logs/$lane/test_index-$index_case.log" 2>&1
+      env QEMU="$qemu" LORELEI_DEVKIT="$devkit" LORE_AE_HECATE=1 HOST_LIB_DIR="$hecate_prefix/lib" THUNK_DIR="$work/thunks/lzma" LIBC_SHIM_DIR="$libc_shim" GUEST_LIB_DIR="$guest_prefix/lib" srcdir="$suite/source" "$qemu_wrapper" "$suite/tests_bin/test_index" "$index_case" >"$run_dir/logs/$lane/test_index-$index_case.log" 2>&1
     fi
     status=$?
     set -e
     if [[ $status != 0 ]]; then index_failed=1; cat "$run_dir/logs/$lane/test_index-$index_case.log"; fi
   done
   if [[ $index_failed == 0 ]]; then passed=$((passed + 1)); else failed=$((failed + 1)); fi
-  export QEMU="$qemu" DEVKIT="$devkit" QEMU_WRAPPER="$qemu_wrapper" LORE_AE_HECATE=0 GUEST_LIB_DIR="$guest_prefix/lib"
+  export QEMU="$qemu" LORELEI_DEVKIT="$devkit" QEMU_WRAPPER="$qemu_wrapper" LORE_AE_HECATE=0 GUEST_LIB_DIR="$guest_prefix/lib"
   if [[ $lane == hecate ]]; then
     export LORE_AE_HECATE=1 HOST_LIB_DIR="$hecate_prefix/lib" THUNK_DIR="$work/thunks/lzma" LIBC_SHIM_DIR="$libc_shim"
   fi

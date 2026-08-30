@@ -2,14 +2,14 @@
 
 set -euo pipefail
 
-: "${DEVKIT:?DEVKIT is required}"
+: "${LORELEI_DEVKIT:?LORELEI_DEVKIT is required}"
 : "${QEMU:?QEMU is required}"
 : "${LIBSODIUM_SOURCE:?LIBSODIUM_SOURCE is required}"
 : "${WORK:?WORK is required}"
 : "${BENCH:?BENCH is required}"
 : "${QEMU_WRAPPER:?QEMU_WRAPPER is required}"
 
-devkit=$DEVKIT
+devkit=$LORELEI_DEVKIT
 qemu=$QEMU
 src=$LIBSODIUM_SOURCE
 work=$WORK
@@ -105,7 +105,7 @@ run_lane() {
     local lane=$1
     local start end
     start=$(date +%s%N)
-    QEMU="$qemu" DEVKIT="$devkit" LORE_AE_HECATE=1 \
+    QEMU="$qemu" LORELEI_DEVKIT="$devkit" LORE_AE_HECATE=1 \
         HOST_LIB_DIR="$work/native/src/libsodium/.libs" THUNK_DIR="$work/thunk" \
         ERRNO_SHIM_DIR="$work/thunk-errno-shim" \
         make -C "$work/guest/test/default" check-TESTS \

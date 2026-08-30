@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Derive every repository path from this script. The evaluator supplies only the
-# installed Lorelei devkit. QEMU may be overridden through QEMU while developing
-# against a devkit that does not yet bundle the patched emulator.
-recipe_dir=$(cd "$(dirname "$0")" && pwd)
+# Derive every repository path from this script. LORELEI_DEVKIT and QEMU may override
+# the repository-relative defaults for a development installation.
+recipe_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 repo_root=$(cd "$recipe_dir/../../.." && pwd)
 common_dir=$repo_root/evaluations/common
 overlay_dir=$repo_root/vcpkg-overlay
@@ -26,7 +25,7 @@ while (($#)); do
         --install-only) install_only=true ;;
         --verbose) verbose=true ;;
         -h|--help)
-            echo "Usage: $0 [--reference] [--install-only] [--verbose] /path/to/lorelei-devkit"
+            echo "Usage: $0 [--reference] [--install-only] [--verbose]"
             echo "Set QEMU=/path/to/qemu-x86_64 only for a development devkit."
             exit 0
             ;;
@@ -34,17 +33,12 @@ while (($#)); do
             echo "Unknown option: $1" >&2
             exit 2
             ;;
-        *) positional+=("$1") ;;
+        *) echo "Unexpected positional argument: $1" >&2; exit 2 ;;
     esac
     shift
 done
-if [[ ${#positional[@]} != 1 ]]; then
-    echo "Usage: $0 [--reference] [--install-only] [--verbose] /path/to/lorelei-devkit" >&2
-    echo "Set QEMU=/path/to/qemu-x86_64 only for a development devkit." >&2
-    exit 2
-fi
-devkit=$(realpath "${positional[0]}")
-qemu=$(realpath -m "${QEMU:-$devkit/bin/qemu-x86_64}")
+devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/../lorelei-ae/build/install}")
+qemu=$(realpath -m "${QEMU:-$repo_root/../qemu-ae/build/qemu-x86_64}")
 # Keep the documented default stable. Developers may select another disposable
 # marked workspace to avoid colliding with a concurrent graphics evaluation.
 work_dir=${LORELEI_EVALUATION_WORK_DIR:-$repo_root/.work/evaluations/sdl2}
@@ -129,11 +123,10 @@ record_status() {
 # JSON file is the stable machine-readable identity, while environment.txt keeps
 # the unedited diagnostic output.
 stage "Record invocation and environment"
-invocation=("$0")
+invocation=(env "LORELEI_DEVKIT=$devkit" "$recipe_dir/run.sh")
 if $reference; then invocation+=(--reference); fi
 if $install_only; then invocation+=(--install-only); fi
 if $verbose; then invocation+=(--verbose); fi
-invocation+=("$devkit")
 printf '%q ' "${invocation[@]}" >"$run_dir/invocation.txt"
 printf '\n' >>"$run_dir/invocation.txt"
 {

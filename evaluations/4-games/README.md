@@ -2,12 +2,12 @@
 
 This group contains reproducible recipes and evidence for game performance and playability. Library-level GLVND and Vulkan validation belongs under `evaluations/1-libs`.
 
-Each game has the same recipe layout as a library evaluation and is started by its own `run.sh`. The only additional positional argument is the optional watchdog duration in seconds.
+Each game has the same recipe layout as a library evaluation and is started by its own `run.sh`. `LORELEI_DEVKIT` follows the repository-wide default and is not positional. The optional watchdog duration in seconds is the only positional argument.
 
 ```bash
-./evaluations/4-games/openarena/run.sh /path/to/lorelei-devkit 30
-./evaluations/4-games/supertuxkart/run.sh /path/to/lorelei-devkit 60
-HOLLOW_USE_VULKAN=1 ./evaluations/4-games/hollow-knight/run.sh /path/to/lorelei-devkit 45
+./evaluations/4-games/openarena/run.sh 30
+./evaluations/4-games/supertuxkart/run.sh 60
+HOLLOW_USE_VULKAN=1 ./evaluations/4-games/hollow-knight/run.sh 45
 ```
 
 The watchdog defaults to 30 seconds. Per-game evidence is written under that game's `results/` directory. Writable home directories are runtime state under `.work/evaluations/games/runtime-home`. Override the location with `RUNTIME_HOME_ROOT` when needed.

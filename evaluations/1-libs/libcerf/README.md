@@ -1,13 +1,15 @@
 # libcerf 3.5 validation (TLC Only) [ALL TESTS PASSED]
 
+Public commands use the sibling `../lorelei-ae/build/install` devkit by default. Set `LORELEI_DEVKIT=/absolute/path/to/devkit` to override it.
+
 This recipe builds the pinned official release as shared libraries for the AArch64 host and x86_64 guest, generates the workload-scoped TLC thunk, and runs the same directed public-API workload natively and through Hecate. The port has no `hlr` feature and the runner does not load an HLR extension.
 
 ## Commands
 
 ```bash
-./evaluations/1-libs/libcerf/run.sh /path/to/lorelei-devkit
-./evaluations/1-libs/libcerf/run.sh --reference --verbose /path/to/lorelei-devkit
-./evaluations/1-libs/libcerf/run.sh --install-only /path/to/lorelei-devkit
+./evaluations/1-libs/libcerf/run.sh
+./evaluations/1-libs/libcerf/run.sh --reference --verbose
+./evaluations/1-libs/libcerf/run.sh --install-only
 ```
 
 Set `QEMU=/path/to/qemu-x86_64` when QEMU is not installed in the devkit.

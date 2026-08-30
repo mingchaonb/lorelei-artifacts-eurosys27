@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-recipe_dir=$(cd "$(dirname "$0")" && pwd)
+recipe_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 repo_root=$(cd "$recipe_dir/../../.." && pwd)
 overlay_dir=$repo_root/vcpkg-overlay
 state=$repo_root/.work/evaluations/breakdown-test
@@ -13,11 +13,11 @@ while (($#)); do
     case $1 in
         --install-only) install_only=true ;;
         -h|--help)
-            echo "Usage: $0 --install-only /path/to/lorelei-devkit"
+            echo "Usage: $0 --install-only"
             exit 0
             ;;
         --*) echo "Unknown option: $1" >&2; exit 2 ;;
-        *) positional+=("$1") ;;
+        *) echo "Unexpected positional argument: $1" >&2; exit 2 ;;
     esac
     shift
 done
@@ -26,11 +26,7 @@ test "$install_only" = true || {
     echo "breakdown-test is an installation prerequisite. Pass --install-only" >&2
     exit 2
 }
-test "${#positional[@]}" -eq 1 || {
-    echo "Expected one devkit path" >&2
-    exit 2
-}
-devkit=$(realpath "${positional[0]}")
+devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/../lorelei-ae/build/install}")
 test -x "$vcpkg"
 test -x "$devkit/bin/x86_64-linux-gnu-clang"
 

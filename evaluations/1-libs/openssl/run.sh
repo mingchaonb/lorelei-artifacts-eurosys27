@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-recipe_dir=$(cd "$(dirname "$0")" && pwd)
+recipe_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 repo_root=$(cd "$recipe_dir/../../.." && pwd)
 overlay=$repo_root/vcpkg-overlay
 reference=false
@@ -12,14 +12,13 @@ while (($#)); do
         --reference) reference=true ;;
         --install-only) install_only=true ;;
         --verbose) verbose=true ;;
-        -h|--help) echo "Usage: $0 [--reference] [--install-only] [--verbose] /path/to/lorelei-devkit"; exit 0 ;;
+        -h|--help) echo "Usage: $0 [--reference] [--install-only] [--verbose]"; exit 0 ;;
         --*) echo "Unknown option: $1" >&2; exit 2 ;;
-        *) args+=("$1") ;;
+        *) echo "Unexpected positional argument: $1" >&2; exit 2 ;;
     esac
     shift
 done
-[[ ${#args[@]} == 1 ]] || { echo "Expected one devkit path" >&2; exit 2; }
-devkit=$(realpath "${args[0]}")
+devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/../lorelei-ae/build/install}")
 vcpkg=$repo_root/vcpkg/vcpkg
 [[ -x $vcpkg ]] || { echo "Bootstrap ./vcpkg first" >&2; exit 2; }
 [[ -x $devkit/bin/x86_64-linux-gnu-clang ]] || { echo "Invalid devkit: $devkit" >&2; exit 2; }

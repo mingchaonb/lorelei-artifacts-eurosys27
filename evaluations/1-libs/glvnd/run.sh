@@ -1,9 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-recipe_dir=$(cd "$(dirname "$0")" && pwd)
+recipe_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 repo_root=$(cd "$recipe_dir/../../.." && pwd)
-devkit=$(realpath "${1:?Usage: $0 /path/to/lorelei-devkit}")
+if [[ ${1:-} == -h || ${1:-} == --help ]]; then
+    echo "Usage: $0"
+    exit 0
+fi
+[[ $# == 0 ]] || { echo "Unexpected positional argument: $1" >&2; exit 2; }
+devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/../lorelei-ae/build/install}")
 qemu=$(realpath "${QEMU:-$repo_root/../qemu-ae/build/qemu-x86_64}")
 gui_env=${GUI_ENV:-$HOME/Desktop/spark-gui-env.txt}
 run_id=$(date -u +%Y%m%dT%H%M%SZ)

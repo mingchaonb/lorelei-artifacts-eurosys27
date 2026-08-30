@@ -31,7 +31,7 @@ vcpkg-overlay/
 └── triplets/                       shared native and guest targets
 ```
 
-Every package recipe must accept the devkit path as its only positional argument and `--reference` as an optional evidence-destination flag. A library recipe may provide `--install-only` to prepare its complete mechanism path without compiling or running tests. A recipe may accept an emulator path through the `QEMU` environment variable for development, but the release devkit is expected to provide `bin/qemu-x86_64`. Source acquisition, version verification, compilation, and installation belong to the repository-level vcpkg overlay. A recipe must use the repository-local `vcpkg/vcpkg` executable.
+Every public recipe reads the Lorelei devkit from `LORELEI_DEVKIT`. The default is the sibling checkout `../lorelei-ae/build/install`, resolved from the artifact repository rather than the caller's current directory. Public recipes do not accept the devkit as a positional argument. `QEMU` similarly overrides the default sibling executable at `../qemu-ae/build/qemu-x86_64`. A library recipe may provide `--reference`, `--install-only`, and `--verbose`. Source acquisition, version verification, compilation, and installation belong to the repository-level vcpkg overlay. A recipe must use the repository-local `vcpkg/vcpkg` executable.
 
 Each recipe must perform these stages when applicable:
 
@@ -46,13 +46,14 @@ Each recipe must perform these stages when applicable:
 The public command for a package must fit on one line. SDL2 is the reference implementation:
 
 ```bash
-./evaluations/1-libs/sdl2/run.sh /path/to/lorelei-devkit
+./evaluations/1-libs/sdl2/run.sh
 ```
 
-During development, a patched QEMU outside the devkit can be selected explicitly:
+Another devkit or patched QEMU can be selected explicitly:
 
 ```bash
-QEMU=/path/to/qemu-x86_64 ./evaluations/1-libs/sdl2/run.sh /path/to/lorelei-devkit
+LORELEI_DEVKIT=/path/to/devkit QEMU=/path/to/qemu-x86_64 \
+  ./evaluations/1-libs/sdl2/run.sh
 ```
 
 Generated build trees belong below `.work/evaluations/` and are not evidence. Each recipe keeps raw evidence beside the recipe and never overwrites an earlier run.

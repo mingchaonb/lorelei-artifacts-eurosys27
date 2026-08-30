@@ -4,10 +4,7 @@ set -euo pipefail
 if [[ ${1:-} == --resolve-qemu ]]; then
     devkit=$2
     repo_root=$3
-    candidate=${QEMU:-$devkit/bin/qemu-x86_64}
-    if [[ ! -x $candidate && -x $(dirname "$repo_root")/qemu-ae/build/qemu-x86_64 ]]; then
-        candidate=$(dirname "$repo_root")/qemu-ae/build/qemu-x86_64
-    fi
+    candidate=${QEMU:-$repo_root/../qemu-ae/build/qemu-x86_64}
     [[ -x $candidate ]] || { echo "Patched QEMU not found: $candidate" >&2; exit 2; }
     realpath "$candidate"
     exit 0
@@ -32,7 +29,7 @@ host_runtime=$9
 guest_runtime=${10}
 verbose=${11}
 
-runner=$(realpath "$0")
+runner=$(realpath "${BASH_SOURCE[0]}")
 driver=$(dirname "$runner")/audio-signal-ctest.py
 upstream=$work/upstream
 mkdir -p "$upstream" "$run_dir/logs/upstream"/{preparation,native,hecate} "$run_dir/generated/upstream"

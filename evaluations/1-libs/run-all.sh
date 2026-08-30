@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-base_dir=$(cd "$(dirname "$0")" && pwd)
+base_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 repo_root=$(cd "$base_dir/../.." && pwd)
 
 run_all=false
@@ -16,7 +16,7 @@ while (($#)); do
         --verbose) verbose=true ;;
         --plain) plain=true ;;
         -h|--help)
-            echo "Usage: $0 [--all] [--restart] [--verbose] [--plain] /path/to/lorelei-devkit"
+            echo "Usage: $0 [--all] [--restart] [--verbose] [--plain]"
             echo "Default: run only recipes marked [ALL TESTS PASSED]."
             echo "--all: run every library recipe except the synthetic breakdown-test."
             echo "--restart: archive the saved batch state and start every selected recipe again."
@@ -25,13 +25,12 @@ while (($#)); do
             exit 0
             ;;
         --*) echo "Unknown option: $1" >&2; exit 2 ;;
-        *) positional+=("$1") ;;
+        *) echo "Unexpected positional argument: $1" >&2; exit 2 ;;
     esac
     shift
 done
-[[ ${#positional[@]} == 1 ]] || { echo "Expected one devkit path" >&2; exit 2; }
 
-devkit=$(realpath "${positional[0]}")
+devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/../lorelei-ae/build/install}")
 [[ -d $devkit ]] || { echo "Devkit not found: $devkit" >&2; exit 2; }
 
 mode=verified
@@ -221,9 +220,8 @@ for name in $(<"$plan"); do
     log=$state_dir/logs/$name-attempt-$attempt.log
     before=$(find "$base_dir/$name/results" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | sort | tail -1 || true)
     started=$SECONDS
-    command=("$runner")
+    command=(env "LORELEI_DEVKIT=$devkit" "$runner")
     if $verbose; then command+=(--verbose); fi
-    command+=("$devkit")
 
     ui_current="RUN $name"
     ui_detail="Attempt $attempt of this recipe, batch item $index of $total"

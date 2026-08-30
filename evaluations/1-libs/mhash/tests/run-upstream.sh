@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
-: "${DEVKIT:?}"
+: "${LORELEI_DEVKIT:?}"
 : "${QEMU:?}"
 : "${SOURCE:?}"
 : "${WORK:?}"
 : "${BENCH:?}"
-devkit=$DEVKIT
+devkit=$LORELEI_DEVKIT
 qemu=$QEMU
 work=$WORK
 jobs=${JOBS:-8}
@@ -84,7 +84,7 @@ run_lane() {
     cp "$work/guest/src/hash_test.sh" "$lane_dir/hash_test.sh"
     cp "$BENCH/DriverWrapper.sh" "$lane_dir/driver"
     chmod +x "$lane_dir/driver"
-    env_args=(QEMU="$qemu" DEVKIT="$devkit" GUEST_LIB_DIR="$guest_lib_dir")
+    env_args=(QEMU="$qemu" LORELEI_DEVKIT="$devkit" GUEST_LIB_DIR="$guest_lib_dir")
     if [[ "$lane" == hecate ]]; then
         env_args+=(LORE_AE_HECATE=1 HOST_LIB_DIR="$work/native/lib/.libs"
             THUNK_DIR="$work/thunk")

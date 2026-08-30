@@ -8,8 +8,8 @@ The vcpkg port installs all four tests under `tools/libb2/upstream-tests`. `run.
 
 The pre-cleanup validation passed all four tests in native and Hecate with identical output. There are no configured skips or failures. OpenMP and architecture-specific dispatch are disabled in both packages.
 
-The runner accepts one devkit path. `--install-only` stops after both packages are installed and audited. `--reference` writes append-only reference evidence. `--verbose` streams vcpkg preparation while preserving raw logs. No pure QEMU lane is provided.
+The runner reads the devkit from `LORELEI_DEVKIT`, defaulting to `../lorelei-ae/build/install` relative to the artifact repository. `--install-only` stops after both packages are installed and audited. `--reference` writes append-only reference evidence. `--verbose` streams vcpkg preparation while preserving raw logs. No pure QEMU lane is provided.
 
 ```bash
-./run.sh --reference /path/to/lorelei-devkit
+./run.sh --reference
 ```

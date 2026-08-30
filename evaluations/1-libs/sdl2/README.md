@@ -1,5 +1,7 @@
 # SDL2 2.28.5 validation (TLC + HLR)
 
+Public commands use the sibling `../lorelei-ae/build/install` devkit by default. Set `LORELEI_DEVKIT=/absolute/path/to/devkit` to override it.
+
 This recipe is the reference implementation of the library evaluation contract. The repository-level vcpkg overlay pins and builds the official SDL release. The recipe then creates SDL and libc-shim thunks and runs the same selected tests in the native baseline and the Hecate path. Hecate is the anonymous submission name for Lorelei. Its SDL path combines TLC thunk generation with HLR rewriting and runtime extensions.
 
 ## Evaluator command
@@ -7,19 +9,19 @@ This recipe is the reference implementation of the library evaluation contract. 
 Bootstrap the repository-local `vcpkg/` checkout once as documented in [`../../../vcpkg-overlay/README.md`](../../../vcpkg-overlay/README.md). A full test run requires Lorelei tools, both HLR runtime extensions, the QEMU thread hook, the x86-64 sysroot, and `bin/qemu-x86_64` in the release devkit.
 
 ```bash
-./evaluations/1-libs/sdl2/run.sh /path/to/lorelei-devkit
+./evaluations/1-libs/sdl2/run.sh
 ```
 
 Add `--verbose` to stream vcpkg, thunk-generation, build, and test output while retaining the same raw log files:
 
 ```bash
-./evaluations/1-libs/sdl2/run.sh --verbose /path/to/lorelei-devkit
+./evaluations/1-libs/sdl2/run.sh --verbose
 ```
 
 To install the HLR-rewritten host SDL, generate the SDL thunk and libc shim, and skip all test compilation and execution, use:
 
 ```bash
-./evaluations/1-libs/sdl2/run.sh --install-only /path/to/lorelei-devkit
+./evaluations/1-libs/sdl2/run.sh --install-only
 ```
 
 Install-only mode does not require QEMU or the QEMU thread hook. It writes the installed paths and `tests_run: false` to `summary.json`. The installed files remain under `.work/evaluations/sdl2/` until the next SDL2 invocation replaces that disposable workspace.
@@ -27,7 +29,7 @@ Install-only mode does not require QEMU or the QEMU thread hook. It writes the i
 The default command writes evaluator-generated evidence to `results/<run-id>/`. To produce the reference evidence shipped from the authors' machine, use:
 
 ```bash
-./evaluations/1-libs/sdl2/run.sh --reference /path/to/lorelei-devkit
+./evaluations/1-libs/sdl2/run.sh --reference
 ```
 
 Reference runs are written to `reference-results/<run-id>/`. The option changes only the evidence destination and `meta.json` result kind. Both commands execute the same build and test policy.
@@ -36,7 +38,7 @@ For a development tree where patched QEMU has not yet been installed into the de
 
 ```bash
 QEMU=/path/to/patched/qemu-x86_64 \
-  ./evaluations/1-libs/sdl2/run.sh /path/to/lorelei-devkit
+  ./evaluations/1-libs/sdl2/run.sh
 ```
 
 The disposable build tree is `.work/evaluations/sdl2`. Both evidence directories are append-only.

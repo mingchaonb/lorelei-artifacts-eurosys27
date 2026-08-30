@@ -1,203 +1,81 @@
-# EuroSys 2027 Lorelei 投稿 Artifact
+# EuroSys 2027 Lorelei Artifact
 
 [English](README.md)
 
-本仓库是 EuroSys 2027 Lorelei 投稿的公开 artifact 与证据工作区。仓库包含构建 artifact、运行评测、检查原始观测和复现论文结果所需的材料。
+本仓库是 EuroSys 2027 Lorelei 投稿面向 Artifact Evaluation 评审者的构建、测试与证据工作区。Lorelei 是公开项目名。Hecate 是论文和部分 runtime 接口使用的匿名名称。除非具体配方另有说明，两者指同一个系统。
 
-## 命名说明
+## 快速开始
 
-- **Lorelei** 是项目名称，也是公开源码仓库与 artifact 仓库使用的名称。
-- **Hecate** 是双盲论文投稿和 artifact 准备期间使用的匿名系统名称。
-- AE 脚本、二进制、日志、环境变量和历史结果可以继续使用 Hecate 标识符。
-- 除非文档明确区分，Lorelei 与 Hecate 指同一个系统。
-
-## 仓库契约
-
-### 范围
-
-本仓库负责：
-
-- artifact 配置与构建脚本
-- 固定版本的依赖与源码版本
-- 实验驱动程序与测试输入
-- 机器可读的环境记录
-- 原始命令输出与测量数据
-- 派生的汇总、表格与图
-- 面向 Artifact Evaluation 评审者的说明
-
-下列材料不放在本仓库：
-
-- 论文正文、内部协作记录和论文侧分析，这些内容保留在论文仓库
-- Lorelei、QEMU、thunk 库和第三方项目，这些内容保留在各自的源码仓库
-
-本仓库记录每项实验所需的准确源码版本和补丁。
-
-### 规划目录
+默认配置将各源码仓库并列放置：
 
 ```text
-README.md                 英文契约与评审入口
-README.zh-CN.md           中文契约
-docs/                     配置、架构与实验说明
-scripts/                  可重复的配置、构建、测试与分析命令
-configs/                  版本固定信息与实验配置
-patches/                  artifact 所需且经过审查的源码补丁
-inputs/                   可再分发的固定输入或下载清单
-evaluations/              可复现评测配方及其就近存放的证据
-evaluations/1-libs/       库 API 与边界验证
-evaluations/2-cli-benchmarks/ 八个命令行 workload
-evaluations/3-breakdown/  调用、callback 与机制开销拆分
-evaluations/4-games/      游戏性能与可玩性
-vcpkg-overlay/            固定版本的第三方 port 与 AE 构建策略
-results/                  按论文结论分组并纳入版本管理的证据
-results/README.md         结果分类与共享证据规则
-results/library-tests/    83-target API 与正确性证据
-results/workloads/        八个命令行 workload 的结果
-results/games/            游戏帧率与可玩性结果
-results/microbenchmarks/  调用、callback 与机制开销结果
-results/source-analysis/  函数、覆盖率与修改量统计
+rover2024/
+├── eurosys-lorelei-artifacts/
+├── lorelei-ae/build/install/
+└── qemu-ae/build/qemu-x86_64
 ```
 
-不要提交：
+首次使用时初始化仓库内的 vcpkg：
 
-- 生成的构建树
-- 编译器缓存
-- 安装前缀
-- 下载的源码归档
-- 临时文件
+```bash
+./vcpkg/bootstrap-vcpkg.sh -disableMetrics
+```
 
-### 证据要求
+依次运行已经验证的 library 集合：
 
-每项报告结果必须在 `results/` 下对应的论文结论分组中拥有独立且自包含的目录。只有目录记录了以下信息，结果才能作为论文证据：
+```bash
+./evaluations/1-libs/run-all.sh --verbose
+```
 
-- 日期与稳定的实验标识符
-- 机器硬件、操作系统、内核、CPU 策略和相关设备状态
-- 源码仓库 URL、准确 Git revision、release 版本和本地补丁哈希
-- 编译器、构建系统、构建选项和依赖版本
-- 完整命令行和全部相关环境变量
-- 输入的身份、大小、来源和校验和
-- 未编辑的原始 stdout、stderr、退出状态和计时观测
-- 从原始观测派生的机器可读汇总
-- 生成每项聚合数值所使用的分析命令或脚本
+批处理遇到失败库后仍会继续。再次执行同一命令会跳过成功配方，并重试失败或中断的配方。`--restart` 会归档 controller 状态并重新开始所选集合。`--all` 除了带有 `[ALL TESTS PASSED]` 标记的配方，还会纳入存在明确排除项的配方。
 
-性能证据必须满足以下要求：
+单独运行一个 library：
 
-- 至少记录五次重复，除非实验说明规定了更严格的协议
-- 报告中位数以及离散程度或范围
-- 记录预热策略、超时策略和系统负载检查
-- 保留失败、中断和排除的运行，并记录原因
+```bash
+./evaluations/1-libs/sdl2/run.sh --verbose
+```
 
-正确性证据按认领范围判断。支持声明必须覆盖直通边界中与评测相关的部分：
+所有公开配方都从 `LORELEI_DEVKIT` 读取 devkit。默认值是相对于本仓库解析的 `../lorelei-ae/build/install`，不再接受 devkit 位置参数。patched emulator 默认是 `../qemu-ae/build/qemu-x86_64`，可通过 `QEMU` 覆盖：
 
-- 选定的公开 API
-- ABI 与数据转换
-- callback
-- variadic call
-- allocator ownership
-- 评测 workload 使用的代表性 C 控制流
+```bash
+LORELEI_DEVKIT=/absolute/path/to/devkit \
+QEMU=/absolute/path/to/qemu-x86_64 \
+  ./evaluations/1-libs/sdl2/run.sh --verbose
+```
 
-artifact 不声称所有上游测试类别都能通过。target 支持声明之外的类别可以包括：
+支持 `--install-only` 的 library 配方可只准备 vcpkg package 和机制文件，不运行测试。`--reference` 仅用于生成作者侧参考证据。
 
-- fuzz 与 sanitizer 测试
-- 压力与长时间测试
-- 并发与信号行为
-- 私有 ABI 测试
-- 平台与设备集成测试
+## 仓库布局
 
-报告一个 target 通过之前，必须定义：
+1. [`evaluations/1-libs/`](evaluations/1-libs/) 保存安装式上游 library 测试，以及 native 与 Hecate 的正确性对照。
+2. [`evaluations/2-cli-benchmarks/`](evaluations/2-cli-benchmarks/) 预留给八个命令行性能 workload。
+3. [`evaluations/3-breakdown/`](evaluations/3-breakdown/) 保存调用、callback、emulator 和机制开销拆分。
+4. [`evaluations/4-games/`](evaluations/4-games/) 保存游戏 preflight、可玩性和帧率配方。
+5. [`vcpkg-overlay/`](vcpkg-overlay/) 保存固定版本的 port、经过审查的 patch、Lorelei metadata，以及 native 和 guest triplet。
+6. `vcpkg/` 是仓库内的 package manager 和共享源码归档缓存。
+7. `.work/evaluations/` 保存可复用的 package、build、install 和生成机制状态，不属于证据。
 
-- 测试的 API 范围
-- 评测 workload
-- 覆盖的边界机制
-- 纳入和未纳入的上游测试
-- 每项重要排除的原因
+每个 library port 都把当前配置中的全部上游测试安装到 `tools/<port>/upstream-tests`。`run.sh` 只从安装完成的 native 和 guest prefix 执行该上游测试套件，不在安装后重新从 source tree 构建上游测试。library evaluation 使用两条对称 lane：
 
-对应证据应包括：
+1. native AArch64
+2. x86-64 通过 Hecate，需使用 HLR 的 library 同时采用 TLC 与 HLR
 
-- 确定性的算法测试
-- 代表性的公开 API 路径
-- 与认领范围相关的边界机制测试
-- 在可行情况下与 native 参考结果比较输出
+artifact 永远不运行纯 QEMU full-emulation 对照 lane。
 
-可以使用完整上游测试套件，也可以使用有明确记录的子集。如果未纳入的测试覆盖 artifact 声明边界之外的行为，或者不适合可重复的 AE 执行，则允许使用子集。
+## 结果与声明
 
-以下内容单独存在时不足以作为证据：
+评审者生成的证据就近保存在配方的 `results/<run-id>/`。作者生成的证据保存在 `reference-results/<run-id>/`。结果目录按适用情况保存原始日志、命令、环境身份、源码与 patch 审计、配置代码行数、测试分类和机器可读汇总。
 
-- smoke test
-- 构建成功
-- 生成的 thunk 数量
+只有当前配置中所有未排除的上游测试都在 native 与 Hecate lane 通过时，library README 第一行才会带有 `[ALL TESTS PASSED]`。排除项必须明确记录。常见范围外类别包括原子操作与锁、signal、设备集成、fuzz、sanitizer、private ABI 测试和不适合 AE 的压力测试。仅仅构建成功或生成 thunk 数量不能作为正确性证据。
 
-按以下流程处理不支持或失败的测试：
+## 可复现契约
 
-1. 保留观测到的失败及其执行环境。
-2. 按机制对失败分类。
-3. 判断失败路径是否属于明确声明的支持范围。
-4. 如果认领的直通路径失败，则将其视为 target 失败。
-5. 记录范围外失败，但不因此自动否定 target。
+1. 配方固定上游 release 或 commit，并验证下载归档。
+2. vcpkg 负责源码获取、patch、编译和安装。
+3. 所有 port 共享 `vcpkg/downloads`，每个 library 的 build 和 install root 仍隔离在 `.work/evaluations` 下。
+4. 脚本根据自身位置解析仓库文件，可从任意当前目录启动。
+5. 测试失败和中断运行保持可见，替代运行创建新的结果目录。
+6. 性能实验保留原始样本、输入身份、环境状态和聚合结果推导命令。
+7. 生成的 build tree、install prefix、下载归档、凭据、专有输入和临时文件不提交。
 
-每项结论必须明确使用了哪些执行 lane。当前 SDL2 工作使用 native 和 Hecate lane，不要求纯 QEMU 对照 lane。
-
-原始证据经过审查后只允许追加：
-
-- 替代运行应创建新的结果目录
-- 更正应使用明确标识的 amendment
-- 不得静默改写已经支撑论文结论的日志或测量数据
-
-### 可复现性规则
-
-- 优先使用非交互脚本，脚本遇到错误时应失败，并打印其执行的命令。
-- 尽可能固定正式发布的源码版本，即使使用 tag 也要记录完整 commit hash。
-- 使用 SHA-256 校验下载的输入与归档。
-- 从源码构建被测库，不依赖未记录的系统软件包。
-- 分开保存不同架构的构建树与安装树。
-- 检测实际加载的 guest、host、GTL、HTL、runtime extension 和依赖共享库。
-- 原始证据及其推导过程提交到本仓库之前，不得更新论文数字。
-- 按测试配置、公开 API 范围、边界机制和 workload 定义支持范围。
-- 区分直通机制失败与不支持的上游子系统或测试基础设施失败。
-- 只有完整适用测试套件确实运行并通过时，才能声称完整的上游兼容性。
-
-### 可移植性与安全
-
-提交的脚本不得依赖：
-
-- 贡献者的 home 目录
-- 机器名
-- 凭据或访问令牌
-- 代理地址
-- 其他私有机器状态
-
-机器本地路径应通过被忽略的本地配置或命令行参数传入。绝不提交：
-
-- secret 或私钥
-- 访问令牌
-- core dump
-- 专有输入
-
-安全要求如下：
-
-- 破坏性清理只能作用于经过验证的 artifact 构建目录或临时目录
-- 不得覆盖无关的源码 checkout
-- 不得覆盖未提交的工作
-
-### 贡献规则
-
-贡献必须遵守以下规则：
-
-- 规范版本的公开文档、脚本、元数据 key 和注释使用英文，`README.zh-CN.md` 等指定译文应与英文版保持同步
-- 文件名一旦被说明或结果引用就保持稳定
-- 提交前对照原始输入审查生成的汇总
-- 使用简短且基于事实的提交信息
-- 不添加自动生成的 authorship trailer
-
-artifact 准备期间，本仓库可以处于未完成状态。只有本仓库包含以下内容后，一项功能、库或结果才对评审者可用：
-
-- 公开说明
-- 全部必需文件
-- 验证证据
-
-## 当前工作
-
-- Target：SDL2 2.28.5
-- 上游 commit：`15ead9a40d09a1eb9972215cceac2bf29c9b77f6`
-- 执行 lane：native 和 Hecate
-- Backend 范围：SDL dummy backend
-- 目标：运行 HLR 路径，并按照本契约保存构建、rewrite 和测试证据
+公共配方契约见 [`evaluations/README.md`](evaluations/README.md)。每项评测的范围和命令见对应 evaluation 目录。

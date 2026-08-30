@@ -1,11 +1,13 @@
 # libX11 1.8.7
 
+Public commands use the sibling `../lorelei-ae/build/install` devkit by default. Set `LORELEI_DEVKIT=/absolute/path/to/devkit` to override it.
+
 This recipe builds the pinned Ubuntu 24.04 libX11 source as native AArch64, x86-64 guest, and HLR-rewritten AArch64 packages. The directed X11 test checks non-variadic keysym and Xrm calls, opens the active X11 display, and exercises resource-name variadic calls for XIM and XIC objects.
 
 Run it with:
 
 ```bash
-QEMU=/path/to/qemu-x86_64 GUI_ENV=/path/to/spark-gui-env.txt ./run.sh --reference /path/to/lorelei-devkit
+QEMU=/path/to/qemu-x86_64 GUI_ENV=/path/to/spark-gui-env.txt ./run.sh --reference
 ```
 
 - `--install-only` installs and audits all three packages and generates the TLC thunk without requiring an active X11 session.

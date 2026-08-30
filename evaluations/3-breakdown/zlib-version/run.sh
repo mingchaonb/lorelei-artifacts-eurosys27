@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-target_dir=$(cd "$(dirname "$0")" && pwd)
+target_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 repo_root=$(cd "$target_dir/../../.." && pwd)
-devkit=${1:-$repo_root/../lorelei-ae/build/install}
+[[ $# == 0 ]] || { echo "Unexpected positional argument: $1" >&2; exit 2; }
+devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/../lorelei-ae/build/install}")
 qemu=${QEMU:-$repo_root/../qemu-ae/build/qemu-x86_64}
 iterations=${ITERATIONS:-1000000}
 rounds=${ROUNDS:-5}

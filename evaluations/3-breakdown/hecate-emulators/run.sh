@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-target_dir=$(cd "$(dirname "$0")" && pwd)
+target_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 repo_root=$(cd "$target_dir/../../.." && pwd)
 rover_root=$(cd "$repo_root/.." && pwd)
-devkit=${1:-$rover_root/lorelei-ae/build/install}
+[[ $# == 0 ]] || { echo "Unexpected positional argument: $1" >&2; exit 2; }
+devkit=$(realpath -m "${LORELEI_DEVKIT:-$rover_root/lorelei-ae/build/install}")
 blink=${BLINK:-$rover_root/blink-ae/o/rel/blink/blink}
 box64=${BOX64:-$rover_root/box64-ae/build-ae/box64}
 fex=${FEX:-$rover_root/FEX-ae/build-ae-clang/Bin/FEX}

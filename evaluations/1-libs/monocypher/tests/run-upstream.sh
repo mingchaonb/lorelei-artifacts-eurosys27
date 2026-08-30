@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
-: "${DEVKIT:?}"
+: "${LORELEI_DEVKIT:?}"
 : "${QEMU:?}"
 : "${WORK:?}"
 : "${NATIVE_PREFIX:?}" "${GUEST_PREFIX:?}"
-devkit=$DEVKIT
+devkit=$LORELEI_DEVKIT
 qemu=$QEMU
 work=$WORK
 guest_sysroot=$devkit/x86_64/sysroot

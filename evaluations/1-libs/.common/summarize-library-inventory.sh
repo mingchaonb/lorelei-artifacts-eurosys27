@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-script_dir=$(cd "$(dirname "$0")" && pwd)
+script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 repo_root=$(cd "$script_dir/../../.." && pwd)
 work_root=$repo_root/.work/evaluations
 excluded=(breakdown-test)

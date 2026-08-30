@@ -8,8 +8,8 @@ The vcpkg port builds `test_shared` and installs it under `tools/rhash/upstream-
 
 The pre-cleanup validation passed the installed upstream test in both lanes with the identical output `All sums are working properly!`. There are no configured test failures or skips. OpenSSL integration, gettext, the CLI, and the static library are disabled in the shared-library configuration.
 
-The runner accepts one devkit path. `--install-only` stops after both packages are installed and audited. `--reference` writes append-only reference evidence. `--verbose` streams vcpkg preparation while preserving raw logs. No pure QEMU lane is provided.
+The runner reads the devkit from `LORELEI_DEVKIT`, defaulting to `../lorelei-ae/build/install` relative to the artifact repository. `--install-only` stops after both packages are installed and audited. `--reference` writes append-only reference evidence. `--verbose` streams vcpkg preparation while preserving raw logs. No pure QEMU lane is provided.
 
 ```bash
-./run.sh --reference /path/to/lorelei-devkit
+./run.sh --reference
 ```

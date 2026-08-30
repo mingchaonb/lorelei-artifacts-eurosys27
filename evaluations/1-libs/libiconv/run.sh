@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-recipe_dir=$(cd "$(dirname "$0")" && pwd)
+recipe_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 repo_root=$(cd "$recipe_dir/../../.." && pwd)
 overlay_dir=$repo_root/vcpkg-overlay
 devkit=
@@ -13,16 +13,14 @@ while (($#)); do
     --reference) reference=true ;;
     --install-only) install_only=true ;;
     --verbose) verbose=true ;;
-    -h|--help) echo "Usage: $0 [--reference] [--install-only] [--verbose] /path/to/lorelei-devkit"; exit 0 ;;
+    -h|--help) echo "Usage: $0 [--reference] [--install-only] [--verbose]"; exit 0 ;;
     --*) echo "Unknown option: $1" >&2; exit 2 ;;
-    *) positional+=("$1") ;;
+    *) echo "Unexpected positional argument: $1" >&2; exit 2 ;;
   esac
   shift
 done
-[[ ${#positional[@]} == 1 ]] || { echo "Expected one devkit path" >&2; exit 2; }
-devkit=$(realpath "${positional[0]}")
-default_qemu=$devkit/bin/qemu-x86_64
-[[ -x $default_qemu || ! -x $devkit/../../../qemu-ae/build/qemu-x86_64 ]] || default_qemu=$devkit/../../../qemu-ae/build/qemu-x86_64
+devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/../lorelei-ae/build/install}")
+default_qemu=$repo_root/../qemu-ae/build/qemu-x86_64
 qemu=$(realpath -m "${QEMU:-$default_qemu}")
 vcpkg=$repo_root/vcpkg/vcpkg
 nm_tool=$(command -v llvm-nm-20 || command -v llvm-nm || command -v nm)
@@ -160,7 +158,7 @@ for lane in native hecate; do
   if [[ $lane == native ]]; then
     (cd "$runtime/tests" && env LC_ALL=C LD_LIBRARY_PATH="$native_prefix/lib" make -j1 check CC=false) >"$output" 2>&1
   else
-    (cd "$runtime/tests" && env LC_ALL=C QEMU="$qemu" DEVKIT="$devkit" QEMU_WRAPPER="$recipe_dir/upstream/QEMUWrapper.sh" LORE_AE_HECATE=1 HOST_LIB_DIR="$hecate_prefix/lib" THUNK_DIR="$work/thunks/iconv" ERRNO_SHIM_DIR="$errno_thunk" METADATA_SO="$work/thunks/guest-metadata.so" GUEST_LIB_DIR="$guest_prefix/lib" HOST_LOCALE_SO="$work/thunks/host-locale-shim.so" make -j1 check CC=false) >"$output" 2>&1
+    (cd "$runtime/tests" && env LC_ALL=C QEMU="$qemu" LORELEI_DEVKIT="$devkit" QEMU_WRAPPER="$recipe_dir/upstream/QEMUWrapper.sh" LORE_AE_HECATE=1 HOST_LIB_DIR="$hecate_prefix/lib" THUNK_DIR="$work/thunks/iconv" ERRNO_SHIM_DIR="$errno_thunk" METADATA_SO="$work/thunks/guest-metadata.so" GUEST_LIB_DIR="$guest_prefix/lib" HOST_LOCALE_SO="$work/thunks/host-locale-shim.so" make -j1 check CC=false) >"$output" 2>&1
   fi
   printf 'RUN complete make check\nPASS complete make check\n' >"$run_dir/logs/$lane/upstream-status.log"
 done

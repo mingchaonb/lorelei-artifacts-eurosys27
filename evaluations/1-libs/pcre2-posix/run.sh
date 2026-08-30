@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-recipe_dir=$(cd "$(dirname "$0")" && pwd)
+recipe_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 repo_root=$(cd "$recipe_dir/../../.." && pwd)
 overlay_dir=$repo_root/vcpkg-overlay
 devkit=
@@ -13,16 +13,14 @@ while (($#)); do
     --reference) reference=true ;;
     --install-only) install_only=true ;;
     --verbose) verbose=true ;;
-    -h|--help) echo "Usage: $0 [--reference] [--install-only] [--verbose] /path/to/lorelei-devkit"; exit 0 ;;
+    -h|--help) echo "Usage: $0 [--reference] [--install-only] [--verbose]"; exit 0 ;;
     --*) echo "Unknown option: $1" >&2; exit 2 ;;
-    *) positional+=("$1") ;;
+    *) echo "Unexpected positional argument: $1" >&2; exit 2 ;;
   esac
   shift
 done
-[[ ${#positional[@]} == 1 ]] || { echo "Expected one devkit path" >&2; exit 2; }
-devkit=$(realpath "${positional[0]}")
-default_qemu=$devkit/bin/qemu-x86_64
-[[ -x $default_qemu || ! -x $devkit/../../../qemu-ae/build/qemu-x86_64 ]] || default_qemu=$devkit/../../../qemu-ae/build/qemu-x86_64
+devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/../lorelei-ae/build/install}")
+default_qemu=$repo_root/../qemu-ae/build/qemu-x86_64
 qemu=$(realpath -m "${QEMU:-$default_qemu}")
 vcpkg=$repo_root/vcpkg/vcpkg
 nm_tool=$(command -v llvm-nm-20 || command -v llvm-nm || command -v nm)
