@@ -1,0 +1,41 @@
+--- a/tests/test-IdnaTest-txt.c
++++ b/tests/test-IdnaTest-txt.c
+@@ -67,8 +67,7 @@ _scan_file (const char *fname, int (*scan) (char *))
+ {
+   FILE *fp = fopen (fname, "r");
+-  char *buf = NULL, *linep;
+-  size_t bufsize = 0;
+-  ssize_t buflen;
++  char buf[65536], *linep;
++  size_t buflen;
+   int ret = 0;
+ 
+   printf ("Scanning file: %s\n", fname);
+@@ -80,8 +79,10 @@ _scan_file (const char *fname, int (*scan) (char *))
+       return -1;
+     }
+ 
+-  while ((buflen = getline (&buf, &bufsize, fp)) >= 0)
++  /* Keep FILE consumption and line storage on supported libc-shim paths. */
++  while (fgets (buf, sizeof (buf), fp) != NULL)
+     {
++      buflen = strlen (buf);
+       linep = buf;
+ 
+       while (isspace (*linep))
+@@ -88,6 +89,6 @@ _scan_file (const char *fname, int (*scan) (char *))
+ 
+       // strip off \r\n
+-      while (buflen > 0 && (buf[buflen] == '\n' || buf[buflen] == '\r'))
++      while (buflen > 0 && (buf[buflen - 1] == '\n' || buf[buflen - 1] == '\r'))
+ 	buf[--buflen] = 0;
+ 
+       if (!*linep || *linep == '#')
+@@ -98,7 +99,6 @@ _scan_file (const char *fname, int (*scan) (char *))
+ 	break;
+     }
+ 
+-  free (buf);
+   fclose (fp);
+ 
+   return ret;

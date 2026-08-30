@@ -127,6 +127,17 @@ for pattern in "${patterns[@]}"; do
 done
 host_path=$(IFS=:; echo "${thunk_host[*]}")
 guest_path=$(IFS=:; echo "${thunk_guest[*]}")
+libc_shim=$work/thunks/libc-shim
+host_libc=$(cc -print-file-name=libc.so.6)
+run_logged "$run_dir/logs/preparation/thunk-libc-shim.log" "$devkit/bin/LoreMakeThunk.py" \
+  --name c-shim --out "$libc_shim" --lib "$host_libc" --soname libc-shim.so \
+  --symbols "$repo_root/evaluations/common/libc-shim/Symbols.conf" \
+  --desc "$repo_root/evaluations/common/libc-shim/Desc.h" \
+  --manifest-host "$repo_root/evaluations/common/libc-shim/Manifest_host.cpp" \
+  --manifest-guest "$repo_root/evaluations/common/libc-shim/Manifest_guest.cpp" \
+  --devkit "$devkit" --keep-intermediates -- \
+  -D_GNU_SOURCE -I"$repo_root/evaluations/common/include"
+cmake -E create_symlink "$host_libc" "$libc_shim/libc-shim.so"
 run_upstream_suite() {
   local lane=$1 suite=$2 prefix=$3 passed=0 failed=0 name status
   local -a unit_tests=(test_bcj_exact_size test_block_header test_check test_filter_flags test_filter_str test_hardware test_index_hash test_lzip_decoder test_memlimit test_stream_flags test_vli test_microlzma)
@@ -135,7 +146,7 @@ run_upstream_suite() {
     if [[ $lane == native ]]; then
       env LD_LIBRARY_PATH="$prefix/lib" srcdir="$suite/source" "$suite/tests_bin/$name" >"$run_dir/logs/$lane/$name.log" 2>&1
     else
-      env QEMU="$qemu" DEVKIT="$devkit" LORE_AE_HECATE=1 HOST_LIB_DIR="$hecate_prefix/lib" THUNK_DIR="$work/thunks/lzma" GUEST_LIB_DIR="$guest_prefix/lib" srcdir="$suite/source" "$qemu_wrapper" "$suite/tests_bin/$name" >"$run_dir/logs/$lane/$name.log" 2>&1
+      env QEMU="$qemu" DEVKIT="$devkit" LORE_AE_HECATE=1 HOST_LIB_DIR="$hecate_prefix/lib" THUNK_DIR="$work/thunks/lzma" LIBC_SHIM_DIR="$libc_shim" GUEST_LIB_DIR="$guest_prefix/lib" srcdir="$suite/source" "$qemu_wrapper" "$suite/tests_bin/$name" >"$run_dir/logs/$lane/$name.log" 2>&1
     fi
     status=$?
     set -e
@@ -148,7 +159,7 @@ run_upstream_suite() {
     if [[ $lane == native ]]; then
       env LD_LIBRARY_PATH="$prefix/lib" srcdir="$suite/source" "$suite/tests_bin/test_index" "$index_case" >"$run_dir/logs/$lane/test_index-$index_case.log" 2>&1
     else
-      env QEMU="$qemu" DEVKIT="$devkit" LORE_AE_HECATE=1 HOST_LIB_DIR="$hecate_prefix/lib" THUNK_DIR="$work/thunks/lzma" GUEST_LIB_DIR="$guest_prefix/lib" srcdir="$suite/source" "$qemu_wrapper" "$suite/tests_bin/test_index" "$index_case" >"$run_dir/logs/$lane/test_index-$index_case.log" 2>&1
+      env QEMU="$qemu" DEVKIT="$devkit" LORE_AE_HECATE=1 HOST_LIB_DIR="$hecate_prefix/lib" THUNK_DIR="$work/thunks/lzma" LIBC_SHIM_DIR="$libc_shim" GUEST_LIB_DIR="$guest_prefix/lib" srcdir="$suite/source" "$qemu_wrapper" "$suite/tests_bin/test_index" "$index_case" >"$run_dir/logs/$lane/test_index-$index_case.log" 2>&1
     fi
     status=$?
     set -e
@@ -157,7 +168,7 @@ run_upstream_suite() {
   if [[ $index_failed == 0 ]]; then passed=$((passed + 1)); else failed=$((failed + 1)); fi
   export QEMU="$qemu" DEVKIT="$devkit" QEMU_WRAPPER="$qemu_wrapper" LORE_AE_HECATE=0 GUEST_LIB_DIR="$guest_prefix/lib"
   if [[ $lane == hecate ]]; then
-    export LORE_AE_HECATE=1 HOST_LIB_DIR="$hecate_prefix/lib" THUNK_DIR="$work/thunks/lzma"
+    export LORE_AE_HECATE=1 HOST_LIB_DIR="$hecate_prefix/lib" THUNK_DIR="$work/thunks/lzma" LIBC_SHIM_DIR="$libc_shim"
   fi
   local -a script_names=(test_scripts.sh test_suffix.sh test_compress_generated_abc test_compress_generated_text test_compress_generated_random test_files.sh)
   local -a script_dirs=(test_scripts test_suffix test_compress test_compress test_compress test_files)

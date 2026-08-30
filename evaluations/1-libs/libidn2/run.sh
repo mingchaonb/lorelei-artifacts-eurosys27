@@ -106,6 +106,17 @@ done
 host_path=$(IFS=:; echo "${thunk_host[*]}")
 guest_path=$(IFS=:; echo "${thunk_guest[*]}")
 run_logged "$run_dir/logs/preparation/host-locale-shim.log" cc -shared -fPIC "$recipe_dir/upstream/HostLocaleShim.c" -o "$work/thunks/host-locale-shim.so" -ldl
+libc_shim=$work/thunks/libc-shim
+host_libc=$(cc -print-file-name=libc.so.6)
+run_logged "$run_dir/logs/preparation/thunk-libc-shim.log" "$devkit/bin/LoreMakeThunk.py" \
+  --name c-shim --out "$libc_shim" --lib "$host_libc" --soname libc-shim.so \
+  --symbols "$repo_root/evaluations/common/libc-shim/Symbols.conf" \
+  --desc "$repo_root/evaluations/common/libc-shim/Desc.h" \
+  --manifest-host "$repo_root/evaluations/common/libc-shim/Manifest_host.cpp" \
+  --manifest-guest "$repo_root/evaluations/common/libc-shim/Manifest_guest.cpp" \
+  --devkit "$devkit" --keep-intermediates -- \
+  -D_GNU_SOURCE -I"$repo_root/evaluations/common/include"
+cmake -E create_symlink "$host_libc" "$libc_shim/libc-shim.so"
 native_status=0
 hecate_status=0
 python3 - "$run_dir/summary.json" "$native_status" "$hecate_status" "$index" <<'PY'
@@ -129,7 +140,7 @@ for lane in native hecate; do
     if [[ $lane == native ]]; then
       (cd "$data_dir" && env LC_ALL=C.UTF-8 LD_LIBRARY_PATH="$native_prefix/lib" "$suite/bin/$test_name") >>"$output" 2>&1
     else
-      (cd "$data_dir" && env LC_ALL=C.UTF-8 LD_PRELOAD="$work/thunks/host-locale-shim.so" LD_LIBRARY_PATH="$devkit/lib:$hecate_prefix/lib:$host_path" "$qemu" -L "$devkit/x86_64/sysroot" -U LD_PRELOAD -E LD_BIND_NOW=1 -E "LD_LIBRARY_PATH=$devkit/x86_64/lib:$guest_path" "$suite/bin/$test_name") >>"$output" 2>&1
+      (cd "$data_dir" && env LC_ALL=C.UTF-8 LD_PRELOAD="$work/thunks/host-locale-shim.so" LD_LIBRARY_PATH="$devkit/lib:$hecate_prefix/lib:$host_path:$libc_shim" "$qemu" -L "$devkit/x86_64/sysroot" -U LD_PRELOAD -E LD_BIND_NOW=1 -E "LD_PRELOAD=$libc_shim/x86_64/libc-shim.so" -E "LD_LIBRARY_PATH=$devkit/x86_64/lib:$guest_path:$libc_shim/x86_64" "$suite/bin/$test_name") >>"$output" 2>&1
     fi
     echo "PASS $test_name" >>"$output"
   done
@@ -139,9 +150,9 @@ for lane in native hecate; do
   else
     runtime=$work/upstream/$lane
     mkdir -p "$runtime"
-    printf '%s\n' '#!/usr/bin/env bash' 'exec env LC_ALL=C.UTF-8 LD_PRELOAD="$LORE_LOCALE_SO" LD_LIBRARY_PATH="$LORE_HOST_PATH" "$LORE_QEMU" -L "$LORE_SYSROOT" -U LD_PRELOAD -E LD_BIND_NOW=1 -E "LD_LIBRARY_PATH=$LORE_GUEST_PATH" "$LORE_IDN2" "$@"' >"$runtime/idn2"
+    printf '%s\n' '#!/usr/bin/env bash' 'exec env LC_ALL=C.UTF-8 LD_PRELOAD="$LORE_LOCALE_SO" LD_LIBRARY_PATH="$LORE_HOST_PATH:$LORE_LIBC_SHIM" "$LORE_QEMU" -L "$LORE_SYSROOT" -U LD_PRELOAD -E LD_BIND_NOW=1 -E "LD_PRELOAD=$LORE_LIBC_SHIM/x86_64/libc-shim.so" -E "LD_LIBRARY_PATH=$LORE_GUEST_PATH:$LORE_LIBC_SHIM/x86_64" "$LORE_IDN2" "$@"' >"$runtime/idn2"
     chmod +x "$runtime/idn2"
-    (cd "$suite/data/tests" && env IDN2="$runtime/idn2" LORE_LOCALE_SO="$work/thunks/host-locale-shim.so" LORE_HOST_PATH="$devkit/lib:$hecate_prefix/lib:$host_path" LORE_QEMU="$qemu" LORE_SYSROOT="$devkit/x86_64/sysroot" LORE_GUEST_PATH="$devkit/x86_64/lib:$guest_path" LORE_IDN2="$suite/bin/idn2" sh ./test-idn2.sh) >>"$output" 2>&1
+    (cd "$suite/data/tests" && env IDN2="$runtime/idn2" LORE_LOCALE_SO="$work/thunks/host-locale-shim.so" LORE_LIBC_SHIM="$libc_shim" LORE_HOST_PATH="$devkit/lib:$hecate_prefix/lib:$host_path" LORE_QEMU="$qemu" LORE_SYSROOT="$devkit/x86_64/sysroot" LORE_GUEST_PATH="$devkit/x86_64/lib:$guest_path" LORE_IDN2="$suite/bin/idn2" sh ./test-idn2.sh) >>"$output" 2>&1
   fi
   echo "PASS test-idn2.sh" >>"$output"
   grep -E '^(RUN|PASS) ' "$output" >"$run_dir/logs/$lane/upstream-status.log"

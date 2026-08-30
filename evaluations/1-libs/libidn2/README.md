@@ -12,4 +12,4 @@ This recipe fetches the official GNU Libidn2 2.3.8 release through the pinned vc
 
 ## Upstream test scope
 
-The build uses bundled libunistring. The vcpkg port installs all 15 configured upstream tests, including the CLI script and three fuzz-harness executables, under `tools/libidn2/upstream-tests`. The self-contained `run.sh` executes the installed suite in symmetric native and Hecate lanes without a source-tree rebuild or pure-QEMU lane. Documentation and NLS remain excluded.
+The build uses bundled libunistring. The vcpkg port installs all 15 configured upstream tests, including the CLI script and three fuzz-harness executables, under `tools/libidn2/upstream-tests`. Hecate loads the shared allocator libc shim so buffers returned by the host library are released on the same heap. A test-only port patch replaces `getline(FILE *)` in `test-IdnaTest-txt` with an equivalent bounded `fgets` loop because `getline` is outside that shim's supported stdio surface. The self-contained `run.sh` executes the installed suite in symmetric native and Hecate lanes without a source-tree rebuild or pure-QEMU lane. Documentation and NLS remain excluded.
