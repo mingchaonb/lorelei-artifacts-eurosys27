@@ -36,10 +36,9 @@ run_dir=$recipe_dir/$kind/$run_id
 work=$repo_root/.work/evaluations/rhash
 [[ ! -e $run_dir ]] || { echo "Evidence exists: $run_dir" >&2; exit 2; }
 if [[ -e $work && ! -f $work/.lorelei-evaluations-workspace ]]; then
-    echo "Refusing to replace unmarked work directory: $work" >&2
+    echo "Refusing to reuse unmarked work directory: $work" >&2
     exit 2
 fi
-if [[ -e $work ]]; then cmake -E remove_directory "$work"; fi
 mkdir -p "$run_dir/logs/preparation" "$run_dir/generated" "$work"
 touch "$work/.lorelei-evaluations-workspace"
 exec > >(tee "$run_dir/commands.log") 2>&1
@@ -66,6 +65,7 @@ pathlib.Path(sys.argv[2]).write_text(json.dumps(summary, indent=2, sort_keys=Tru
 PY
 if ! $install_only; then
     upstream=$work/upstream
+    cmake -E remove_directory "$upstream"
     native_prefix=$work/installed/native/arm64-linux-ae
     guest_prefix=$work/installed/guest/x64-linux-ae
     bench=$overlay/ports/rhash/lorelei
