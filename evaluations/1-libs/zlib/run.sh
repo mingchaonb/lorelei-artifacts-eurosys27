@@ -24,8 +24,8 @@ devkit=$(realpath "${positional[0]}")
 qemu=$(realpath -m "${QEMU:-$repo_root/../qemu-ae/build/qemu-x86_64}")
 vcpkg=$repo_root/vcpkg/vcpkg
 nm_tool=$(command -v llvm-nm-20 || command -v llvm-nm || command -v nm)
-work=$repo_root/.work/evaluations/zlib
-vcpkg_state=$repo_root/.work/evaluations/vcpkg-state
+state=$repo_root/.work/evaluations/zlib
+work=$state/run
 results_root=$recipe_dir/results
 kind=evaluator
 if $reference; then results_root=$recipe_dir/reference-results; kind=reference; fi
@@ -36,10 +36,10 @@ for path in bin/LoreMakeThunk.py bin/x86_64-linux-gnu-clang x86_64/sysroot; do
   [[ -e $devkit/$path ]] || { echo "Missing devkit entry: $devkit/$path" >&2; exit 2; }
 done
 if ! $install_only; then [[ -x $qemu ]] || { echo "Patched QEMU not found: $qemu" >&2; exit 2; }; fi
-if [[ -e $work && ! -f $work/.lorelei-evaluations-workspace ]]; then echo "Refusing unmarked work directory: $work" >&2; exit 2; fi
+if [[ -e $state && ! -f $state/.lorelei-evaluations-workspace ]]; then echo "Refusing unmarked work directory: $state" >&2; exit 2; fi
 if [[ -e $work ]]; then cmake -E remove_directory "$work"; fi
-mkdir -p "$work" "$vcpkg_state" "$run_dir"/{generated,logs/preparation,logs/native,logs/hecate}
-touch "$work/.lorelei-evaluations-workspace"
+mkdir -p "$state" "$work" "$run_dir"/{generated,logs/preparation,logs/native,logs/hecate}
+touch "$state/.lorelei-evaluations-workspace"
 if ! $install_only && [[ -n ${PLUGIN:-} ]]; then
   plugin=$(realpath "$PLUGIN")
   qemu_binary=$qemu
@@ -67,18 +67,18 @@ export LORELEI_DEVKIT=$devkit
 export VCPKG_MAX_CONCURRENCY=$(nproc)
 install_lane() {
   local lane=$1 triplet=$2
-  run_logged "$run_dir/logs/preparation/vcpkg-$lane.log" "$vcpkg" install "zlib:$triplet" --overlay-ports="$overlay_dir/ports" --overlay-triplets="$overlay_dir/triplets" --x-install-root="$vcpkg_state/installed/$lane" --x-buildtrees-root="$vcpkg_state/vcpkg/$lane/buildtrees" --x-packages-root="$vcpkg_state/vcpkg/$lane/packages" --downloads-root="$vcpkg_state/vcpkg/downloads" --triplet="$triplet"
+  run_logged "$run_dir/logs/preparation/vcpkg-$lane.log" "$vcpkg" install "zlib:$triplet" --overlay-ports="$overlay_dir/ports" --overlay-triplets="$overlay_dir/triplets" --x-install-root="$state/installed/$lane" --x-buildtrees-root="$state/vcpkg/$lane/buildtrees" --x-packages-root="$state/vcpkg/$lane/packages" --downloads-root="$state/vcpkg/downloads" --triplet="$triplet"
 }
 if ! $install_only; then install_lane native arm64-linux-ae; install_lane guest x64-linux-ae; fi
 install_lane hecate arm64-linux-ae
-hecate_prefix=$vcpkg_state/installed/hecate/arm64-linux-ae
+hecate_prefix=$state/installed/hecate/arm64-linux-ae
 mkdir -p "$work/thunks" "$run_dir/generated/elf"
 if $install_only; then
   printf '{"schema_version":2,"package":"zlib","status":"installed","mode":"install-only","tests_run":false}\n' >"$run_dir/summary.json"
   exit 0
 fi
-native_prefix=$vcpkg_state/installed/native/arm64-linux-ae
-guest_prefix=$vcpkg_state/installed/guest/x64-linux-ae
+native_prefix=$state/installed/native/arm64-linux-ae
+guest_prefix=$state/installed/guest/x64-linux-ae
 upstream_tests=(zlib_example zlib_example64 minigzip)
 registered_tests=(zlib_example zlib_example64)
 native_upstream=$native_prefix/tools/zlib/upstream-tests
