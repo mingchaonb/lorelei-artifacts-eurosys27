@@ -1,71 +1,131 @@
-# Reproducible evaluations
+# Evaluation guide
 
 [中文版](README.zh-CN.md)
 
-`evaluations` contains evaluator-facing recipes organized by the claims they support. Each recipe owns its reproducible command, reviewed inputs, raw evidence, and machine-readable summary.
+`evaluations/` is the public entry point for Artifact Evaluation. It organizes reproduction recipes by paper claim and does not expose development plans or migration history.
 
-## Evaluation groups
+## 1. Evaluation groups
 
-1. `1-libs` validates selected library APIs and boundary mechanisms.
-2. `2-cli-benchmarks` measures the eight command-line workloads reported by the paper.
-3. `3-breakdown` measures individual call, callback, and mechanism costs.
-4. `4-games` measures game performance and playability.
+1. [Library correctness](1-libs/README.md)
+   - Validates the public C ABI and boundary mechanisms of 79 library packages.
+   - Compares native AArch64 with Hecate x86-64.
+   - Does not run a pure QEMU full-emulation lane.
+2. [Command-line performance](2-cli-benchmarks/README.md)
+   - Reproduces the paper's 8 command-line workloads.
+   - Compares native, 4 pure emulators, and 4 Hecate-integrated paths.
+3. [Mechanism breakdown](3-breakdown/README.md)
+   - Measures individual calls, callback address-origin recognition, and Hecate emulator integration.
+4. [Game evaluation](4-games/README.md)
+   - Validates the graphics, window-system, thunk, and game-launch paths.
+   - Records FPS and frametime with MangoHud.
 
-## Evaluation tools
+Each group README defines its claims, commands, parameters, result format, and exclusions. An item README only describes that specific library, workload, breakdown, or game.
 
-The released Lorelei devkit, native FFmpeg utility, and four pinned emulator forks are packaged separately from the libraries under test. An additional Box64 package contains only the timing probes used by the callback breakdown. Install all of them from any working directory:
+## 2. Prepare the environment
+
+Run these commands from the repository root:
 
 ```bash
+./evaluations/install-devkit.sh
 ./evaluations/install-tools.sh
+./evaluations/install-libs.sh
+./evaluations/install-games.sh
 ```
 
-The installer downloads the architecture-matched AE devkit into `.work/devkit`, reuses packages already present in vcpkg, and places the public emulator and FFmpeg executables below `vcpkg/installed/arm64-linux/tools/`. The devkit step is also available independently as `evaluations/install-devkit.sh`. The emulator recipes live in `vcpkg-overlay/ports-tools`. `box64-ae` remains the uninstrumented performance tool, while `box64-callback-track-ae` is used only by the callback breakdown. Native FFmpeg comes from the built-in vcpkg port, not from the Hecate FFmpeg library-test recipe.
+The installers have these responsibilities:
 
-## Directory contract
+1. `install-devkit.sh`
+   - Downloads the Lorelei AE devkit for the host architecture.
+   - Verifies its SHA-256 and installs it under `.work/devkit/`.
+2. `install-tools.sh`
+   - Installs the native FFmpeg input-preparation tool.
+   - Installs pinned QEMU, Blink, Box64, and FEX packages.
+   - Installs the instrumented Box64 used only by the callback breakdown.
+3. `install-libs.sh`
+   - Invokes each library recipe with `run.sh --install-only`.
+   - Continues preparing later libraries after a failure.
+4. `install-games.sh`
+   - Installs native AArch64 and guest x86-64 packages for redistributable games.
+   - Continues preparing later games after a failure.
+
+Installation follows these rules:
+
+- Previously installed packages are not deleted before each run.
+- Every port shares the `vcpkg/downloads/` source cache.
+- vcpkg reuses successful downloads, builds, and binary package state.
+- Complete vcpkg output remains visible above a progress display at the bottom of the terminal.
+- Use `--plain` when redirecting output or when terminal control sequences are undesirable.
+
+## 3. Shared tools
+
+`install-tools.sh` provides these default paths:
+
+| Tool | Default path | Purpose |
+|---|---|---|
+| Lorelei devkit | `.work/devkit/` | TLC, HLR, runtime, cross compiler, and patched QEMU plugin |
+| FFmpeg | `vcpkg/installed/arm64-linux/tools/ffmpeg/ffmpeg` | Prepares media input and is never timed |
+| QEMU | `vcpkg/installed/arm64-linux/tools/qemu-ae/qemu-x86_64` | Pure-emulation and Hecate performance paths |
+| Blink | `vcpkg/installed/arm64-linux/tools/blink-ae/blink` | Pure-emulation and Hecate performance paths |
+| Box64 | `vcpkg/installed/arm64-linux/tools/box64-ae/box64` | Uninstrumented performance paths |
+| FEX | `vcpkg/installed/arm64-linux/tools/fex-ae/FEX` | Pure-emulation and Hecate performance paths |
+| Instrumented Box64 | `vcpkg/installed/arm64-linux/tools/box64-callback-track-ae/box64-callback-track` | Callback address-origin breakdown only |
+
+The ordinary and instrumented Box64 executables are independent packages. The instrumented build never replaces `BOX64` and does not participate in a performance lane.
+
+## 4. Shared interfaces
+
+Every public script resolves the repository from its own location and can be launched from any working directory.
+
+| Variable | Meaning |
+|---|---|
+| `LORELEI_DEVKIT` | Overrides the default `.work/devkit` |
+| `QEMU` | Overrides the ordinary QEMU executable |
+| `BLINK` | Overrides the Blink executable |
+| `BOX64` | Overrides the ordinary, uninstrumented Box64 executable |
+| `FEX` | Overrides the FEX executable |
+| `BOX64_CALLBACK_TRACK` | Overrides the instrumented Box64 executable used by the callback breakdown and does not affect `BOX64` or performance evaluation |
+| `GAME_DIR` | Overrides the installation directory for the selected game |
+| `REPETITIONS` | Overrides the number of performance workload repetitions |
+| `TIMEOUT_SECONDS` | Overrides the timeout for one workload repetition |
+
+Batch scripts share these properties:
+
+- One failed item does not prevent later items from running.
+- Repeating the same command after interruption skips successful items.
+- Failed, interrupted, and pending items are retried.
+- `--restart` archives the previous controller state and begins again.
+- `--plain` disables the progress display fixed to the bottom of the terminal.
+
+## 5. Layout and evidence
 
 ```text
 evaluations/
-├── common/                         shared, versioned recipe inputs
-├── 1-libs/<package>/
-    ├── README.md                   scope and evaluator instructions
-    ├── run.sh                      single public entry point
-    ├── standalone-tests.tsv        selected upstream programs and arguments
-    ├── tests/                      directed boundary tests
-    ├── tools/                      package-local analysis helpers
-    ├── reference-results/<run-id>/ author-generated reference evidence
-    └── results/<run-id>/           evaluator-generated evidence
-├── 2-cli-benchmarks/
-├── 3-breakdown/
-└── 4-games/
+├── common/                         Shared code and tools across groups
+├── 1-libs/<package>/              One library recipe
+├── 2-cli-benchmarks/<workload>/   One performance workload
+├── 3-breakdown/<experiment>/      One mechanism experiment
+└── 4-games/<game>/                One game recipe
 
 vcpkg-overlay/
-├── ports/<package>/                pinned source and package build policy
-└── triplets/                       shared native and guest targets
+├── ports/<package>/               Source, patches, and build policy for evaluated software
+├── ports-tools/<tool>/            Shared tool recipes
+└── triplets/                      Native, guest, and Hecate build configurations
+
+.work/evaluations/                 Reusable build, package, and installation state
 ```
 
-Every public recipe reads the Lorelei devkit from `LORELEI_DEVKIT`. The default is the repository-local `.work/devkit`. Emulator defaults come from `vcpkg/installed/arm64-linux/tools/` after running `evaluations/install-tools.sh`. `QEMU`, `BLINK`, `BOX64`, and `FEX` override those packaged executables. A library recipe may provide `--reference`, `--install-only`, and `--verbose`. Source acquisition, version verification, compilation, and installation belong to the repository-level vcpkg overlay. A recipe must use the repository-local `vcpkg/vcpkg` executable.
+- `results/<run-id>/` stores evidence generated locally by an evaluator.
+- `reference-results/<run-id>/` stores author-provided reference evidence.
+- Every run creates a new UTC timestamp directory and never overwrites prior evidence.
+- `.work/`, vcpkg buildtrees, installation prefixes, download caches, and temporary inputs are not evidence.
+- Result cleanup does not remove shared vcpkg downloads or package caches.
 
-Each recipe must perform these stages when applicable:
+Every evaluation records at least:
 
-1. Validate tools and the devkit layout.
-2. Ask vcpkg to build the pinned native and guest packages through the shared overlay.
-3. Build the selected host mechanism package. SDL selects Hecate, which combines TLC thunk generation with HLR rewriting.
-4. Run HLR from the final host compilation database and apply reviewed adaptations in the HLR port.
-5. Generate the Hecate thunk with TLC callback replacement disabled.
-6. Run the documented native and Hecate paths.
-7. Classify Hecate against the native reference and write append-only evidence.
+1. Complete commands and exit status.
+2. Tool, source, and patch identity.
+3. Execution environment and input identity.
+4. Raw output.
+5. A machine-readable summary from which the conclusion can be recomputed.
 
-The public command for a package must fit on one line. SDL2 is the reference implementation:
-
-```bash
-./evaluations/1-libs/sdl2/run.sh
-```
-
-Another devkit or emulator can be selected explicitly:
-
-```bash
-LORELEI_DEVKIT=/path/to/devkit QEMU=/path/to/qemu-x86_64 \
-  ./evaluations/1-libs/sdl2/run.sh
-```
-
-Generated build trees belong below `.work/evaluations/` and are not evidence. Each recipe keeps raw evidence beside the recipe and never overwrites an earlier run.
+Each group README defines its additional evidence requirements.

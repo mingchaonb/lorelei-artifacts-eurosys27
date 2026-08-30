@@ -76,10 +76,19 @@ mkdir -p "$state_dir"/{logs,status}
 # Freeze the discovered workload set for the lifetime of this batch. New
 # recipes are picked up after --restart, never halfway through a resumed run.
 plan=$state_dir/plan.txt
+discovered_plan=$(mktemp)
+find "$base_dir" -mindepth 2 -maxdepth 2 -type f -name run.sh -printf '%h\n' \
+    | xargs -r -n1 basename | sort -u >"$discovered_plan"
 if [[ ! -f $plan ]]; then
-    find "$base_dir" -mindepth 2 -maxdepth 2 -type f -name run.sh -printf '%h\n' \
-        | xargs -r -n1 basename | sort -u >"$plan"
+    cp "$discovered_plan" "$plan"
+elif ! cmp -s "$plan" "$discovered_plan"; then
+    echo "The available workload recipes changed after this batch was created:" >&2
+    diff -u "$plan" "$discovered_plan" >&2 || true
+    rm -f "$discovered_plan"
+    echo "Use --restart to create a batch plan containing the current recipes." >&2
+    exit 2
 fi
+rm -f "$discovered_plan"
 [[ -s $plan ]] || { echo "No command-line workloads found" >&2; exit 1; }
 
 # Refuse to merge results made with different execution settings. Paths are

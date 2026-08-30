@@ -2,26 +2,167 @@
 
 [English](README.md)
 
-本组包含用于复现游戏性能和可玩性的配方与证据。库级 GLVND 与 Vulkan 验证位于 `evaluations/1-libs`。
+本组验证 Hecate 是否能通过真实 graphics、window system、SDL、GL 和 Vulkan 路径启动 x86-64 游戏，并使用 MangoHud 收集 FPS 与 frametime。库级正确性由 `evaluations/1-libs` 单独验证，本组只负责游戏运行与性能证据。
 
-每个游戏采用与 library evaluation 相同的配方布局，并由自身的 `run.sh` 启动。`LORELEI_DEVKIT` 使用仓库统一默认值。可选的 `SECONDS` 参数设置 watchdog 时长。`GAME_DIR` 覆盖当前游戏的默认安装目录，同时跳过该游戏 vcpkg package 的安装。
+## 1. 当前游戏
+
+| 游戏 | 版本 | 获取方式 | 默认 graphics 路径 | 入口 |
+|---|---:|---|---|---|
+| AssaultCube | 1.3.0.2 | artifact 可下载 | OpenGL | `assaultcube/run.sh` |
+| OpenArena | 0.8.8 | artifact 可下载 | OpenGL 加 SDL 1.2 | `openarena/run.sh` |
+| Red Eclipse | 2.0.0 | artifact 可下载 | OpenGL | `redeclipse/run.sh` |
+| SuperTux | 0.6.3 | artifact 可下载或构建 | OpenGL | `supertux/run.sh` |
+| SuperTuxKart | 1.4 | artifact 可下载 | OpenGL | `supertuxkart/run.sh` |
+| Hollow Knight | 用户合法持有的副本 | artifact 不下载、不再分发 | OpenGL，可选 Vulkan | `hollow-knight/run.sh` |
+
+[`sources.json`](sources.json) 固定 5 个可再分发游戏的上游版本、归档 URL、SHA-256 和 guest 可执行文件身份。Hollow Knight 是付费专有游戏，因此只提供 runner。
+
+## 2. 安装可再分发游戏
+
+从仓库根目录运行：
 
 ```bash
-./evaluations/4-games/openarena/run.sh 30
-./evaluations/4-games/supertuxkart/run.sh 60
-GAME_DIR="/absolute/path/to/openarena" ./evaluations/4-games/openarena/run.sh 30
-GAME_DIR="/absolute/path/to/Hollow Knight" ./evaluations/4-games/hollow-knight/run.sh 45
-GAME_DIR="/absolute/path/to/Hollow Knight" HOLLOW_USE_VULKAN=1 ./evaluations/4-games/hollow-knight/run.sh 45
+./evaluations/install-games.sh
 ```
 
-`sources.json` 固定官方 x86-64 release 归档、版本、校验和与可执行文件路径。Hollow Knight 是付费专有游戏，artifact 不能下载或再分发其文件，因此下载清单明确排除它。合法持有副本的评审者仍可使用对应 runner。此时 `GAME_DIR` 应直接包含 `Hollow Knight` 可执行文件和 `Hollow Knight_Data/` 目录。
+该脚本为前 5 个游戏安装：
 
-五个可再分发游戏均提供 vcpkg port。运行 `./evaluations/install-games.sh` 为每个游戏安装 AArch64 native 包和 x86-64 guest 包。没有单独的 Hecate 游戏包。Hecate 运行 guest 包内未经修改的程序，转换后的库来自 library evaluation。每个游戏的 `run.sh` 在启动前也会安装或复用自己的两个包。`GAMES_ROOT` 只用于旧版外部包布局。
+- native AArch64 package。
+- guest x86-64 package。
+- 游戏数据与运行所需的固定目录布局。
 
-watchdog 默认 30 秒。每个游戏的证据写入自身 `results/`。可写 home 位于 `.work/evaluations/games/runtime-home`，可用 `RUNTIME_HOME_ROOT` 覆盖。
+没有单独的 Hecate 游戏 package。Hecate 运行 guest package 中未经修改的 x86-64 游戏程序，并使用 `1-libs` 安装的 AArch64 library、GTL、HTL 和 HLR 结果。重复安装会复用现有 vcpkg download、build 与 package 状态。
 
-共享 harness 启动游戏前会使用选定 devkit 构建 `_common/tests` 下的 x86-64 probe。所有游戏都会运行 XRandR probe，并验证 GL 与 Vulkan proc-address dispatch 能配合有序 thunk database 列表工作。OpenArena 额外运行 SDL 1.2 video probe，其他游戏运行 SDL2 display probe。build 输出、probe 日志和退出状态均写入游戏证据，preflight 失败时不会启动游戏。
+## 3. 运行游戏
 
-MangoHud 默认包裹 host 侧 QEMU 进程，因为 AArch64 GL 和 Vulkan 工作在该进程执行。HUD 保持隐藏，同时每 100 ms 把样本写入 `results/<run-id>/mangohud`。完成的运行还包含 `fps-summary.json`，记录稳定 FPS 和 frametime 统计。设置 `MANGOHUD_ENABLED=0` 可关闭采集，`MANGOHUD_CONFIG_EXTRA` 可追加采集选项。
+每个 runner 接受一个可选的位置参数，表示 watchdog 秒数。默认值为 30 秒：
 
-运行 `delete-all-results.sh --dry-run` 可在删除前查看可丢弃的游戏结果目录。`delete-all-reference-results.sh` 对参考结果提供相同的保护流程。
+```bash
+./evaluations/4-games/assaultcube/run.sh
+./evaluations/4-games/openarena/run.sh 30
+./evaluations/4-games/redeclipse/run.sh 30
+./evaluations/4-games/supertux/run.sh 30
+./evaluations/4-games/supertuxkart/run.sh 60
+```
+
+设置 `GAME_DIR` 可让任何 runner 使用用户指定的游戏目录，并跳过该游戏的 vcpkg package 安装：
+
+```bash
+GAME_DIR=/absolute/path/to/game \
+  ./evaluations/4-games/openarena/run.sh 30
+```
+
+`GAME_DIR` 必须直接对应 runner 预期的目录结构。找不到 guest executable 时，脚本会打印解析后的准确路径。
+
+## 4. Hollow Knight
+
+评审者需要提供自己的 Linux x86-64 副本。目录中必须直接包含：
+
+- `Hollow Knight` 可执行文件。
+- `Hollow Knight_Data/` 数据目录。
+
+默认运行 OpenGL：
+
+```bash
+GAME_DIR="/absolute/path/to/Hollow Knight" \
+  ./evaluations/4-games/hollow-knight/run.sh 45
+```
+
+选择 Vulkan：
+
+```bash
+GAME_DIR="/absolute/path/to/Hollow Knight" \
+HOLLOW_USE_VULKAN=1 \
+  ./evaluations/4-games/hollow-knight/run.sh 45
+```
+
+## 5. 启动前验证
+
+共享 runner 会先使用选定 devkit 构建并执行 x86-64 probe。只有全部 preflight 通过后才启动游戏。
+
+所有游戏验证：
+
+- XRandR display path。
+- GL proc-address dispatch。
+- Vulkan proc-address dispatch。
+- 有序 thunk database 列表。
+
+OpenArena 额外运行 SDL 1.2 video probe。其他游戏运行 SDL2 display probe。build 输出、probe stdout、stderr 与退出状态全部写入本次结果。
+
+## 6. 图形环境
+
+runner 默认从以下文件读取 `DISPLAY` 与 `XAUTHORITY`：
+
+```text
+$HOME/Desktop/spark-gui-env.txt
+```
+
+可使用 `GUI_ENV` 指定另一个环境文件：
+
+```bash
+GUI_ENV=/absolute/path/to/gui-env.txt \
+  ./evaluations/4-games/supertux/run.sh 30
+```
+
+每个游戏使用独立可写 home，默认位于：
+
+```text
+.work/evaluations/games/runtime-home/<game>/
+```
+
+可使用 `RUNTIME_HOME_ROOT` 覆盖根目录。
+
+## 7. MangoHud 采集
+
+MangoHud 默认包裹 host 侧 QEMU 进程，因为 AArch64 GL 与 Vulkan driver 在该进程内执行。默认行为为：
+
+- HUD 不显示在屏幕上。
+- 每 100 ms 记录一次 sample。
+- 原始 MangoHud CSV 写入本次结果目录。
+- `fps-summary.json` 汇总稳定 FPS 与 frametime。
+
+关闭采集：
+
+```bash
+MANGOHUD_ENABLED=0 ./evaluations/4-games/openarena/run.sh 30
+```
+
+追加 MangoHud 配置：
+
+```bash
+MANGOHUD_CONFIG_EXTRA=output_folder=/absolute/path \
+  ./evaluations/4-games/openarena/run.sh 30
+```
+
+## 8. 结果与证据
+
+每次运行写入：
+
+```text
+evaluations/4-games/<game>/results/<UTC timestamp>/
+```
+
+证据包括：
+
+1. 游戏、guest executable 与 package 身份。
+2. devkit、QEMU、library 和 thunk 身份。
+3. preflight build 与运行日志。
+4. 完整游戏启动命令和 watchdog 状态。
+5. MangoHud 原始样本。
+6. `fps-summary.json`。
+
+清理评审者结果前先预览：
+
+```bash
+./evaluations/4-games/delete-all-results.sh --dry-run
+./evaluations/4-games/delete-all-results.sh
+```
+
+参考结果使用独立脚本：
+
+```bash
+./evaluations/4-games/delete-all-reference-results.sh --dry-run
+./evaluations/4-games/delete-all-reference-results.sh
+```
+
+清理脚本不会删除游戏 package、共享 vcpkg cache 或用户提供的 `GAME_DIR`。
