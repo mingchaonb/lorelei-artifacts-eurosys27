@@ -1,0 +1,7 @@
+**/results/
+_inputs/*
+
+!**/reference-results/
+!**/reference-results/**
+!_inputs/README.md
+!_inputs/media-source.json

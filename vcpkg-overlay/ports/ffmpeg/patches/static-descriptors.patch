@@ -1113,3 +1113,23 @@
      .option     = swscale_options,
      .parent_log_context_offset = OFFSET(parent),
      .category   = AV_CLASS_CATEGORY_SWSCALER,
+--- a/libavformat/wavdec.c
++++ b/libavformat/wavdec.c
+@@ -850,7 +850,7 @@
+ 
+ static const AVClass wav_demuxer_class = {
+     .class_name = "WAV demuxer",
+-    .item_name  = LORE_FDG_2_3(av_default_item_name),
++    .item_name  = av_default_item_name,
+     .option     = demux_options,
+     .version    = LIBAVUTIL_VERSION_INT,
+ };
+--- a/libavfilter/buffersink.c
++++ b/libavfilter/buffersink.c
+@@ -174,5 +174,5 @@
+ /* Preserve the static callback identity when HLR provides an FDG entry. */
+-static int (*const activate_identity)(AVFilterContext *ctx) = LORE_FDG_4_8(activate);
++static int (*const activate_identity)(AVFilterContext *ctx) = activate;
+ 
+ void av_buffersink_set_frame_size(AVFilterContext *ctx, unsigned frame_size)
+ {

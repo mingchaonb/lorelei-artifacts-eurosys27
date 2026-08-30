@@ -7,6 +7,11 @@
   "license": null,
   "supports": "linux",
   "dependencies": [
+    "fdk-aac",
+    "libogg",
+    "libvorbis",
+    "mp3lame",
+    "x264",
     {
       "name": "vcpkg-cmake-get-vars",
       "host": true
@@ -14,14 +19,7 @@
   ],
   "features": {
     "hlr": {
-      "description": "Install the seven HLR-rewritten FFmpeg shared libraries",
-      "dependencies": [
-        "fdk-aac",
-        "libogg",
-        "libvorbis",
-        "mp3lame",
-        "x264"
-      ]
+      "description": "Install the seven HLR-rewritten FFmpeg shared libraries"
     }
   }
 }

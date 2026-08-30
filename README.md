@@ -6,6 +6,12 @@ This repository is the evaluator-facing build, test, and evidence workspace for 
 
 ## Quick start
 
+Install the host build tools and the GNU x86-64 cross compiler. The zlib guest package uses the GNU compiler to avoid a data-dependent Blink JIT incompatibility observed with the devkit Clang build.
+
+```bash
+sudo apt install -y build-essential cmake ninja-build gcc-x86-64-linux-gnu g++-x86-64-linux-gnu python3
+```
+
 The default setup places the source checkouts next to this repository under the evaluator's home directory:
 
 ```text

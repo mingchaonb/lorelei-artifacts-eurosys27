@@ -68,17 +68,14 @@ install_lane() {
   local lane=$1 triplet=$2
   run_logged "$run_dir/logs/preparation/vcpkg-$lane.log" "$vcpkg" install "zlib:$triplet" --overlay-ports="$overlay_dir/ports" --overlay-triplets="$overlay_dir/triplets" --x-install-root="$state/installed/$lane" --x-buildtrees-root="$state/vcpkg/$lane/buildtrees" --x-packages-root="$state/vcpkg/$lane/packages" --downloads-root="$repo_root/vcpkg/downloads" --triplet="$triplet"
 }
-if ! $install_only; then install_lane native arm64-linux-ae; install_lane guest x64-linux-ae; fi
+install_lane native arm64-linux-ae
+install_lane guest x64-linux-ae-gcc
 install_lane hecate arm64-linux-ae
 hecate_prefix=$state/installed/hecate/arm64-linux-ae
 mkdir -p "$work/thunks" "$run_dir/generated/elf"
-if $install_only; then
-  printf '{"schema_version":2,"package":"zlib","status":"installed","mode":"install-only","tests_run":false}\n' >"$run_dir/summary.json"
-  exit 0
-fi
 native_prefix=$state/installed/native/arm64-linux-ae
-guest_prefix=$state/installed/guest/x64-linux-ae
-upstream_tests=(zlib_example zlib_example64 minigzip)
+guest_prefix=$state/installed/guest/x64-linux-ae-gcc
+upstream_tests=(zlib_example zlib_example64 minigzip minizip miniunzip)
 registered_tests=(zlib_example zlib_example64)
 native_upstream=$native_prefix/tools/zlib/upstream-tests
 guest_upstream=$guest_prefix/tools/zlib/upstream-tests
@@ -90,6 +87,7 @@ done
   for test_name in "${upstream_tests[@]}"; do
     "$nm_tool" -D --undefined-only --just-symbol-name "$guest_upstream/$test_name"
   done
+  "$nm_tool" -D --undefined-only --just-symbol-name "$guest_upstream/libminizip.so.1"
 } | sed 's/@.*//' | sort -u >"$run_dir/generated/guest-undefined.txt"
 thunk_host=()
 thunk_guest=()
@@ -117,6 +115,11 @@ for pattern in "${patterns[@]}"; do
 done
 host_path=$(IFS=:; echo "${thunk_host[*]}")
 guest_path=$(IFS=:; echo "${thunk_guest[*]}")
+if $install_only; then
+  printf '{"schema_version":2,"package":"zlib","status":"installed","mode":"install-only","tests_run":false,"installed_lanes":["native","guest","hecate"],"thunks_generated":true}\n' >"$run_dir/summary.json"
+  echo "Installed native, guest, Hecate, and thunk artifacts: $state"
+  exit 0
+fi
 upstream_failures=0
 for test_name in "${registered_tests[@]}"; do
   native_test_dir=$work/upstream-native-$test_name

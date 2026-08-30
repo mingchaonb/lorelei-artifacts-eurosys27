@@ -18,6 +18,11 @@ vcpkg_cmake_configure(
         -DZLIB_BUILD_TESTING=ON
         -DZLIB_BUILD_SHARED=${ZLIB_BUILD_SHARED}
         -DZLIB_BUILD_STATIC=${ZLIB_BUILD_STATIC}
+        -DZLIB_BUILD_MINIZIP=ON
+        -DZLIB_MINIZIP_BUILD_SHARED=ON
+        -DZLIB_MINIZIP_BUILD_STATIC=OFF
+        -DZLIB_MINIZIP_BUILD_TESTING=ON
+        -DZLIB_MINIZIP_INSTALL=OFF
 )
 
 vcpkg_cmake_install()
@@ -31,6 +36,15 @@ foreach(TEST_NAME IN ITEMS zlib_example zlib_example64 minigzip)
     if(EXISTS "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/test/${TEST_NAME}")
         file(INSTALL "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/test/${TEST_NAME}"
              DESTINATION "${ZLIB_TEST_DIR}")
+    endif()
+endforeach()
+# minizip is built in the same configured tree and dynamically uses this
+# package's libz. Install both upstream CLIs and their private helper DSO next
+# to the other tests so later evaluations never rebuild from the source tree.
+foreach(MINIZIP_FILE IN ITEMS minizip miniunzip libminizip.so libminizip.so.1 libminizip.so.1.0.0)
+    if(EXISTS "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/contrib/minizip/${MINIZIP_FILE}")
+        file(INSTALL "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/contrib/minizip/${MINIZIP_FILE}"
+             DESTINATION "${ZLIB_TEST_DIR}" USE_SOURCE_PERMISSIONS)
     endif()
 endforeach()
 vcpkg_copy_pdbs()

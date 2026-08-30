@@ -6,6 +6,12 @@
 
 ## 快速开始
 
+先安装主机构建工具和 GNU x86-64 交叉编译器。zlib 的 guest 包使用 GNU 编译器，以避开 devkit Clang 构建在 Blink JIT 下出现的数据相关兼容问题。
+
+```bash
+sudo apt install -y build-essential cmake ninja-build gcc-x86-64-linux-gnu g++-x86-64-linux-gnu python3
+```
+
 默认配置将各源码仓库并列放在评审者的用户目录下：
 
 ```text

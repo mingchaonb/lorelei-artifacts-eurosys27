@@ -1,0 +1,54 @@
+--- a/libavfilter/buffersink.c
++++ b/libavfilter/buffersink.c
+@@ -172,6 +172,9 @@ static int activate(AVFilterContext *ctx)
+     return 0;
+ }
+ 
++/* Preserve the static callback identity when HLR provides an FDG entry. */
++static int (*const activate_identity)(AVFilterContext *ctx) = activate;
++
+ void av_buffersink_set_frame_size(AVFilterContext *ctx, unsigned frame_size)
+ {
+     FilterLink *inlink = ff_filter_link(ctx->inputs[0]);
+@@ -180,7 +183,7 @@ void av_buffersink_set_frame_size(AVFilterContext *ctx, unsigned frame_size)
+ 
+ #define MAKE_AVFILTERLINK_ACCESSOR(type, field) \
+ type av_buffersink_get_##field(const AVFilterContext *ctx) { \
+-    av_assert0(ctx->filter->activate == activate); \
++    av_assert0(ctx->filter->activate == activate_identity); \
+     return ctx->inputs[0]->field; \
+ }
+ 
+@@ -190,13 +193,13 @@ MAKE_AVFILTERLINK_ACCESSOR(int              , sample_rate        )
+ AVRational av_buffersink_get_frame_rate(const AVFilterContext *ctx)
+ {
+     FilterLink *l = ff_filter_link(ctx->inputs[0]);
+-    av_assert0(ctx->filter->activate == activate);
++    av_assert0(ctx->filter->activate == activate_identity);
+     return l->frame_rate;
+ }
+ 
+ AVBufferRef* av_buffersink_get_hw_frames_ctx(const AVFilterContext *ctx)
+ {
+     FilterLink *l = ff_filter_link(ctx->inputs[0]);
+-    av_assert0(ctx->filter->activate == activate);
++    av_assert0(ctx->filter->activate == activate_identity);
+     return l->hw_frames_ctx;
+ }
+@@ -203,6 +206,6 @@ AVBufferRef* av_buffersink_get_hw_frames_ctx(const AVFilterContext *ctx)
+ 
+ int av_buffersink_get_channels(const AVFilterContext *ctx)
+ {
+-    av_assert0(ctx->filter->activate == activate);
++    av_assert0(ctx->filter->activate == activate_identity);
+     return ctx->inputs[0]->ch_layout.nb_channels;
+ }
+@@ -212,7 +215,7 @@ int av_buffersink_get_ch_layout(const AVFilterContext *ctx,
+     AVChannelLayout ch_layout = { 0 };
+     int ret;
+ 
+-    av_assert0(ctx->filter->activate == activate);
++    av_assert0(ctx->filter->activate == activate_identity);
+     ret = av_channel_layout_copy(&ch_layout, &ctx->inputs[0]->ch_layout);
+     if (ret < 0)
+         return ret;

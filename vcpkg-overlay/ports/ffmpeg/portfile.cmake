@@ -4,6 +4,8 @@ vcpkg_from_git(
     URL https://github.com/FFmpeg/FFmpeg.git
     REF 3a0867c2bfda4a4d4309ca1a8cbdc6175e67f587
     HEAD_REF master
+    PATCHES
+        patches/buffersink-function-identity.patch
 )
 
 # The ordinary package is used for both native AArch64 and guest x86-64 roots.
@@ -51,8 +53,8 @@ endif()
 set(ENV{PKG_CONFIG_PATH} "${CURRENT_INSTALLED_DIR}/lib/pkgconfig:${CURRENT_INSTALLED_DIR}/share/pkgconfig")
 set(ENV{PKG_CONFIG_LIBDIR} "$ENV{PKG_CONFIG_PATH}")
 
-# Shared options define the symmetric, no-samples FATE configuration. The HLR
-# host adds the four external encoders used by the historical FFmpeg workload.
+# Shared options define one symmetric no-samples configuration. Native, guest,
+# and HLR packages all include the four external workload encoders.
 set(COMMON_OPTIONS
     --target-os=linux
     --enable-shared
@@ -76,6 +78,17 @@ set(COMMON_OPTIONS
     --enable-protocol=file,pipe
     --enable-indev=lavfi
     --enable-filter=sine,testsrc2,aformat,format,aresample,scale
+    --enable-gpl
+    --enable-nonfree
+    --enable-libmp3lame
+    --enable-libfdk-aac
+    --enable-libvorbis
+    --enable-libx264
+    --enable-encoder=libmp3lame,libfdk_aac,libvorbis,libx264
+    --enable-decoder=mp3,aac,vorbis,h264,pcm_s16le,rawvideo,wrapped_avframe
+    --enable-muxer=mp3,adts,ogg,matroska,null,framecrc
+    --enable-demuxer=mp3,aac,ogg,matroska,yuv4mpegpipe,wav
+    --enable-parser=mpegaudio,aac,h264,vorbis
 )
 
 # Configure and build this triplet's package.
@@ -106,17 +119,6 @@ if(RUN_HLR)
     list(REMOVE_ITEM PRIMARY_OPTIONS "--extra-cflags=-I${CURRENT_INSTALLED_DIR}/include")
     list(APPEND PRIMARY_OPTIONS
         "--extra-cflags=${PRIMARY_CFLAGS}"
-        --enable-gpl
-        --enable-nonfree
-        --enable-libmp3lame
-        --enable-libfdk-aac
-        --enable-libvorbis
-        --enable-libx264
-        --enable-encoder=libmp3lame,libfdk_aac,libvorbis,libx264
-        --enable-decoder=mp3,aac,vorbis,h264,pcm_s16le,rawvideo,wrapped_avframe
-        --enable-muxer=mp3,adts,ogg,matroska,null,framecrc
-        --enable-demuxer=mp3,aac,ogg,matroska
-        --enable-parser=mpegaudio,aac,h264,vorbis
     )
 endif()
 vcpkg_execute_required_process(
