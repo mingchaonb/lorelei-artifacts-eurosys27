@@ -27,7 +27,7 @@ kind=results
 $reference && kind=reference-results
 run_id=$(date -u +%Y%m%dT%H%M%SZ)
 run_dir=$recipe_dir/$kind/$run_id
-work=$repo_root/.work/evaluations/openssl-ae
+work=$repo_root/.work/evaluations/openssl
 [[ ! -e $run_dir ]] || { echo "Evidence exists: $run_dir" >&2; exit 2; }
 if [[ -e $work && ! -f $work/.lorelei-evaluations-workspace ]]; then
     echo "Refusing to replace unmarked work directory: $work" >&2
@@ -41,7 +41,7 @@ export LORELEI_DEVKIT=$devkit
 install_lane() {
     local lane=$1 triplet=$2
     local log=$run_dir/logs/preparation/vcpkg-$lane.log
-    local command=("$vcpkg" install "openssl-ae:$triplet" --overlay-ports="$overlay/ports" --overlay-triplets="$overlay/triplets" --x-install-root="$work/installed/$lane" --x-buildtrees-root="$work/vcpkg/$lane/buildtrees" --x-packages-root="$work/vcpkg/$lane/packages" --downloads-root="$repo_root/vcpkg/downloads")
+    local command=("$vcpkg" install "openssl:$triplet" --overlay-ports="$overlay/ports" --overlay-triplets="$overlay/triplets" --x-install-root="$work/installed/$lane" --x-buildtrees-root="$work/vcpkg/$lane/buildtrees" --x-packages-root="$work/vcpkg/$lane/packages" --downloads-root="$repo_root/vcpkg/downloads")
     if $verbose; then
         "${command[@]}" 2>&1 | tee "$log"
     else
@@ -53,9 +53,9 @@ install_lane guest x64-linux-ae
 find "$work/installed/native/arm64-linux-ae/lib" "$work/installed/guest/x64-linux-ae/lib" -maxdepth 1 -type f -name '*.so*' -print -exec file {} \; -exec readelf -d {} \; -exec readelf -Ws {} \; >"$run_dir/generated/shared-library-audit.txt"
 python3 - "$run_dir/meta.json" "$run_dir/summary.json" <<'PY'
 import json, pathlib, sys
-meta = {"schema_version": 2, "package": "openssl-ae", "release": "3.0.22", "mechanism": "TLC Only", "scope": "shared-library installation audit only"}
+meta = {"schema_version": 2, "package": "openssl", "release": "3.0.22", "mechanism": "TLC Only", "scope": "shared-library installation audit only"}
 pathlib.Path(sys.argv[1]).write_text(json.dumps(meta, indent=2, sort_keys=True) + "\n")
-summary = {"schema_version": 2, "package": "openssl-ae", "status": "installed", "tests_run": False}
+summary = {"schema_version": 2, "package": "openssl", "status": "installed", "tests_run": False}
 pathlib.Path(sys.argv[2]).write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n")
 PY
 echo "Evidence: $run_dir"

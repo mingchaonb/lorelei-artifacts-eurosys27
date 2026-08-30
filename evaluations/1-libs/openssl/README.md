@@ -1,6 +1,6 @@
-# openssl-ae evaluation (TLC Only)
+# openssl evaluation (TLC Only)
 
-This recipe pins openssl-ae 3.0.22. The production targets are libcrypto.so.3 and libssl.so.3. Native AArch64 and x86-64 packages are built as shared libraries from the same official source input.
+This recipe pins OpenSSL 3.0.22. The production targets are libcrypto.so.3 and libssl.so.3. Native AArch64 and x86-64 packages are built as shared libraries from the same official source input.
 
 OpenSSL is the explicit exception in this migration batch. The port builds and installs only the software payload. It does not build or install upstream tests.
 

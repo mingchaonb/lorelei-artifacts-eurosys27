@@ -1,7 +1,7 @@
 {
-  "name": "openssl-ae",
+  "name": "openssl",
   "version-string": "3.0.22",
-  "description": "Pinned shared build for the openssl-ae TLC Only evaluation",
+  "description": "Pinned shared build for the OpenSSL TLC Only evaluation",
   "homepage": "https://github.com/openssl/openssl",
   "supports": "linux & (arm64 | x64)",
   "dependencies": [
