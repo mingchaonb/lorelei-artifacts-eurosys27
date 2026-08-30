@@ -1,0 +1,13 @@
+diff --git a/src/SDL12_compat.c b/src/SDL12_compat.c
+index 4e5df71..55c064c 100644
+--- a/src/SDL12_compat.c
++++ b/src/SDL12_compat.c
+@@ -9442,7 +9442,7 @@ SDL_OpenAudio(SDL_AudioSpec *appwant, SDL_AudioSpec *obtained)
+        still be good enough. */
+ 
+     SDL20_memcpy(&devwant, appwant, sizeof (SDL_AudioSpec));
+-    devwant.callback = LORE_FDG_1_1(AudioCallbackWrapper);
++    devwant.callback = AudioCallbackWrapper;
+     devwant.userdata = audio_cbdata;
+     devwant.freq = SDL_max(devwant.freq, 44100);
+     devwant.channels = SDL_max(devwant.channels, 2);

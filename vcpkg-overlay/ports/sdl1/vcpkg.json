@@ -1,0 +1,30 @@
+{
+  "name": "sdl1",
+  "version": "1.2.68",
+  "description": "SDL 1.2 compatibility ABI used by OpenArena through Lorelei HLR",
+  "homepage": "https://github.com/libsdl-org/sdl12-compat",
+  "license": "Zlib",
+  "supports": "linux",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    },
+    "sdl2"
+  ],
+  "features": {
+    "hlr": {
+      "description": "Rewrite the SDL 1.2 compatibility implementation with Lorelei HLR",
+      "dependencies": [
+        {
+          "name": "sdl2",
+          "features": ["hlr"]
+        }
+      ]
+    }
+  }
+}

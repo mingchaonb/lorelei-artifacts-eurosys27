@@ -1,0 +1,10 @@
+{
+    "forwardThunks": [
+        {
+            "name": "libSDL",
+            "guestThunk": "${SDL1_THUNK}/x86_64/libSDL.so",
+            "hostThunk": "${SDL1_THUNK}/libSDL_HTL.so",
+            "hostLibrary": "${SDL1_PREFIX}/lib/libSDL-1.2.so.0"
+        }
+    ]
+}
