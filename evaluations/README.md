@@ -18,6 +18,9 @@
 4. [Game evaluation](4-games/README.md)
    - Validates the graphics, window-system, thunk, and game-launch paths.
    - Records FPS and frametime with MangoHud.
+5. [QEMU modification statistics](5-modifications/README.md)
+   - Measures QEMU integration changes for Lat, Risotto, and Hecate.
+   - Uses an auditable Box64/KZT build dependency closure for Lat.
 
 Each group README defines its claims, commands, parameters, result format, and exclusions. An item README only describes that specific library, workload, breakdown, or game.
 
@@ -40,7 +43,7 @@ The installers have these responsibilities:
 2. `install-tools.sh`
    - Installs the native FFmpeg input-preparation tool.
    - Installs pinned QEMU, Blink, Box64, and FEX packages.
-   - Installs the instrumented Box64 used only by the callback breakdown.
+   - Installs the instrumented QEMU for call breakdowns and the instrumented Box64 for callback breakdowns.
 3. `install-libs.sh`
    - Invokes each library recipe with `run.sh --install-only`.
    - Continues preparing later libraries after a failure.
@@ -65,12 +68,13 @@ Installation follows these rules:
 | Lorelei devkit | `.work/devkit/` | TLC, HLR, runtime, cross compiler, and patched QEMU plugin |
 | FFmpeg | `vcpkg/installed/arm64-linux/tools/ffmpeg/ffmpeg` | Prepares media input and is never timed |
 | QEMU | `vcpkg/installed/arm64-linux/tools/qemu-ae/qemu-x86_64` | Pure-emulation and Hecate performance paths |
+| Instrumented QEMU | `vcpkg/installed/arm64-linux/tools/qemu-breakdown-ae/qemu-x86_64` | Pass-through call phase breakdown only |
 | Blink | `vcpkg/installed/arm64-linux/tools/blink-ae/blink` | Pure-emulation and Hecate performance paths |
 | Box64 | `vcpkg/installed/arm64-linux/tools/box64-ae/box64` | Uninstrumented performance paths |
 | FEX | `vcpkg/installed/arm64-linux/tools/fex-ae/FEX` | Pure-emulation and Hecate performance paths |
 | Instrumented Box64 | `vcpkg/installed/arm64-linux/tools/box64-callback-track-ae/box64-callback-track` | Callback address-origin breakdown only |
 
-The ordinary and instrumented Box64 executables are independent packages. The instrumented build never replaces `BOX64` and does not participate in a performance lane.
+The ordinary QEMU and Box64 packages are independent from their instrumented counterparts. Instrumented builds never replace `QEMU` or `BOX64` and do not participate in a performance lane.
 
 ## 4. Shared interfaces
 
@@ -80,13 +84,14 @@ Every public script resolves the repository from its own location and can be lau
 |---|---|
 | `LORELEI_DEVKIT` | Overrides the default `.work/devkit` |
 | `QEMU` | Overrides the ordinary QEMU executable |
+| `QEMU_BREAKDOWN` | Overrides the instrumented QEMU used by the call breakdown without affecting `QEMU` or performance evaluation |
 | `BLINK` | Overrides the Blink executable |
 | `BOX64` | Overrides the ordinary, uninstrumented Box64 executable |
 | `FEX` | Overrides the FEX executable |
 | `BOX64_CALLBACK_TRACK` | Overrides the instrumented Box64 executable used by the callback breakdown and does not affect `BOX64` or performance evaluation |
 | `GAME_DIR` | Overrides the installation directory for the selected game |
 | `REPETITIONS` | Overrides the number of performance workload repetitions |
-| `TIMEOUT_SECONDS` | Overrides the timeout for one workload repetition |
+| `TIMEOUT_SECONDS` | Lowers the timeout for one workload repetition and cannot raise Figure 17's 100-second hard limit |
 
 Batch scripts share these properties:
 
@@ -104,7 +109,8 @@ evaluations/
 ├── 1-libs/<package>/              One library recipe
 ├── 2-cli-benchmarks/<workload>/   One performance workload
 ├── 3-breakdown/<experiment>/      One mechanism experiment
-└── 4-games/<game>/                One game recipe
+├── 4-games/<game>/                One game recipe
+└── 5-modifications/               QEMU modification source analysis
 
 vcpkg-overlay/
 ├── ports/<package>/               Source, patches, and build policy for evaluated software
@@ -129,3 +135,15 @@ Every evaluation records at least:
 5. A machine-readable summary from which the conclusion can be recomputed.
 
 Each group README defines its additional evidence requirements.
+
+## 6. Export paper CSV files
+
+The final exporter reads existing raw evidence. It does not implicitly run benchmarks or the TLC coverage audit. After completing the group runners, explicitly generate the coverage and modification evidence before invoking the unified exporter:
+
+```bash
+python3 evaluations/3-breakdown/coverage-effort/run.py
+./evaluations/5-modifications/run.sh
+python3 evaluations/export-paper-data.py
+```
+
+The exporter writes `overall.csv`, `game-fps.csv`, `function-breakdown.csv`, `callback-track.csv`, `coverage-effort.csv`, `modifications.csv`, and an input-hash manifest under `evaluations/paper-data/`. Experiments that have not been run remain `missing`; constants from an older paper are never substituted.

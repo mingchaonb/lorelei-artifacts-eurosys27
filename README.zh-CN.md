@@ -13,8 +13,11 @@ eurosys-lorelei-artifacts/
 │   ├── 2-cli-benchmarks/       论文中的八个命令行 workload
 │   ├── 3-breakdown/            函数调用与 callback 开销拆分
 │   ├── 4-games/                游戏可用性与帧率评测
+│   ├── 5-modifications/        Lat、Risotto 与 Hecate 源码修改量
+│   ├── paper-data/             从原始结果导出的可读 CSV
+│   ├── plots/                  只读取 CSV 的论文绘图脚本
 │   ├── install-devkit.sh       安装固定版本的 Lorelei devkit
-│   ├── install-tools.sh        安装 FFmpeg、四个 DBT 和 Box64 breakdown 工具
+│   ├── install-tools.sh        安装 FFmpeg、四个 DBT 和独立 breakdown 工具
 │   ├── install-libs.sh         安装全部 library 测试包
 │   └── install-games.sh        安装可再分发的游戏包
 ├── vcpkg-overlay/
@@ -31,28 +34,89 @@ eurosys-lorelei-artifacts/
 
 `vcpkg-overlay/ports/` 保存从各项目官方原版仓库获取源码并完成编译、安装和测试部署的配方。配方固定上游 release 或 commit，并校验下载内容。若上游构建系统不安装测试，配方会通过 `patches/` 或 `portfile.cmake` 将已构建测试统一安装到 `tools/<port>/upstream-tests/`。这些 patch 用于复现构建、测试安装和必要的 Hecate 适配，不替换被测 library 的算法实现。
 
-`evaluations/` 下四个编号目录分别对应四类论文证据。每项评测的入口、范围和结果都放在自己的目录中。评审者运行产生的证据写入 `results/<run-id>/`，作者参考结果写入 `reference-results/<run-id>/`。`.work/`、vcpkg build tree 和下载缓存只是可复用的中间状态，不属于实验结果。
+`evaluations/` 下五个编号目录分别对应五类论文证据。每项评测的入口、范围和结果都放在自己的目录中。评审者运行产生的证据写入 `results/<run-id>/`，作者参考结果写入 `reference-results/<run-id>/`。`.work/`、vcpkg build tree 和下载缓存只是可复用的中间状态，不属于实验结果。
 
 ## 2. 准备环境
 
-### 2.1 系统与依赖
+### 2.1 启动空 Ubuntu 24.04 ARM64 容器
 
-本 artifact 要求运行在 Ubuntu 24.04 AArch64 主机上。library 和命令行评测不要求图形桌面。游戏评测还需要可用的 X11 会话、OpenGL 或 Vulkan 驱动，以及 MangoHud。
+正式评测要求物理 ARM64 主机和已经可用的 Docker Engine。`--platform linux/arm64` 只用于防止 Docker 选错镜像，不能用 x86-64 主机上的透明 QEMU 模拟代替 ARM64 主机。先在 host 上确认架构并从仓库根目录创建容器：
 
-安装构建工具、x86-64 交叉编译器、输入下载工具和游戏测量工具：
+```bash
+test "$(uname -m)" = aarch64
+
+export AE_REPO=$PWD
+export AE_XAUTHORITY=${XAUTHORITY:-$HOME/.Xauthority}
+test -f "$AE_XAUTHORITY"
+
+docker run --detach \
+  --name lorelei-eurosys27-ae-ubuntu2404 \
+  --platform linux/arm64 \
+  --network host \
+  --device /dev/dri \
+  --env HOST_UID="$(id -u)" \
+  --env HOST_GID="$(id -g)" \
+  --env DISPLAY="${DISPLAY:-:0}" \
+  --env XAUTHORITY=/home/user/.Xauthority \
+  --mount type=bind,src="$AE_REPO",dst=/home/user \
+  --mount type=bind,src=/tmp/.X11-unix,dst=/tmp/.X11-unix \
+  --mount type=bind,src="$AE_XAUTHORITY",dst=/home/user/.Xauthority,readonly \
+  ubuntu:24.04 sleep infinity
+```
+
+`/dev/dri`、X11 socket 和 Xauthority 三项用于游戏评测。只复现 library、命令行和 breakdown 数据时可以省略这三个 mount 或 device 参数。若 host 使用 NVIDIA 专有驱动，需要按 host 的容器运行时配置额外传入 GPU。
+
+进入容器的 root shell，把 Ubuntu Ports 切换到中科大镜像，并创建与 host UID、GID 一致的普通用户 `user`：
+
+```bash
+docker exec -it lorelei-eurosys27-ae-ubuntu2404 bash
+
+sed -Ei \
+  's#https?://ports\.ubuntu\.com/ubuntu-ports/?#http://mirrors.ustc.edu.cn/ubuntu-ports/#g' \
+  /etc/apt/sources.list.d/ubuntu.sources
+apt update
+apt install -y sudo
+groupadd --gid "$HOST_GID" user
+useradd --uid "$HOST_UID" --gid "$HOST_GID" \
+  --home-dir /home/user --no-create-home --shell /bin/bash user
+printf 'user ALL=(ALL) NOPASSWD:ALL\n' >/etc/sudoers.d/user
+chmod 0440 /etc/sudoers.d/user
+exit
+```
+
+随后所有构建、评测和导出命令都在普通用户 shell 中执行：
+
+```bash
+docker exec -it \
+  --user user \
+  --workdir /home/user \
+  --env HOME=/home/user \
+  lorelei-eurosys27-ae-ubuntu2404 bash
+```
+
+### 2.2 安装系统依赖
+
+library 和命令行评测不要求图形桌面。游戏评测还需要 host 上可用的 X11 会话、OpenGL 或 Vulkan 驱动，以及容器内的 MangoHud。以下是在空 `ubuntu:24.04` 镜像中构建全部 ports、运行五类评测和导出 CSV 所需的完整依赖：
 
 ```bash
 sudo apt update
 sudo apt install -y \
-  build-essential cmake ninja-build git curl ca-certificates \
-  xz-utils zip unzip tar pkg-config python3 python3-venv \
+  build-essential autoconf automake bear bison cmake flex libtool m4 \
+  meson ninja-build nasm yasm pkg-config \
+  git curl wget ca-certificates file patch patchelf \
+  xz-utils zip unzip tar squashfs-tools \
+  python3 python3-venv python3-numpy python3-matplotlib python3-tomli \
   gcc-x86-64-linux-gnu g++-x86-64-linux-gnu \
-  yt-dlp mangohud
+  clang-20 llvm-20-dev libclang-20-dev \
+  libglib2.0-dev libdw-dev libelf-dev libcapstone-dev libfdt-dev \
+  libpixman-1-dev libslirp-dev libffi-dev libffcall-dev libssl-dev \
+  libvulkan1 libvulkan-dev libgl1 libglx0 libgl-dev libglx-dev libx11-dev \
+  yt-dlp mangohud x11-xserver-utils x11-utils xdotool
 ```
 
 命令行 workload 使用 `yt-dlp` 获取公开媒体输入。如果 Ubuntu 提供的版本无法读取当前 YouTube 元数据，可安装更新版本并通过 `YT_DLP=/absolute/path/to/yt-dlp` 指定。
 
-### 2.2 安装 vcpkg
+### 2.3 安装 vcpkg
 
 在本仓库根目录 clone 并初始化固定版本的 vcpkg：
 
@@ -64,7 +128,7 @@ git -C vcpkg checkout 2026.07.29
 
 所有 port 共享 `vcpkg/downloads/`，因此不同 library 不会重复下载同一份源码。各项评测仍使用 `.work/evaluations/` 下相互隔离的 build、package 和 install 目录。
 
-### 2.3 安装评测内容
+### 2.4 安装评测内容
 
 从仓库根目录依次运行四个安装脚本：
 
@@ -75,9 +139,18 @@ git -C vcpkg checkout 2026.07.29
 ./evaluations/install-games.sh
 ```
 
-`install-devkit.sh` 根据主机架构下载 EuroSys 2027 AE release 并校验 SHA-256，然后安装到 `.work/devkit/`。`install-tools.sh` 也会检查并复用该 devkit，并安装普通性能评测使用的 Box64 与 callback breakdown 专用的独立插桩 Box64。其余脚本会复用已经安装的 vcpkg package、下载和构建状态，不会在每次执行前清空缓存。
+`install-devkit.sh` 根据主机架构下载 EuroSys 2027 AE release 并校验 SHA-256，然后安装到 `.work/devkit/`。`install-tools.sh` 也会检查并复用该 devkit，并分别安装普通性能评测与 breakdown 使用的 QEMU、Box64 package。其余脚本会复用已经安装的 vcpkg package、下载和构建状态，不会在每次执行前清空缓存。
 
 安装过程保留完整的 vcpkg 输出，并在终端底部显示进度。重定向输出或不希望出现终端控制序列时可添加 `--plain`。所有公开脚本都根据自身位置解析路径，可以从任意当前目录启动。
+
+容器中的游戏 runner 需要一个只含 `DISPLAY` 和 `XAUTHORITY` 的环境文件：
+
+```bash
+mkdir -p .work
+printf 'DISPLAY=%s\nXAUTHORITY=%s\n' \
+  "$DISPLAY" "$XAUTHORITY" >.work/gui-env
+export GUI_ENV=$PWD/.work/gui-env
+```
 
 ## 3. 验证 Artifact
 
@@ -127,22 +200,24 @@ git -C vcpkg checkout 2026.07.29
 ./evaluations/2-cli-benchmarks/run-all.sh
 ```
 
-runner 会准备确定性压缩输入和公开媒体输入，并依次测量 FFTW、zlib、zstd、OpenSSL，以及四个 FFmpeg 编码 workload。每个 workload 记录至少五次测量、完整命令、输入哈希、工具版本和原始时间。批处理支持断点恢复，再次执行会跳过已经成功的 workload。完整 lane、输入和结果说明见 [`evaluations/2-cli-benchmarks/README.md`](evaluations/2-cli-benchmarks/README.md)。
+runner 会准备确定性压缩输入和公开媒体输入，并依次测量 FFTW、zlib、zstd、OpenSSL，以及四个 FFmpeg 编码 workload。正式运行默认对每条 lane 重复五次；可用 `REPETITIONS=1` 做单次快速检查。每个 workload 的 native 中位时间不少于 1.5 秒。任一非 native lane 超过 native 的 20 倍会从 Figure 17 排除，单次执行达到 100 秒时会立即终止。结果保留完整命令、输入哈希、工具版本和每次原始时间。批处理支持断点恢复，再次执行会跳过已经成功的 workload。完整 lane、输入和结果说明见 [`evaluations/2-cli-benchmarks/README.md`](evaluations/2-cli-benchmarks/README.md)。
 
 ### 3.3 验证 breakdown
 
-运行 callback 地址来源检查和三整数函数调用拆分：
+运行 callback 地址来源检查和 2 参数、6 参数函数调用拆分：
 
 ```bash
 ./evaluations/3-breakdown/box64-callback-track/run.sh
+./evaluations/3-breakdown/hecate-callback-track/run.sh
 ./evaluations/3-breakdown/breakdown-test/run.sh
+python3 evaluations/3-breakdown/coverage-effort/run.py
 ```
 
-两个实验都使用 `install-libs.sh` 已安装的 `breakdown-test` 包。callback 实验使用 `install-tools.sh` 安装的独立 Box64 插桩 executable，不读取源码树，也不在运行时重新编译 Box64。采样轮数、迭代次数和 CPU 可分别通过 `ROUNDS`、`ITERATIONS` 和 `CPU` 调整。具体测量点见两个实验各自的 README。
+函数调用拆分和 Box64 callback 拆分使用 `install-libs.sh` 已安装的 `breakdown-test` 包，并分别使用 `install-tools.sh` 安装的独立插桩 QEMU 与 Box64。Hecate callback 地址边界实验使用已安装的 devkit。这些 runner 不读取相邻源码仓库，也不在运行时重新编译模拟器。采样轮数、迭代次数和 CPU 可分别通过 `ROUNDS`、`ITERATIONS` 和 `CPU` 调整。具体测量点见三个实验各自的 README。
 
 ### 3.4 验证游戏
 
-评审者可以从已安装的游戏中任选一个运行。参数是运行秒数，缺省为 30 秒：
+评审者可以从已安装的游戏中任选一个运行。参数是 watchdog 秒数，缺省为 30 秒：
 
 ```bash
 ./evaluations/4-games/assaultcube/run.sh 30
@@ -152,10 +227,71 @@ runner 会准备确定性压缩输入和公开媒体输入，并依次测量 FFT
 ./evaluations/4-games/supertuxkart/run.sh 30
 ```
 
-游戏 runner 会先执行图形、窗口系统和 thunk preflight，再通过 Hecate 启动未修改的 x86-64 游戏程序。MangoHud 默认在 host 侧采集帧率和帧时间，并将原始样本与汇总写入该游戏的 `results/<run-id>/`。所有游戏都可以使用 `GAME_DIR` 覆盖当前所选游戏的默认安装目录。Hollow Knight 的 runner 也保留在 `evaluations/4-games/hollow-knight/`，但其专有游戏文件不能随 artifact 分发，评审者需自行提供合法副本。对 Hollow Knight，`GAME_DIR` 应直接包含 `Hollow Knight` 可执行文件和 `Hollow Knight_Data/`：
+游戏 runner 会先执行图形、窗口系统和 thunk preflight，再通过 Hecate 启动未修改的 x86-64 游戏程序。MangoHud 默认在 host 侧采集帧率和帧时间，并将原始样本与汇总写入该游戏的 `results/<run-id>/`。采集论文口径的 FPS 时，进入要测的实际游戏场景，保持至少 15 秒，然后关闭游戏；导出器只采用整段记录关闭前第 12 秒到第 2 秒之间的 10 秒窗口。可以传入较长 watchdog，例如 `300`，给人工进入场景留足时间。所有游戏都可以使用 `GAME_DIR` 覆盖当前所选游戏的默认安装目录。Hollow Knight 的 runner 也保留在 `evaluations/4-games/hollow-knight/`，但其专有游戏文件不能随 artifact 分发，评审者需自行提供合法副本。对 Hollow Knight，`GAME_DIR` 应直接包含 `Hollow Knight` 可执行文件和 `Hollow Knight_Data/`：
 
 ```bash
 GAME_DIR="/absolute/path/to/Hollow Knight" ./evaluations/4-games/hollow-knight/run.sh 30
+```
+
+### 3.5 导出论文数据与构图
+
+运行 coverage、源码修改量分析，随后一次性把现有实验证据导出为与论文口径对应的可读 CSV：
+
+```bash
+python3 evaluations/3-breakdown/coverage-effort/run.py
+./evaluations/5-modifications/run.sh
+python3 evaluations/export-paper-data.py
+```
+
+导出器会生成以下数据：
+
+1. `overall.csv`：八个命令行 workload 的九条执行路径及归一化时间。
+2. `game-fps.csv`：每个游戏关闭前 `[12s, 2s)` 窗口的 FPS 平均值、最小值、最大值和总体方差，并保留样本数与原始 MangoHud 路径。
+3. `function-breakdown.csv` 与 `callback-track.csv`：直通调用和 callback breakdown。
+4. `coverage-effort.csv` 与 `modifications.csv`：覆盖率、Hecate 人工及生成代码量和各系统修改量。
+5. `manifest.json`：所有被读取证据的 SHA-256 及导出配置。
+
+绘图脚本只读取 `evaluations/paper-data/` 中生成的 CSV：
+
+```bash
+python3 evaluations/plots/plot-overall.py
+python3 evaluations/plots/plot-coverage-effort.py
+python3 evaluations/plots/plot-function-breakdown.py
+python3 evaluations/plots/plot-callback-track.py
+```
+
+该导出明确排除 Risotto 性能、VA 与 FP 总体统计和 library distribution。尚未人工运行的游戏及其他缺失实验 lane 保留为 `missing`，不会用旧论文常量填补。
+
+### 3.6 从空容器快速 walkthrough
+
+完成第 2 节安装后，下面的顺序覆盖 library 正确性、全部命令行执行路径、三个 breakdown、一个人工游戏场景、修改量和最终导出。快速检查只把重复测量缩为一次，不改变 workload、执行路径或验证逻辑：
+
+```bash
+./evaluations/1-libs/run-all.sh --verbose
+REPETITIONS=1 ./evaluations/2-cli-benchmarks/run-all.sh
+ROUNDS=1 ./evaluations/3-breakdown/box64-callback-track/run.sh
+ROUNDS=1 ./evaluations/3-breakdown/hecate-callback-track/run.sh
+ROUNDS=1 ./evaluations/3-breakdown/breakdown-test/run.sh
+```
+
+然后任选一个游戏，以足够长的 watchdog 启动。进入目标场景后保持至少 15 秒，再正常关闭游戏：
+
+```bash
+GUI_ENV=$PWD/.work/gui-env ./evaluations/4-games/openarena/run.sh 300
+```
+
+最后运行 coverage、修改量分析并一次性导出全部现有证据：
+
+```bash
+python3 evaluations/3-breakdown/coverage-effort/run.py
+./evaluations/5-modifications/run.sh
+python3 evaluations/export-paper-data.py
+```
+
+正式数据把命令行 workload 恢复为默认五次，并使用各 breakdown runner 的默认轮数。如果同一 checkout 已保存单次快速检查的批处理状态，必须用 `--restart` 开始新的五次测量，避免混合两种配置：
+
+```bash
+REPETITIONS=5 ./evaluations/2-cli-benchmarks/run-all.sh --restart
 ```
 
 ## 4. 结果与声明（Results and claims）

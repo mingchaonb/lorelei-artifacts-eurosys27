@@ -18,6 +18,9 @@
 4. [游戏评测](4-games/README.zh-CN.md)
    - 验证 graphics、window system、thunk 和游戏启动路径。
    - 使用 MangoHud 记录 FPS 与 frametime。
+5. [QEMU 修改量统计](5-modifications/README.zh-CN.md)
+   - 统计 Lat、Risotto 与 Hecate 的 QEMU 接入修改量。
+   - 为 Lat 使用可审计的 Box64/KZT build dependency closure。
 
 各组 README 负责说明本组的声明、运行命令、参数、结果格式和排除项。单项配方 README 只说明对应 library、workload、breakdown 或游戏。
 
@@ -40,7 +43,7 @@
 2. `install-tools.sh`
    - 安装 native FFmpeg 输入准备工具。
    - 安装固定版本的 QEMU、Blink、Box64 和 FEX。
-   - 安装 callback breakdown 专用的插桩 Box64。
+   - 安装函数调用 breakdown 专用的插桩 QEMU 和 callback breakdown 专用的插桩 Box64。
 3. `install-libs.sh`
    - 依次调用 library 配方的 `run.sh --install-only`。
    - 失败后继续准备后续 library。
@@ -65,12 +68,13 @@
 | Lorelei devkit | `.work/devkit/` | TLC、HLR、runtime、cross compiler 和 patched QEMU plugin |
 | FFmpeg | `vcpkg/installed/arm64-linux/tools/ffmpeg/ffmpeg` | 准备媒体输入，不参与计时 |
 | QEMU | `vcpkg/installed/arm64-linux/tools/qemu-ae/qemu-x86_64` | 纯模拟与 Hecate 性能路径 |
+| 插桩 QEMU | `vcpkg/installed/arm64-linux/tools/qemu-breakdown-ae/qemu-x86_64` | 只用于直通函数调用的阶段拆分 |
 | Blink | `vcpkg/installed/arm64-linux/tools/blink-ae/blink` | 纯模拟与 Hecate 性能路径 |
 | Box64 | `vcpkg/installed/arm64-linux/tools/box64-ae/box64` | 不带插桩的性能路径 |
 | FEX | `vcpkg/installed/arm64-linux/tools/fex-ae/FEX` | 纯模拟与 Hecate 性能路径 |
 | 插桩 Box64 | `vcpkg/installed/arm64-linux/tools/box64-callback-track-ae/box64-callback-track` | 只用于 callback 地址来源 breakdown |
 
-普通 Box64 与插桩 Box64 是两个独立 package。插桩版本不会替换普通 `BOX64`，也不参与任何性能 lane。
+普通 QEMU、Box64 与各自的插桩版本是独立 package。插桩版本不会替换普通 `QEMU` 或 `BOX64`，也不参与任何性能 lane。
 
 ## 4. 公共接口
 
@@ -82,13 +86,14 @@
 |---|---|
 | `LORELEI_DEVKIT` | 覆盖默认 `.work/devkit` |
 | `QEMU` | 覆盖普通 QEMU 可执行文件路径 |
+| `QEMU_BREAKDOWN` | 覆盖函数调用 breakdown 使用的插桩 QEMU 路径，不影响 `QEMU` 或性能评测 |
 | `BLINK` | 覆盖 Blink 可执行文件路径 |
 | `BOX64` | 覆盖不带插桩的普通 Box64 路径 |
 | `FEX` | 覆盖 FEX 可执行文件路径 |
 | `BOX64_CALLBACK_TRACK` | 覆盖 callback breakdown 使用的插桩 Box64 路径，不影响 `BOX64` 或性能评测 |
 | `GAME_DIR` | 覆盖当前所选游戏的安装目录 |
 | `REPETITIONS` | 覆盖性能 workload 的重复次数 |
-| `TIMEOUT_SECONDS` | 覆盖单次 workload 的超时时间 |
+| `TIMEOUT_SECONDS` | 降低单次 workload 的超时时间，不能调高 Figure 17 的 100 秒 hard limit |
 
 批处理脚本具有以下共同特性：
 
@@ -106,7 +111,8 @@ evaluations/
 ├── 1-libs/<package>/              单个 library 配方
 ├── 2-cli-benchmarks/<workload>/   单个性能 workload
 ├── 3-breakdown/<experiment>/      单个机制实验
-└── 4-games/<game>/                单个游戏配方
+├── 4-games/<game>/                单个游戏配方
+└── 5-modifications/               QEMU 修改量源码分析
 
 vcpkg-overlay/
 ├── ports/<package>/               被测软件的源码、patch 与构建策略
@@ -133,3 +139,15 @@ vcpkg-overlay/
 5. 从原始数据得到结论的机器可读汇总。
 
 不同评测组需要保存的附加证据由各组 README 规定。
+
+## 6. 导出论文 CSV
+
+最终导出只读取已经生成的原始证据，不会隐式运行 benchmark 或 TLC 覆盖率审计。完成各组 runner 后，还需要显式生成 coverage 与修改量证据，再运行统一导出器：
+
+```bash
+python3 evaluations/3-breakdown/coverage-effort/run.py
+./evaluations/5-modifications/run.sh
+python3 evaluations/export-paper-data.py
+```
+
+导出器在 `evaluations/paper-data/` 中写入 `overall.csv`、`game-fps.csv`、`function-breakdown.csv`、`callback-track.csv`、`coverage-effort.csv`、`modifications.csv` 和输入哈希 manifest。未运行的实验保留为 `missing`，不会使用旧论文常量填补。
