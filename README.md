@@ -15,11 +15,11 @@ The default setup places the source checkouts next to this repository under the 
 └── qemu-ae/build/qemu-x86_64
 ```
 
-Clone the pinned vcpkg revision into the artifact repository root, then bootstrap it once:
+Clone the pinned vcpkg release into the artifact repository root, then bootstrap it once:
 
 ```bash
 git clone https://github.com/microsoft/vcpkg.git vcpkg
-git -C vcpkg checkout 3f7b5a12ef0a55e7b59339b2b69cac4b56d6dbf9
+git -C vcpkg checkout 2026.07.29
 ./vcpkg/bootstrap-vcpkg.sh -disableMetrics
 ```
 

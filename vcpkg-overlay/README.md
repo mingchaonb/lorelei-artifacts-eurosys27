@@ -2,13 +2,13 @@
 
 This directory is the shared package layer for version 2 library validation. All tested libraries use ports below `ports/`, and all AE target definitions use triplets below `triplets/`.
 
-The repository-local `vcpkg/` checkout is the only supported vcpkg instance. The currently validated checkout is commit `3f7b5a12ef0a55e7b59339b2b69cac4b56d6dbf9`.
+The repository-local `vcpkg/` checkout is the only supported vcpkg instance. The pinned release is `2026.07.29`.
 
 ## Initial setup
 
 ```bash
 git clone https://github.com/microsoft/vcpkg.git vcpkg
-git -C vcpkg checkout 3f7b5a12ef0a55e7b59339b2b69cac4b56d6dbf9
+git -C vcpkg checkout 2026.07.29
 ./vcpkg/bootstrap-vcpkg.sh -disableMetrics
 ```
 

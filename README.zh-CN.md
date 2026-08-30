@@ -19,7 +19,7 @@
 
 ```bash
 git clone https://github.com/microsoft/vcpkg.git vcpkg
-git -C vcpkg checkout 3f7b5a12ef0a55e7b59339b2b69cac4b56d6dbf9
+git -C vcpkg checkout 2026.07.29
 ./vcpkg/bootstrap-vcpkg.sh -disableMetrics
 ```
 
