@@ -347,6 +347,7 @@ fi
     echo "cwd=$game_dir"
     echo "executable=$executable"
     echo "watchdog_seconds=$run_seconds"
+    echo "lane=qemu-hecate"
     echo "mangohud_enabled=$mangohud_enabled"
     echo "native_game_prefix=$native_game_prefix"
     echo "guest_game_prefix=$guest_game_prefix"

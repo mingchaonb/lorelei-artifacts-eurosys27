@@ -45,6 +45,13 @@
 ./evaluations/4-games/supertuxkart/run.sh 60
 ```
 
+采集论文 FPS 数据时：
+
+1. 根据进入目标游戏场景所需的时间，选择足够长的 watchdog。
+2. 启动 runner，并手动进入目标场景。
+3. 场景就绪后，保持游戏继续运行至少 15 秒。
+4. 正常关闭游戏。论文导出取最后一个 sample 前第 12 秒到第 2 秒之间的 10 秒窗口。最后 2 秒不计入，避免关闭游戏的操作影响结果。
+
 设置 `GAME_DIR` 可让任何 runner 使用用户指定的游戏目录，并跳过该游戏的 vcpkg package 安装：
 
 ```bash
@@ -121,6 +128,16 @@ MangoHud 默认包裹 host 侧 QEMU 进程，因为 AArch64 GL 与 Vulkan driver
 - 原始 MangoHud CSV 写入本次结果目录。
 - `fps-summary.json` 汇总稳定 FPS 与 frametime。
 
+论文数据导出脚本直接读取原始 CSV，不会照搬 MangoHud 的全程 summary。脚本优先根据 MangoHud 的 `elapsed` 时间戳为每个游戏截取 `[最后一个 sample - 12 秒, 最后一个 sample - 2 秒)`，统计 sample 数量以及 FPS 平均值、最小值、最大值和总体方差。默认每 100 ms 采样一次，因此窗口通常包含约 100 个 sample。旧日志没有 `elapsed` 字段时才按固定采样间隔回退。少于 12 秒的记录会明确标记为数据不足，不会擅自缩短窗口。
+
+导出每个游戏最新且包含 MangoHud 记录的运行：
+
+```bash
+python3 evaluations/export-paper-data.py
+```
+
+可读表格写入 `evaluations/paper-data/game-fps.csv`。加 `--reference` 时，脚本读取 `reference-results/`，而不是 `results/`。
+
 关闭采集：
 
 ```bash
@@ -150,6 +167,7 @@ evaluations/4-games/<game>/results/<UTC timestamp>/
 4. 完整游戏启动命令和 watchdog 状态。
 5. MangoHud 原始样本。
 6. `fps-summary.json`。
+7. `game-fps.csv` 保留的 result 与原始日志路径。
 
 清理评审者结果前先预览：
 

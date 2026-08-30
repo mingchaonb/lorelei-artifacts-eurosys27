@@ -1,0 +1,20 @@
+{
+  "lat": {
+    "url": "https://github.com/lat-opensource/lat.git",
+    "base": "609d7596524ab204ccd71ef42c9eee4c7c338ea4",
+    "head": "a16a46b3b847977cc6b9b6a8a07af08e37efb814",
+    "selection": "lat-box64-closure"
+  },
+  "risotto": {
+    "url": "https://github.com/rgouicem/qemu.git",
+    "base": "7935027ab2bd2a8c23abc6d5bf8d7b778875b2ae",
+    "head": "18caf42a19bf7f0f8d4299687ead13d3c3c20c1e",
+    "selection": "complete-diff"
+  },
+  "hecate": {
+    "url": "https://github.com/qemu/qemu.git",
+    "base": "d37ce14f98b04c5017e74cd8b32776adb878b633",
+    "head": "5ed628d1d398b164053f5d5685541ea705275998",
+    "selection": "complete-diff"
+  }
+}

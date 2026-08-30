@@ -45,6 +45,13 @@ Each runner accepts one optional positional watchdog duration in seconds. The de
 ./evaluations/4-games/supertuxkart/run.sh 60
 ```
 
+For a paper FPS measurement:
+
+1. Choose a watchdog long enough to enter the intended gameplay scene.
+2. Start the run and navigate to that scene manually.
+3. After the scene is ready, leave the game running there for at least 15 seconds.
+4. Close the game normally. The paper export uses the ten-second window from 12 seconds before the final sample up to 2 seconds before it. The last two seconds are omitted so shutdown interaction does not affect the result.
+
 `GAME_DIR` lets any runner use an evaluator-supplied game directory and skips installation of that game's vcpkg package:
 
 ```bash
@@ -121,6 +128,16 @@ MangoHud wraps the host-side QEMU process by default because the AArch64 GL and 
 - Writes raw MangoHud CSV data into the run directory.
 - Produces `fps-summary.json` with stable FPS and frametime statistics.
 
+The paper-data exporter reads the raw CSV rather than copying MangoHud's whole-run summary. For each game, it uses MangoHud's `elapsed` timestamps to select `[last sample - 12 seconds, last sample - 2 seconds)`, then reports the sample count and FPS mean, minimum, maximum, and population variance. The default 100 ms interval normally yields about 100 samples. Fixed-interval indexing is only a fallback for older logs without `elapsed`. A log shorter than 12 seconds is marked as insufficient instead of silently changing the window.
+
+Export the latest available MangoHud run for every game with:
+
+```bash
+python3 evaluations/export-paper-data.py
+```
+
+The readable table is written to `evaluations/paper-data/game-fps.csv`. Use `--reference` to read `reference-results/` instead of `results/`.
+
 Disable collection with:
 
 ```bash
@@ -150,6 +167,7 @@ Evidence includes:
 4. Complete game command and watchdog status.
 5. Raw MangoHud samples.
 6. `fps-summary.json`.
+7. The result and raw-log paths retained by `game-fps.csv`.
 
 Preview and remove evaluator results with:
 
