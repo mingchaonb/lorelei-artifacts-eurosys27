@@ -35,10 +35,9 @@ run_dir=$results_root/$run_id
 [[ -x $vcpkg ]] || { echo "Bootstrap ./vcpkg before running this recipe" >&2; exit 2; }
 [[ -x $devkit/bin/LoreMakeThunk.py ]] || { echo "Invalid Lorelei devkit: $devkit" >&2; exit 2; }
 if [[ -e $work && ! -f $work/.lorelei-evaluations-workspace ]]; then
-    echo "Refusing to replace unmarked work directory: $work" >&2
+    echo "Refusing to use unmarked work directory: $work" >&2
     exit 2
 fi
-if [[ -e $work ]]; then cmake -E remove_directory "$work"; fi
 mkdir -p "$work" "$run_dir"/{generated,logs}
 touch "$work/.lorelei-evaluations-workspace"
 exec > >(tee "$run_dir/commands.log") 2>&1

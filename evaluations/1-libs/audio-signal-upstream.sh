@@ -145,7 +145,9 @@ case $target in
         native_build=$(installed_test_tree host build); native_source=$(installed_test_tree host source)
         guest_build=$(installed_test_tree guest build); guest_source=$(installed_test_tree guest source)
         for rel in tests/stdin_test tests/stdout_test; do
-            mv "$guest_build/$rel" "$guest_build/$rel.x64"
+            if [[ ! -e $guest_build/$rel.x64 ]]; then
+                mv "$guest_build/$rel" "$guest_build/$rel.x64"
+            fi
             printf '#!/usr/bin/env bash\nexec %q --launch-hecate %q "$@"\n' "$runner" "$guest_build/$rel.x64" >"$guest_build/$rel"
             chmod +x "$guest_build/$rel"
         done
@@ -157,7 +159,9 @@ case $target in
         native_build=$(installed_test_tree host build); native_source=$(installed_test_tree host source)
         guest_build=$(installed_test_tree guest build); guest_source=$(installed_test_tree guest source)
         for rel in examples/3-options-input-fn tests/vector-cmp; do
-            mv "$guest_build/$rel" "$guest_build/$rel.x64"
+            if [[ ! -e $guest_build/$rel.x64 ]]; then
+                mv "$guest_build/$rel" "$guest_build/$rel.x64"
+            fi
             printf '#!/usr/bin/env bash\nexec %q --launch-hecate %q "$@"\n' "$runner" "$guest_build/$rel.x64" >"$guest_build/$rel"
             chmod +x "$guest_build/$rel"
         done
