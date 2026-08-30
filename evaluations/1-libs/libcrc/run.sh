@@ -25,6 +25,7 @@ qemu=$(realpath -m "${QEMU:-$repo_root/../qemu-ae/build/qemu-x86_64}")
 vcpkg=$repo_root/vcpkg/vcpkg
 nm_tool=$(command -v llvm-nm-20 || command -v llvm-nm || command -v nm)
 work=$repo_root/.work/evaluations/libcrc
+vcpkg_state=$repo_root/.work/vcpkg-state
 results_root=$recipe_dir/results
 kind=evaluator
 if $reference; then results_root=$recipe_dir/reference-results; kind=reference; fi
@@ -37,7 +38,7 @@ done
 if ! $install_only; then [[ -x $qemu ]] || { echo "Patched QEMU not found: $qemu" >&2; exit 2; }; fi
 if [[ -e $work && ! -f $work/.lorelei-evaluations-workspace ]]; then echo "Refusing unmarked work directory: $work" >&2; exit 2; fi
 if [[ -e $work ]]; then cmake -E remove_directory "$work"; fi
-mkdir -p "$work" "$run_dir"/{generated,logs/preparation,logs/native,logs/hecate}
+mkdir -p "$work" "$vcpkg_state" "$run_dir"/{generated,logs/preparation,logs/native,logs/hecate}
 touch "$work/.lorelei-evaluations-workspace"
 if ! $install_only && [[ -n ${PLUGIN:-} ]]; then
   plugin=$(realpath "$PLUGIN")
@@ -66,18 +67,18 @@ export LORELEI_DEVKIT=$devkit
 export VCPKG_MAX_CONCURRENCY=$(nproc)
 install_lane() {
   local lane=$1 triplet=$2
-  run_logged "$run_dir/logs/preparation/vcpkg-$lane.log" "$vcpkg" install "libcrc:$triplet" --overlay-ports="$overlay_dir/ports" --overlay-triplets="$overlay_dir/triplets" --x-install-root="$work/installed/$lane" --x-buildtrees-root="$work/vcpkg/$lane/buildtrees" --x-packages-root="$work/vcpkg/$lane/packages" --downloads-root="$work/vcpkg/downloads" --triplet="$triplet"
+  run_logged "$run_dir/logs/preparation/vcpkg-$lane.log" "$vcpkg" install "libcrc:$triplet" --overlay-ports="$overlay_dir/ports" --overlay-triplets="$overlay_dir/triplets" --x-install-root="$vcpkg_state/installed/$lane" --x-buildtrees-root="$vcpkg_state/vcpkg/$lane/buildtrees" --x-packages-root="$vcpkg_state/vcpkg/$lane/packages" --downloads-root="$vcpkg_state/vcpkg/downloads" --triplet="$triplet"
 }
 if ! $install_only; then install_lane native arm64-linux-ae; install_lane guest x64-linux-ae; fi
 install_lane hecate arm64-linux-ae
-hecate_prefix=$work/installed/hecate/arm64-linux-ae
+hecate_prefix=$vcpkg_state/installed/hecate/arm64-linux-ae
 mkdir -p "$work/thunks" "$run_dir/generated/elf"
 if $install_only; then
   printf '{"schema_version":2,"package":"libcrc","status":"installed","mode":"install-only","tests_run":false}\n' >"$run_dir/summary.json"
   exit 0
 fi
-native_prefix=$work/installed/native/arm64-linux-ae
-guest_prefix=$work/installed/guest/x64-linux-ae
+native_prefix=$vcpkg_state/installed/native/arm64-linux-ae
+guest_prefix=$vcpkg_state/installed/guest/x64-linux-ae
 native_tests=$native_prefix/tools/libcrc/upstream-tests
 guest_tests=$guest_prefix/tools/libcrc/upstream-tests
 native_test=$native_tests/libcrc_testall
