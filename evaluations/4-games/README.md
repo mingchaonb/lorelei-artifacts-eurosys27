@@ -2,15 +2,17 @@
 
 This group contains reproducible recipes and evidence for game performance and playability. Library-level GLVND and Vulkan validation belongs under `evaluations/1-libs`.
 
-Each game has the same recipe layout as a library evaluation and is started by its own `run.sh`. `LORELEI_DEVKIT` follows the repository-wide default. The optional `SECONDS` argument sets the watchdog duration.
+Each game has the same recipe layout as a library evaluation and is started by its own `run.sh`. `LORELEI_DEVKIT` follows the repository-wide default. The optional `SECONDS` argument sets the watchdog duration. `GAME_DIR` overrides the selected game's default installation directory and skips installation of that game's vcpkg package.
 
 ```bash
 ./evaluations/4-games/openarena/run.sh 30
 ./evaluations/4-games/supertuxkart/run.sh 60
-HOLLOW_USE_VULKAN=1 ./evaluations/4-games/hollow-knight/run.sh 45
+GAME_DIR="/absolute/path/to/openarena" ./evaluations/4-games/openarena/run.sh 30
+GAME_DIR="/absolute/path/to/Hollow Knight" ./evaluations/4-games/hollow-knight/run.sh 45
+GAME_DIR="/absolute/path/to/Hollow Knight" HOLLOW_USE_VULKAN=1 ./evaluations/4-games/hollow-knight/run.sh 45
 ```
 
-The official x86-64 release archives, versions, checksums and executable paths are pinned in `sources.json`. Hollow Knight is intentionally excluded from the download list because its paid proprietary game files cannot be downloaded or redistributed by the artifact. Its runner remains available for evaluators who legally provide their own copy.
+The official x86-64 release archives, versions, checksums and executable paths are pinned in `sources.json`. Hollow Knight is intentionally excluded from the download list because its paid proprietary game files cannot be downloaded or redistributed by the artifact. Its runner remains available for evaluators who legally provide their own copy. For Hollow Knight, set `GAME_DIR` to the installation directory that directly contains the `Hollow Knight` executable and `Hollow Knight_Data/` directory.
 
 The five redistributable games are vcpkg ports. Run `./evaluations/install-games.sh` to install an AArch64 native package and an x86-64 guest package for each game. There is intentionally no separate Hecate game package. Hecate executes the unmodified executable from the guest package while the translated libraries come from the library evaluations. Each per-game `run.sh` also installs or reuses its own two game packages before launching. Set `GAMES_ROOT` only to use the legacy external packages instead.
 

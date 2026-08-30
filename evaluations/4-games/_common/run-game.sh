@@ -12,6 +12,7 @@ Common environment overrides:
   LORELEI_DEVKIT        Lorelei devkit installation
   QEMU                  Patched qemu-x86_64 executable
   GAMES_ROOT            Legacy packaged game directory override
+  GAME_DIR              Selected game's installation directory
   GUI_ENV               File containing DISPLAY and XAUTHORITY
   RUNTIME_HOME_ROOT     Per-game writable home directories
   MANGOHUD_ENABLED      Set to 0 to disable FPS collection
@@ -68,7 +69,7 @@ x11_thunk=$repo_root/.work/evaluations/libx11/thunk
 
 native_game_prefix=
 guest_game_prefix=
-if [[ $game != hollow-knight && -z ${GAMES_ROOT:-} ]]; then
+if [[ $game != hollow-knight && -z ${GAMES_ROOT:-} && -z ${GAME_DIR:-} ]]; then
     game_work_dir=$repo_root/.work/evaluations/games/$game
     game_installed=$game_work_dir/installed
     game_buildtrees=$game_work_dir/buildtrees
@@ -96,19 +97,24 @@ for required in "$qemu" "$gui_env" "$devkit/bin/x86_64-linux-gnu-clang" \
     [[ -e $required ]] || { echo "Missing runtime input: $required" >&2; exit 2; }
 done
 
+resolve_game_dir() {
+    realpath -m "${GAME_DIR:-$1}"
+}
+
 case "$game" in
     assaultcube)
         if [[ -n $guest_game_prefix ]]; then
-            game_dir=$guest_game_prefix/tools/assaultcube/game
+            default_game_dir=$guest_game_prefix/tools/assaultcube/game
         else
-            game_dir=$games_root/assaultcube
+            default_game_dir=$games_root/assaultcube
         fi
+        game_dir=$(resolve_game_dir "$default_game_dir")
         executable=$game_dir/bin_unix/linux_64_client
         game_library_path=""
         game_args=("--home=$runtime_home_root/assaultcube" --init)
         ;;
     hollow-knight)
-        game_dir=$games_root/hollow-knight/game
+        game_dir=$(resolve_game_dir "$games_root/hollow-knight/game")
         executable=$game_dir/Hollow\ Knight
         game_library_path="$game_dir:$game_dir/Hollow Knight_Data/MonoBleedingEdge/x86_64"
         if [[ ${HOLLOW_USE_VULKAN:-0} == 1 ]]; then
@@ -120,20 +126,22 @@ case "$game" in
         ;;
     redeclipse)
         if [[ -n $guest_game_prefix ]]; then
-            game_dir=$guest_game_prefix/tools/redeclipse/game
+            default_game_dir=$guest_game_prefix/tools/redeclipse/game
         else
-            game_dir=$games_root/redeclipse
+            default_game_dir=$games_root/redeclipse
         fi
+        game_dir=$(resolve_game_dir "$default_game_dir")
         executable=$game_dir/bin/amd64/redeclipse_linux
         game_library_path=$game_dir/bin/amd64
         game_args=()
         ;;
     openarena)
         if [[ -n $guest_game_prefix ]]; then
-            game_dir=$guest_game_prefix/tools/openarena/game
+            default_game_dir=$guest_game_prefix/tools/openarena/game
         else
-            game_dir=$games_root/openarena
+            default_game_dir=$games_root/openarena
         fi
+        game_dir=$(resolve_game_dir "$default_game_dir")
         executable=$game_dir/openarena.x86_64
         game_library_path=""
         game_args=(+set r_fullscreen 0 +set r_mode -1 +set r_customwidth 1280
@@ -157,12 +165,16 @@ case "$game" in
         ;;
     supertux)
         if [[ -n $guest_game_prefix ]]; then
-            game_dir=$guest_game_prefix/tools/supertux/game/usr
+            default_game_dir=$guest_game_prefix/tools/supertux/game/usr
+        else
+            default_game_dir=$games_root/supertux
+        fi
+        game_dir=$(resolve_game_dir "$default_game_dir")
+        if [[ -x $game_dir/bin/supertux2 ]]; then
             executable=$game_dir/bin/supertux2
             game_library_path=$game_dir/lib/x86_64-linux-gnu
             game_args=(--datadir "$game_dir/share/supertux2")
         else
-            game_dir=$games_root/supertux
             executable=$game_dir/build/RelWithDebInfo/supertux2
             game_library_path=$game_dir/runtime-libs
             game_args=(--datadir "$game_dir/build/install/share/games/supertux2")
@@ -170,10 +182,11 @@ case "$game" in
         ;;
     supertuxkart)
         if [[ -n $guest_game_prefix ]]; then
-            game_dir=$guest_game_prefix/tools/supertuxkart/game
+            default_game_dir=$guest_game_prefix/tools/supertuxkart/game
         else
-            game_dir=$games_root/supertuxkart
+            default_game_dir=$games_root/supertuxkart
         fi
+        game_dir=$(resolve_game_dir "$default_game_dir")
         executable=$game_dir/bin/supertuxkart
         game_library_path=$game_dir/lib
         game_args=()
@@ -183,6 +196,12 @@ case "$game" in
         exit 2
         ;;
 esac
+
+if [[ ! -x $executable ]]; then
+    echo "Game executable not found: $executable" >&2
+    echo "Set GAME_DIR to the selected game's installation directory." >&2
+    exit 2
+fi
 
 display=$(sed -n 's/^DISPLAY=//p' "$gui_env" | tail -1)
 xauthority=$(sed -n 's/^XAUTHORITY=//p' "$gui_env" | tail -1)
