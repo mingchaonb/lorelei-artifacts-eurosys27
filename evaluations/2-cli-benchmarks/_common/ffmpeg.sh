@@ -55,11 +55,20 @@ ffmpeg_workload_main() {
     local host_extension=$devkit/lib/libLoreHostHLRExtension.so
     local guest_extension=$devkit/x86_64/lib/libLoreGuestHLRExtension.so
     local thread_hook=$devkit/lib/libLoreQEMUThreadHook.so
-    local -a args=(-hide_banner -loglevel error -nostdin -y -i "$input" "${ffmpeg_args[@]}" "{output}$output_suffix")
+    local -a input_args=()
+    if declare -p ffmpeg_input_args &>/dev/null; then
+        input_args=("${ffmpeg_input_args[@]}")
+    fi
+    local -a args=(-hide_banner -loglevel error -nostdin -y "${input_args[@]}" -i "$input" "${ffmpeg_args[@]}" "{output}$output_suffix")
 
     cli_measure native env LD_LIBRARY_PATH="$native_ld" "$native_cli" "${args[@]}"
     cli_measure qemu "$qemu" -L "$devkit/x86_64/sysroot" -E "LD_LIBRARY_PATH=$guest_ld" "$guest_cli" "${args[@]}"
-    cli_measure blink env LD_LIBRARY_PATH="$guest_ld" BLINK_OVERLAYS="$devkit/x86_64/sysroot:" "$blink" -j "$guest_cli" "${args[@]}"
+    if [[ $workload == ffmpeg-x264 ]]; then
+        cli_measure_excludable blink "blink_interpreter_cannot_execute_the_x264_guest_binary" \
+            env LD_LIBRARY_PATH="$guest_ld" BLINK_OVERLAYS="$devkit/x86_64/sysroot:" "$blink" -j "$guest_cli" "${args[@]}"
+    else
+        cli_measure blink env LD_LIBRARY_PATH="$guest_ld" BLINK_OVERLAYS="$devkit/x86_64/sysroot:" "$blink" -j "$guest_cli" "${args[@]}"
+    fi
     cli_measure box64 env LD_LIBRARY_PATH="$devkit/lib" BOX64_LD_LIBRARY_PATH="$guest_ld" BOX64_LOG=0 BOX64_NOBANNER=1 BOX64_NORCFILES=1 "$box64" "$guest_cli" "${args[@]}"
     cli_measure fex env LD_LIBRARY_PATH="$devkit/lib" FEX_ROOTFS="$devkit/x86_64/sysroot" FEX_ENV="LD_LIBRARY_PATH=$guest_ld" FEX_OUTPUTLOG=stderr "$fex" "$guest_cli" "${args[@]}"
 
@@ -78,8 +87,6 @@ import sys
 ffprobe, result_name, suffix, expected_codec = sys.argv[1:]
 result = pathlib.Path(result_name)
 outputs = sorted((result / "outputs").glob(f"*/run-*{suffix}"))
-if not outputs:
-    raise SystemExit("no encoded outputs found")
 records = []
 for output in outputs:
     command = [

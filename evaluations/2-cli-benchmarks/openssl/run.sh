@@ -94,7 +94,8 @@ fi
 for executable in "$native_cli" "$guest_cli" "$qemu" "$blink" "$box64" "$fex"; do
     cli_require_executable "$executable"
 done
-[[ -s $input_dir/manifest.json ]] || "$cli_root/_common/prepare-inputs.sh"
+input=$input_dir/data-256m.bin
+[[ -s $input && -s $input_dir/manifest.json ]] || "$cli_root/_common/prepare-inputs.sh"
 
 cli_begin_result openssl
 native_ld=$native_prefix/lib
@@ -102,89 +103,58 @@ guest_ld=$guest_prefix/lib:$devkit/x86_64/lib
 host_hecate_ld=$devkit/lib:$native_prefix/lib:$crypto_thunk:$ssl_thunk:$libc_thunk
 guest_hecate_ld=$devkit/x86_64/lib:$crypto_thunk/x86_64:$ssl_thunk/x86_64:$libc_thunk/x86_64
 hecate_preload=$libc_thunk/x86_64/libc-shim.so
-speed_seconds=3
-speed_bytes=1048576
-args=(speed -mr -elapsed -seconds "$speed_seconds" -bytes "$speed_bytes" -evp sha256)
+fex_config=$thunk_root/fex-hecate.json
+python3 - "$fex_config" "$hecate_preload" "$guest_hecate_ld" <<'PY'
+import json
+import pathlib
+import sys
+
+path, preload, library_path = sys.argv[1:]
+config = {"Config": {"Env": [f"LD_PRELOAD={preload}", f"LD_LIBRARY_PATH={library_path}"]}}
+pathlib.Path(path).write_text(json.dumps(config, indent=2) + "\n")
+PY
+args=(dgst -sha256 -binary -out '{output}')
+for _ in 1 2 3; do
+    args+=("$input")
+done
 
 cli_measure native env LD_LIBRARY_PATH="$native_ld" "$native_cli" "${args[@]}"
 cli_measure qemu "$qemu" -L "$devkit/x86_64/sysroot" -E "LD_LIBRARY_PATH=$guest_ld" "$guest_cli" "${args[@]}"
 cli_measure blink env LD_LIBRARY_PATH="$guest_ld" BLINK_OVERLAYS="$devkit/x86_64/sysroot:" "$blink" "$guest_cli" "${args[@]}"
-cli_measure box64 env LD_LIBRARY_PATH="$devkit/lib" BOX64_LD_LIBRARY_PATH="$guest_ld" BOX64_LOG=0 BOX64_NOBANNER=1 BOX64_NORCFILES=1 "$box64" "$guest_cli" "${args[@]}"
+cli_measure_excludable box64 "box64_cannot_execute_the_openssl_3.0.22_guest_binary" \
+    env LD_LIBRARY_PATH="$devkit/lib" BOX64_LD_LIBRARY_PATH="$guest_ld" \
+    BOX64_EMULATED_LIBS=libcrypto.so.3:libssl.so.3 \
+    BOX64_LOG=0 BOX64_NOBANNER=1 BOX64_NORCFILES=1 "$box64" "$guest_cli" "${args[@]}"
 cli_measure fex env LD_LIBRARY_PATH="$devkit/lib" FEX_ROOTFS="$devkit/x86_64/sysroot" FEX_ENV="LD_LIBRARY_PATH=$guest_ld" FEX_OUTPUTLOG=stderr "$fex" "$guest_cli" "${args[@]}"
 
 cli_measure qemu-hecate env LD_LIBRARY_PATH="$host_hecate_ld" "$qemu" -L "$devkit/x86_64/sysroot" -E LD_BIND_NOW=1 -E "LD_PRELOAD=$hecate_preload" -E "LD_LIBRARY_PATH=$guest_hecate_ld" "$guest_cli" "${args[@]}"
 cli_measure blink-hecate env LD_LIBRARY_PATH="$host_hecate_ld:$guest_hecate_ld" LD_PRELOAD="$hecate_preload" BLINK_OVERLAYS="$devkit/x86_64/sysroot:" "$blink" "$guest_cli" "${args[@]}"
-cli_measure box64-hecate env LD_LIBRARY_PATH="$host_hecate_ld" BOX64_LD_LIBRARY_PATH="$guest_hecate_ld" BOX64_LD_PRELOAD="$hecate_preload" BOX64_LOG=0 BOX64_NOBANNER=1 BOX64_NORCFILES=1 "$box64" "$guest_cli" "${args[@]}"
-cli_measure fex-hecate env LD_LIBRARY_PATH="$host_hecate_ld" FEX_ROOTFS="$devkit/x86_64/sysroot" FEX_ENV="LD_PRELOAD=$hecate_preload:LD_LIBRARY_PATH=$guest_hecate_ld" FEX_OUTPUTLOG=stderr "$fex" "$guest_cli" "${args[@]}"
+cli_measure_excludable box64-hecate "box64_cannot_execute_the_openssl_3.0.22_tlc_guest_binary" \
+    env LD_LIBRARY_PATH="$host_hecate_ld" BOX64_LD_LIBRARY_PATH="$guest_hecate_ld" \
+    BOX64_LD_PRELOAD="$hecate_preload" BOX64_EMULATED_LIBS=libcrypto.so.3:libssl.so.3 \
+    BOX64_LOG=0 BOX64_NOBANNER=1 BOX64_NORCFILES=1 "$box64" "$guest_cli" "${args[@]}"
+cli_measure fex-hecate env LD_LIBRARY_PATH="$host_hecate_ld" FEX_ROOTFS="$devkit/x86_64/sysroot" \
+    FEX_APP_CONFIG="$fex_config" FEX_OUTPUTLOG=stderr "$fex" "$guest_cli" "${args[@]}"
 
-python3 - "$result_dir" "$speed_seconds" "$speed_bytes" <<'PY'
-import csv
-import json
+python3 - "$result_dir" "$input" <<'PY'
+import hashlib
 import pathlib
-import re
-import statistics
 import sys
 
 root = pathlib.Path(sys.argv[1])
-seconds = int(sys.argv[2])
-buffer_bytes = int(sys.argv[3])
-pattern = re.compile(r"^\+F:[0-9]+:sha256:([0-9]+(?:\.[0-9]+)?)$", re.MULTILINE)
-rows = []
-by_lane = {}
-for path in sorted((root / "raw").glob("*/run-*.stdout")):
-    lane = path.parent.name
-    repetition = int(path.stem.split("-")[-1])
-    match = pattern.search(path.read_text())
-    if not match:
-        raise SystemExit(f"missing OpenSSL SHA-256 throughput result in {path}")
-    throughput = float(match.group(1))
-    rows.append((lane, repetition, throughput))
-    by_lane.setdefault(lane, []).append(throughput)
-
-if not rows:
-    raise SystemExit("no OpenSSL SHA-256 throughput results found")
-
-with (root / "throughput.tsv").open("w", newline="") as stream:
-    writer = csv.writer(stream, delimiter="\t", lineterminator="\n")
-    writer.writerow(["lane", "repetition", "bytes_per_second"])
-    writer.writerows(rows)
-
-summary = {
-    "schema_version": 1,
-    "metric": "SHA-256 throughput",
-    "unit": "bytes_per_second",
-    "speed_seconds": seconds,
-    "buffer_bytes": buffer_bytes,
-    "lanes": {},
-    "hecate_speedup_over_pure_emulation": {},
-}
-for lane, values in sorted(by_lane.items()):
-    summary["lanes"][lane] = {
-        "samples": len(values),
-        "minimum": min(values),
-        "median": statistics.median(values),
-        "maximum": max(values),
-        "mean": statistics.fmean(values),
-    }
-
-for emulator in ("qemu", "blink", "box64", "fex"):
-    hecate = f"{emulator}-hecate"
-    if emulator in summary["lanes"] and hecate in summary["lanes"]:
-        pure_median = summary["lanes"][emulator]["median"]
-        hecate_median = summary["lanes"][hecate]["median"]
-        summary["hecate_speedup_over_pure_emulation"][emulator] = hecate_median / pure_median
-
-native = summary["lanes"].get("native")
-if native:
-    native_median = native["median"]
-    summary["fraction_of_native"] = {
-        lane: values["median"] / native_median
-        for lane, values in summary["lanes"].items()
-        if lane.endswith("-hecate")
-    }
-
-(root / "throughput-summary.json").write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n")
+source = pathlib.Path(sys.argv[2])
+with source.open("rb") as stream:
+    digest = hashlib.file_digest(stream, "sha256")
+expected = digest.digest() * 3
+outputs = sorted((root / "outputs").glob("*/run-*"))
+if not outputs:
+    raise SystemExit("no OpenSSL digest outputs found")
+for path in outputs:
+    actual = path.read_bytes()
+    if actual != expected:
+        raise SystemExit(f"SHA-256 digest mismatch in {path}")
+(root / "input.sha256").write_text(digest.hexdigest() + "\n")
 PY
-printf 'algorithm=SHA-256\nmetric=throughput_bytes_per_second\nseconds=%s\nbytes=%s\nvalidation=every run emitted an OpenSSL machine-readable throughput result\n' \
-    "$speed_seconds" "$speed_bytes" >"$result_dir/validation.txt"
+printf 'algorithm=SHA-256\nmetric=wall_clock_seconds\ninput=%s\ninput_bytes=%s\ninput_repetitions=3\nvalidation=every completed output contains three expected binary digests\n' \
+    "$input" "$(stat -c %s "$input")" >"$result_dir/validation.txt"
 echo "Evidence: $result_dir"

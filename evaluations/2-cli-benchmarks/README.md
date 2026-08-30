@@ -10,13 +10,13 @@ The repository provides all 8 workloads used by the paper:
 
 | No. | Workload | Input | Timed operation | Recipe |
 |---:|---|---|---|---|
-| 1 | FFTW 3.3.10 | `1024x1024` complex 2D problem | Planning and forward transform | `fftw/` |
-| 2 | zstd 1.5.7 | Deterministic 64 MiB data | Level 3 single-worker compression | `zstd/` |
-| 3 | zlib 1.3.2 | Deterministic 64 MiB data | `minizip -9` | `zlib/` |
-| 4 | OpenSSL 3.0.22 | Fixed internal 1 MiB buffer | `openssl speed` EVP SHA-256 throughput | `openssl/` |
-| 5 | FFmpeg with libmp3lame | Fixed WAV excerpt | MP3 encoding | `ffmpeg-mp3lame/` |
-| 6 | FFmpeg with libfdk_aac | Fixed WAV excerpt | AAC encoding | `ffmpeg-fdk-aac/` |
-| 7 | FFmpeg with libvorbis | Fixed WAV excerpt | Vorbis encoding | `ffmpeg-vorbis/` |
+| 1 | FFTW 3.3.10 | `3072x3072` complex 2D problem | Planning and forward transform | `fftw/` |
+| 2 | zstd 1.5.7 | 100 copies of deterministic 64 MiB data | Level 3 single-worker compression | `zstd/` |
+| 3 | zlib 1.3.2 | 5 copies of deterministic 64 MiB data | `minizip -9` | `zlib/` |
+| 4 | OpenSSL 3.0.22 | 3 copies of a deterministic 256 MiB file | SHA-256 digest | `openssl/` |
+| 5 | FFmpeg with libmp3lame | Fixed WAV excerpt looped 7 times | MP3 encoding | `ffmpeg-mp3lame/` |
+| 6 | FFmpeg with libfdk_aac | Fixed WAV excerpt looped 10 times | AAC encoding | `ffmpeg-fdk-aac/` |
+| 7 | FFmpeg with libvorbis | Fixed WAV excerpt looped 7 times | Vorbis encoding | `ffmpeg-vorbis/` |
 | 8 | FFmpeg with libx264 | Fixed Y4M video excerpt | H.264 encoding | `ffmpeg-x264/` |
 
 ## 2. Comparison paths
@@ -102,18 +102,19 @@ Run all 8 workloads:
 Defaults are:
 
 - 5 repetitions per path.
-- A hard timeout of 180 seconds for one repetition.
-- A calibrated size that keeps pure QEMU and pure Blink below 180 seconds per repetition.
+- A native median of at least 1.5 seconds for every workload.
+- A cutoff of 20 times the native median for every non-native path, capped at 100 seconds.
+- A path reaching its cutoff is terminated and marked as excluded from Figure 17. It is not counted as a failure or a performance ratio.
 - Raw wall-clock time for every repetition, not only a summary.
 
-OpenSSL is a metric exception. `openssl speed` deliberately runs for 3 seconds, so its primary metric is SHA-256 throughput emitted by the command. That recipe additionally records per-repetition throughput, lane medians, and Hecate speedups. Outer wall time is audit data only.
-
-Override repetitions and timeout with:
+Override repetitions or lower the hard timeout with:
 
 ```bash
-REPETITIONS=7 TIMEOUT_SECONDS=240 \
+REPETITIONS=7 TIMEOUT_SECONDS=80 \
   ./evaluations/2-cli-benchmarks/run-all.sh
 ```
+
+`TIMEOUT_SECONDS` cannot raise the 100-second hard limit.
 
 ## 6. Select paths
 

@@ -46,7 +46,10 @@ guest_ld=$guest_upstream:$guest_prefix/lib:$devkit/x86_64/lib
 host_hecate_ld=$devkit/lib:$hecate_prefix/lib:$thunk
 guest_hecate_ld=$guest_upstream:$devkit/x86_64/lib:$thunk/x86_64
 
-args=(-9 -o '{output}.zip' "$input")
+args=(-9 -o '{output}.zip')
+for _ in 1 2 3 4 5; do
+    args+=("$input")
+done
 cli_measure native env LD_LIBRARY_PATH="$native_ld" "$native_cli" "${args[@]}"
 cli_measure qemu "$qemu" -L "$devkit/x86_64/sysroot" -E "LD_LIBRARY_PATH=$guest_ld" "$guest_cli" "${args[@]}"
 cli_measure blink env LD_LIBRARY_PATH="$guest_ld" BLINK_OVERLAYS="$devkit/x86_64/sysroot:" "$blink" "$guest_cli" "${args[@]}"
@@ -69,15 +72,16 @@ result = pathlib.Path(sys.argv[2])
 expected = hashlib.sha256(source.read_bytes()).hexdigest()
 for output in sorted((result / "outputs").glob("*/run-*.zip")):
     with zipfile.ZipFile(output) as archive:
-        members = [name for name in archive.namelist() if not name.endswith("/")]
-        if len(members) != 1:
-            raise SystemExit(f"expected one ZIP member: {output}")
-        with archive.open(members[0]) as stream:
-            actual = hashlib.file_digest(stream, "sha256").hexdigest()
-    if actual != expected:
-        raise SystemExit(f"decompressed checksum mismatch: {output}")
+        members = [info for info in archive.infolist() if not info.is_dir()]
+        if len(members) != 5:
+            raise SystemExit(f"expected five ZIP members: {output}")
+        for member in members:
+            with archive.open(member) as stream:
+                actual = hashlib.file_digest(stream, "sha256").hexdigest()
+            if actual != expected:
+                raise SystemExit(f"decompressed checksum mismatch: {output}:{member.filename}")
 (result / "validation.txt").write_text(
-    f"input_sha256={expected}\nvalidation=all outputs decompress to the input\n"
+    f"input_sha256={expected}\ninput_repetitions=5\nvalidation=all completed outputs contain five verified copies of the input\n"
 )
 PY
 echo "Evidence: $result_dir"

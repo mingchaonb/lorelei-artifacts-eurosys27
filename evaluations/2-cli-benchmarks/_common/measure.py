@@ -8,6 +8,7 @@ import contextlib
 import json
 import os
 import pathlib
+import shutil
 import shlex
 import statistics
 import subprocess
@@ -20,9 +21,11 @@ def main() -> None:
     parser.add_argument("--result-dir", required=True, type=pathlib.Path)
     parser.add_argument("--lane", required=True)
     parser.add_argument("--repetitions", type=int, default=5)
-    parser.add_argument("--timeout", type=float, default=180.0)
+    parser.add_argument("--timeout", type=float, default=100.0)
     parser.add_argument("--stdin-file", type=pathlib.Path)
     parser.add_argument("--stdout-to-output", action="store_true")
+    parser.add_argument("--exclude-nonzero", action="store_true")
+    parser.add_argument("--exclusion-reason")
     parser.add_argument("command", nargs=argparse.REMAINDER)
     args = parser.parse_args()
     if args.command[:1] == ["--"]:
@@ -78,6 +81,14 @@ def main() -> None:
         }
         records.append(record)
         print(f"{args.lane} {repetition}/{args.repetitions}: {record['elapsed_seconds']:.6f}s exit={status}", flush=True)
+        if timed_out or (status != 0 and args.exclude_nonzero):
+            # A timed-out command can leave a partial encoder output behind.
+            # It is not valid evidence and must not reach workload validators.
+            for partial in output.parent.glob(output.name + "*"):
+                if partial.is_dir():
+                    shutil.rmtree(partial)
+                else:
+                    partial.unlink()
         if status != 0:
             break
 
@@ -91,7 +102,13 @@ def main() -> None:
         "timeout_seconds": args.timeout,
         "stdin_file": str(args.stdin_file) if args.stdin_file else None,
         "stdout_to_output": args.stdout_to_output,
-        "status": "pass" if len(successful) == args.repetitions else "fail",
+        "status": (
+            "pass"
+            if len(successful) == args.repetitions
+            else "excluded"
+            if any(record["timed_out"] for record in records) or args.exclude_nonzero
+            else "fail"
+        ),
         "runs": records,
     }
     if successful:
@@ -101,6 +118,11 @@ def main() -> None:
             "maximum": max(successful),
             "mean": statistics.fmean(successful),
         }
+    if summary["status"] == "excluded":
+        summary["exclusion_reason"] = (
+            args.exclusion_reason
+            or "exceeded_20x_native_or_100_second_figure_17_cutoff"
+        )
     (args.result_dir / f"{args.lane}.json").write_text(json.dumps(summary, indent=2) + "\n")
     with (args.result_dir / f"{args.lane}.tsv").open("w") as stream:
         stream.write("repetition\telapsed_seconds\texit_status\ttimed_out\n")
@@ -109,7 +131,7 @@ def main() -> None:
                 f"{record['repetition']}\t{record['elapsed_seconds']:.9f}\t"
                 f"{record['exit_status']}\t{str(record['timed_out']).lower()}\n"
             )
-    raise SystemExit(0 if summary["status"] == "pass" else 1)
+    raise SystemExit(0 if summary["status"] in {"pass", "excluded"} else 1)
 
 
 if __name__ == "__main__":

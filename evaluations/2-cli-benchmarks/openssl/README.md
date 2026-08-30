@@ -2,17 +2,19 @@
 
 [中文版](README.zh-CN.md)
 
-This workload runs OpenSSL 3.0.22's own `openssl speed` command and measures EVP SHA-256 throughput over a fixed 1 MiB buffer. Each invocation measures three seconds for greater stability while keeping a pure QEMU or pure Blink repetition below the command-line group's 180-second limit.
+This workload uses OpenSSL 3.0.22 to compute SHA-256 over 3 identical copies of a deterministic 256 MiB file. Like the other command-line workloads, it measures wall-clock execution time for a fixed command instead of running a fixed-duration throughput benchmark. Five native runs on the AE machine have a median of about 1.67 seconds.
 
 The public command is:
 
 ```bash
-openssl speed -mr -elapsed -seconds 3 -bytes 1048576 -evp sha256
+openssl dgst -sha256 -binary -out OUTPUT data-256m.bin data-256m.bin data-256m.bin
 ```
 
-The native and x86-64 CLIs, `libcrypto.so.3`, and `libssl.so.3` all come from the pinned `evaluations/1-libs/openssl` recipe. Hecate uses TLC thunks generated from the same AArch64 installation. The `-mr` option emits a machine-readable `+F` throughput record, and the runner requires every repetition to produce that record successfully.
+The native and x86-64 CLIs, `libcrypto.so.3`, and `libssl.so.3` all come from the pinned `evaluations/1-libs/openssl` recipe. Hecate uses TLC thunks generated from the same AArch64 installation. `_common/prepare-inputs.sh` deterministically generates the input and records its SHA-256.
 
-The primary metric is SHA-256 bytes per second, not the outer wall time of the `openssl speed` process. The `-seconds 3` option deliberately keeps every path active for approximately three seconds, so outer wall time is retained only for auditing. `throughput.tsv` stores every throughput sample. `throughput-summary.json` reports the median and range for each lane, Hecate speedup over the corresponding pure emulator, and Hecate throughput as a fraction of native.
+Each repetition writes 3 binary digests of 32 bytes each. The runner computes the expected bytes with Python and requires every completed lane output to match exactly. The primary results are the common lane TSV and JSON files in seconds.
+
+The pinned Box64 version currently raises `SIGSEGV` while starting the OpenSSL 3.0.22 guest binary, so the plain Box64 and Box64 plus Hecate lanes are recorded as explicit exclusions. Blink is also excluded under the common Figure 17 policy if it exceeds 20 times native time. The runner retains the concrete reason in its result JSON and the exported CSV instead of presenting these paths as missing or successful data.
 
 Run this workload:
 

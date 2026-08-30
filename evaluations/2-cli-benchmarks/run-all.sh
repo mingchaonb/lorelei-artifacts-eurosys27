@@ -53,6 +53,13 @@ fi
 devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/.work/devkit}")
 [[ -d $devkit ]] || { echo "Devkit not found: $devkit" >&2; exit 2; }
 
+# A second controller can otherwise write stale status into a newly restarted
+# batch. Keep one controller for this evaluation group, including installation.
+batch_root=$repo_root/.work/evaluations/2-cli-benchmarks-batch
+mkdir -p "$batch_root"
+exec 9>"$batch_root/controller.lock"
+flock -n 9 || { echo "Another command-line benchmark controller is running" >&2; exit 2; }
+
 # Make the public batch command self-contained. vcpkg returns immediately for
 # tools that are already installed and retains its shared downloads and cache.
 "$repo_root/evaluations/install-tools.sh"
@@ -62,7 +69,6 @@ devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/.work/devkit}")
 mode=evaluator
 $reference && mode=reference
 $install_only && mode=install-only
-batch_root=$repo_root/.work/evaluations/2-cli-benchmarks-batch
 state_dir=$batch_root/$mode
 
 if $restart && [[ -d $state_dir ]]; then
@@ -100,7 +106,7 @@ trap 'rm -f "$current_identity"' EXIT
     printf 'devkit=%s\n' "$devkit"
     printf 'lanes=%s\n' "$lanes"
     printf 'repetitions=%s\n' "${REPETITIONS:-5}"
-    printf 'timeout_seconds=%s\n' "${TIMEOUT_SECONDS:-180}"
+    printf 'timeout_seconds=%s\n' "$(python3 -c 'import sys; print(min(100.0, float(sys.argv[1])))' "${TIMEOUT_SECONDS:-100}")"
     printf 'qemu=%s\n' "$(realpath -m "${QEMU:-$repo_root/vcpkg/installed/arm64-linux/tools/qemu-ae/qemu-x86_64}")"
     printf 'blink=%s\n' "$(realpath -m "${BLINK:-$repo_root/vcpkg/installed/arm64-linux/tools/blink-ae/blink}")"
     printf 'box64=%s\n' "$(realpath -m "${BOX64:-$repo_root/vcpkg/installed/arm64-linux/tools/box64-ae/box64}")"

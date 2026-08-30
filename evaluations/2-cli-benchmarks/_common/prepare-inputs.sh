@@ -14,9 +14,11 @@ prep_ld=$repo_root/vcpkg/installed/arm64-linux/lib
 
 mkdir -p "$input_dir" "$download_dir"
 
-# Generate one fixed 64 MiB input with a deterministic mixture of repeated and
-# pseudo-random blocks. zlib, zstd, and OpenSSL all consume this same file.
+# Generate deterministic mixed-compressibility inputs. Compression uses the
+# bounded 64 MiB file. OpenSSL hashes the larger 256 MiB file so process startup
+# and guest file I/O do not dominate the measured digest workload.
 python3 "$common_dir/generate-data.py" "$input_dir/data-64m.bin" --size-mib 64
+python3 "$common_dir/generate-data.py" "$input_dir/data-256m.bin" --size-mib 256
 
 # Input preparation uses the untimed official native FFmpeg tool. Keep it
 # separate from the FFmpeg 7.1.5 binaries measured by the workload recipes.
@@ -67,7 +69,7 @@ import sys
 
 input_dir = pathlib.Path(sys.argv[1])
 paths = [pathlib.Path(sys.argv[2]), pathlib.Path(sys.argv[3])]
-paths += [input_dir / "data-64m.bin", input_dir / "audio-30s.wav", input_dir / "video-10s-640.y4m"]
+paths += [input_dir / "data-64m.bin", input_dir / "data-256m.bin", input_dir / "audio-30s.wav", input_dir / "video-10s-640.y4m"]
 items = []
 for path in paths:
     data = path.read_bytes()

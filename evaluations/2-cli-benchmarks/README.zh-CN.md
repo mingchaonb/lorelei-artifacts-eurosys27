@@ -10,13 +10,13 @@
 
 | 序号 | Workload | 输入 | 计时操作 | 配方 |
 |---:|---|---|---|---|
-| 1 | FFTW 3.3.10 | `1024x1024` complex 2D problem | planning 与 forward transform | `fftw/` |
-| 2 | zstd 1.5.7 | 确定性 64 MiB 数据 | level 3、单 worker 压缩 | `zstd/` |
-| 3 | zlib 1.3.2 | 确定性 64 MiB 数据 | `minizip -9` | `zlib/` |
-| 4 | OpenSSL 3.0.22 | 固定 1 MiB 内部 buffer | `openssl speed` EVP SHA-256 throughput | `openssl/` |
-| 5 | FFmpeg 加 libmp3lame | 固定 WAV 片段 | MP3 编码 | `ffmpeg-mp3lame/` |
-| 6 | FFmpeg 加 libfdk_aac | 固定 WAV 片段 | AAC 编码 | `ffmpeg-fdk-aac/` |
-| 7 | FFmpeg 加 libvorbis | 固定 WAV 片段 | Vorbis 编码 | `ffmpeg-vorbis/` |
+| 1 | FFTW 3.3.10 | `3072x3072` complex 2D problem | planning 与 forward transform | `fftw/` |
+| 2 | zstd 1.5.7 | 确定性 64 MiB 数据，重复 100 份 | level 3、单 worker 压缩 | `zstd/` |
+| 3 | zlib 1.3.2 | 确定性 64 MiB 数据，重复 5 份 | `minizip -9` | `zlib/` |
+| 4 | OpenSSL 3.0.22 | 确定性 256 MiB 文件，重复 3 份 | SHA-256 digest | `openssl/` |
+| 5 | FFmpeg 加 libmp3lame | 固定 WAV 片段，循环 7 次 | MP3 编码 | `ffmpeg-mp3lame/` |
+| 6 | FFmpeg 加 libfdk_aac | 固定 WAV 片段，循环 10 次 | AAC 编码 | `ffmpeg-fdk-aac/` |
+| 7 | FFmpeg 加 libvorbis | 固定 WAV 片段，循环 7 次 | Vorbis 编码 | `ffmpeg-vorbis/` |
 | 8 | FFmpeg 加 libx264 | 固定 Y4M 视频片段 | H.264 编码 | `ffmpeg-x264/` |
 
 ## 2. 对比路径
@@ -109,18 +109,19 @@ YT_DLP=/absolute/path/to/yt-dlp \
 默认参数为：
 
 - 每条路径重复 5 次。
-- 单次运行 hard timeout 为 180 秒。
-- workload 大小要求纯 QEMU 与纯 Blink 单次均低于 180 秒。
+- 每个 workload 的 native 中位数至少为 1.5 秒。
+- 每条非 native 路径的截止时间是 native 中位数的 20 倍，且绝不超过 100 秒。
+- 到达截止时间的路径立即终止，并在 Figure 17 数据中标记为排除，不计为失败或性能比值。
 - runner 保存每次原始 wall-clock 时间，不只保存汇总。
 
-OpenSSL 是指标例外。`openssl speed` 固定运行 3 秒，其主指标是命令输出的 SHA-256 throughput。该配方另外生成逐轮 throughput、各 lane 中位数和 Hecate 加速比，外层 wall-clock 时间只用于审计。
-
-调整重复次数和 timeout：
+调整重复次数或降低 hard timeout：
 
 ```bash
-REPETITIONS=7 TIMEOUT_SECONDS=240 \
+REPETITIONS=7 TIMEOUT_SECONDS=80 \
   ./evaluations/2-cli-benchmarks/run-all.sh
 ```
+
+`TIMEOUT_SECONDS` 不能把 100 秒 hard limit 调高。
 
 ## 6. 选择路径
 
