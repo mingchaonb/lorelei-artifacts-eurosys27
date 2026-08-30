@@ -262,7 +262,7 @@ for name in $(<"$plan"); do
 done
 
 write_summary
-"$base_dir/.common/summarize-library-inventory.sh" >"$state_dir/inventory.tsv"
+"$base_dir/_common/summarize-library-inventory.sh" >"$state_dir/inventory.tsv"
 passed=$(awk -F '\t' 'NR > 1 && $2 == "pass" {n++} END {print n + 0}' "$state_dir/summary.tsv")
 failed=$(awk -F '\t' 'NR > 1 && $2 == "fail" {n++} END {print n + 0}' "$state_dir/summary.tsv")
 pending=$((total - passed - failed))

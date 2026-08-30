@@ -41,7 +41,7 @@ for path in bin/LoreMakeThunk.py x86_64/sysroot; do
 done
 qemu=
 if ! $install_only; then
-    qemu=$("$repo_root/evaluations/1-libs/.common/audio-signal-upstream.sh" --resolve-qemu "$devkit" "$repo_root")
+    qemu=$("$repo_root/evaluations/1-libs/_common/audio-signal-upstream.sh" --resolve-qemu "$devkit" "$repo_root")
 fi
 
 # Keep vcpkg packages between runs and replace only generated thunk and runtime files.

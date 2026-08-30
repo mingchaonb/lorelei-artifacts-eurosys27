@@ -48,13 +48,13 @@ A target advances from planned to complete only after its clean one-command run 
 The shared inventory helper counts real ELF files, not `.so` symlink aliases, from each recipe's own vcpkg package directory. It also derives the all-tests numerator exclusively from the first-line `[ALL TESTS PASSED]` marker:
 
 ```bash
-./evaluations/1-libs/.common/summarize-library-inventory.sh
+./evaluations/1-libs/_common/summarize-library-inventory.sh
 ```
 
 During the 2026-08-30 non-graphics audit, `glvnd` and `vulkan-loader` were being migrated by a separate evaluation lane and the synthetic `breakdown-test` port was not treated as a library package. The corresponding command and snapshot are:
 
 ```bash
-./evaluations/1-libs/.common/summarize-library-inventory.sh \
+./evaluations/1-libs/_common/summarize-library-inventory.sh \
   --exclude glvnd --exclude vulkan-loader
 ```
 
