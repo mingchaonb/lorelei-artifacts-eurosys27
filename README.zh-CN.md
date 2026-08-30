@@ -6,18 +6,20 @@
 
 ## 快速开始
 
-默认配置将各源码仓库并列放置：
+默认配置将各源码仓库并列放在评审者的用户目录下：
 
 ```text
-rover2024/
+/home/user/
 ├── eurosys-lorelei-artifacts/
 ├── lorelei-ae/build/install/
 └── qemu-ae/build/qemu-x86_64
 ```
 
-首次使用时初始化仓库内的 vcpkg：
+首次使用时，在 artifact 仓库根目录 clone 固定版本的 vcpkg，再完成初始化：
 
 ```bash
+git clone https://github.com/microsoft/vcpkg.git vcpkg
+git -C vcpkg checkout 3f7b5a12ef0a55e7b59339b2b69cac4b56d6dbf9
 ./vcpkg/bootstrap-vcpkg.sh -disableMetrics
 ```
 

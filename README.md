@@ -6,18 +6,20 @@ This repository is the evaluator-facing build, test, and evidence workspace for 
 
 ## Quick start
 
-The default setup places the source checkouts next to this repository:
+The default setup places the source checkouts next to this repository under the evaluator's home directory:
 
 ```text
-rover2024/
+/home/user/
 ├── eurosys-lorelei-artifacts/
 ├── lorelei-ae/build/install/
 └── qemu-ae/build/qemu-x86_64
 ```
 
-Bootstrap the repository-local vcpkg checkout once:
+Clone the pinned vcpkg revision into the artifact repository root, then bootstrap it once:
 
 ```bash
+git clone https://github.com/microsoft/vcpkg.git vcpkg
+git -C vcpkg checkout 3f7b5a12ef0a55e7b59339b2b69cac4b56d6dbf9
 ./vcpkg/bootstrap-vcpkg.sh -disableMetrics
 ```
 
