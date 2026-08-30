@@ -1,2 +1,0 @@
-host_callback=0xede9eb8505f0 guest_callback=0x30ccb001b90
-direct=ok host_address=ok guest_callback=ok iterations=1000
