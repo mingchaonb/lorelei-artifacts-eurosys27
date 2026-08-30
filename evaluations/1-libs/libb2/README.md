@@ -6,7 +6,7 @@ The Hecate lane uses TLC-generated GTL and HTL libraries. It does not enable an 
 
 The vcpkg port installs all four tests under `tools/libb2/upstream-tests`. `run.sh` consumes only the installed packages and does not rebuild tests from a source tree or vcpkg buildtree.
 
-Reference run `20260829T213928Z` passed all four tests in native and Hecate with identical output. There are no configured skips or failures. OpenMP and architecture-specific dispatch are disabled in both packages.
+The pre-cleanup validation passed all four tests in native and Hecate with identical output. There are no configured skips or failures. OpenMP and architecture-specific dispatch are disabled in both packages.
 
 The runner accepts one devkit path. `--install-only` stops after both packages are installed and audited. `--reference` writes append-only reference evidence. `--verbose` streams vcpkg preparation while preserving raw logs. No pure QEMU lane is provided.
 

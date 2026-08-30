@@ -6,7 +6,7 @@ The Hecate lane uses TLC-generated GTL and HTL libraries. It does not enable an 
 
 The vcpkg port installs the complete configured suite under `tools/libtasn1/upstream-tests`. This payload contains 9 fuzz regression executables, 24 regular executables, 7 shell tests, their fixtures, and the three installed command-line tools used by the shell tests. `run.sh` consumes only installed package files and does not rebuild tests from a source tree or vcpkg buildtree.
 
-Result `20260829T213752Z` passed all 40 installed tests in both native and Hecate with identical classifications and no exclusions. The Hecate lane uses TLC plus the package-local libc shim for guest-owned `FILE` streams. It does not use HLR or run a pure QEMU lane.
+The pre-cleanup validation passed all 40 installed tests in both native and Hecate with identical classifications and no exclusions. The Hecate lane uses TLC plus the package-local libc shim for guest-owned `FILE` streams. It does not use HLR or run a pure QEMU lane.
 
 The runner accepts one devkit path. `--install-only` stops after both packages are installed and audited. `--reference` writes append-only reference evidence. `--verbose` streams vcpkg preparation while preserving raw logs.
 

@@ -1,4 +1,4 @@
-# nettle evaluation (TLC Only) [ALL TESTS PASSED]
+# nettle evaluation (TLC Only)
 
 This recipe pins nettle 3.10.2 and runs every test selected by the configured upstream `make check` suite. The production target is `libnettle.so.8`. Native AArch64 and x86-64 guest packages are built as shared libraries from the same official source input.
 
@@ -9,7 +9,7 @@ The two execution lanes are:
 
 The vcpkg port builds and installs the configured upstream suite under `tools/nettle/upstream-tests`. `run.sh` consumes only those installed tests and package payloads. It does not rebuild tests from a source tree or vcpkg buildtree. The package also carries the test manifest, fixtures, runner, TLC description, and guest-local read-only metadata needed by the suite.
 
-The result `20260829T212417Z` reports identical native and Hecate classifications:
+The pre-cleanup validation reported identical native and Hecate classifications:
 
 - 75 passed
 - 5 skipped by the shared build configuration
