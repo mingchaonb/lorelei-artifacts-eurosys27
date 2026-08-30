@@ -27,9 +27,10 @@ export LORELEI_DEVKIT=$devkit
 recipe_dir=$(cd "$(dirname "$0")/../$package" 2>/dev/null && pwd || true)
 if [[ -z $recipe_dir ]]; then recipe_dir=$(cd "$(dirname "$0")/../sdl2-ttf" && pwd); fi
 repo_root=$(cd "$(dirname "$0")/../../.." && pwd)
+common_dir=$repo_root/evaluations/common
 overlay=$repo_root/vcpkg-overlay
 vcpkg=$repo_root/vcpkg/vcpkg
-qemu=$(realpath -m "$devkit/bin/qemu-x86_64")
+qemu=$(realpath -m "${QEMU:-$devkit/bin/qemu-x86_64}")
 work=$repo_root/.work/evaluations/$package
 results_root=$recipe_dir/results
 result_kind=evaluator
@@ -172,6 +173,23 @@ readelf -h "$host_library" >"$run_dir/generated/host-elf.txt"
 readelf -d "$host_library" >"$run_dir/generated/host-dynamic.txt"
 cp "$thunk/.gen/$thunk_name/ThunkStat.json" "$run_dir/generated/ThunkStat.json"
 
+# Interpose the shared allocator shim in the guest. Several upstream suites
+# release buffers allocated by the host library with plain free(), so both
+# sides must use one heap for those ownership-transferring APIs.
+libc_shim=$work/libc-shim
+host_libc=$(cc -print-file-name=libc.so.6)
+if [[ -e $libc_shim ]]; then cmake -E remove_directory "$libc_shim"; fi
+run_logged "$run_dir/logs/preparation/thunk-libc-shim.log" \
+    "$devkit/bin/LoreMakeThunk.py" --name c-shim --out "$libc_shim" \
+    --lib "$host_libc" --soname libc-shim.so \
+    --symbols "$common_dir/libc-shim/Symbols.conf" \
+    --desc "$common_dir/libc-shim/Desc.h" \
+    --manifest-host "$common_dir/libc-shim/Manifest_host.cpp" \
+    --manifest-guest "$common_dir/libc-shim/Manifest_guest.cpp" \
+    --devkit "$devkit" --keep-intermediates -- \
+    -D_GNU_SOURCE -I"$common_dir/include"
+cmake -E create_symlink "$host_libc" "$libc_shim/libc-shim.so"
+
 # SDL2_ttf additionally preserves its zero-hit HLR audit and prepares the SDL2
 # dependency thunk before either install-only or test mode returns.
 if [[ $package == sdl2-ttf ]]; then
@@ -212,9 +230,10 @@ if [[ $package == sdl2-ttf ]]; then
     native_status=${PIPESTATUS[0]}
     env LORELEI_HOST_EXTENSIONS="$devkit/lib/libLoreHostHLRExtension.so" \
         LD_PRELOAD="$devkit/lib/libLoreQEMUThreadHook.so" \
-        LD_LIBRARY_PATH="$devkit/lib:$host_prefix/lib:$thunk:$sdl_thunk" "$qemu" -L "$devkit/x86_64/sysroot" -U LD_PRELOAD -E LD_BIND_NOW=1 \
+        LD_LIBRARY_PATH="$devkit/lib:$host_prefix/lib:$thunk:$sdl_thunk:$libc_shim" "$qemu" -L "$devkit/x86_64/sysroot" -U LD_PRELOAD -E LD_BIND_NOW=1 \
         -E "LORELEI_GUEST_EXTENSIONS=$devkit/x86_64/lib/libLoreGuestHLRExtension.so" \
-        -E "LD_LIBRARY_PATH=$devkit/x86_64/lib:$thunk/x86_64:$sdl_thunk/x86_64" \
+        -E "LD_PRELOAD=$libc_shim/x86_64/libc-shim.so" \
+        -E "LD_LIBRARY_PATH=$devkit/x86_64/lib:$thunk/x86_64:$sdl_thunk/x86_64:$libc_shim/x86_64" \
         "$guest_suite/bin/lorelei-sdl2-ttf-test" "$font" 2>&1 | tee "$run_dir/logs/hecate/upstream.log"
     hecate_status=${PIPESTATUS[0]}
     set -e
@@ -232,9 +251,10 @@ run_one() {
         (cd "$cwd" && env LD_LIBRARY_PATH="$native_prefix/lib:$native_suite/lib" "$binary" "$@")
     else
         (cd "$cwd" && env LD_PRELOAD="$devkit/lib/libLoreQEMUThreadHook.so" \
-            LD_LIBRARY_PATH="$devkit/lib:$host_prefix/lib:$thunk" \
+            LD_LIBRARY_PATH="$devkit/lib:$host_prefix/lib:$thunk:$libc_shim" \
             "$qemu" -L "$devkit/x86_64/sysroot" -U LD_PRELOAD -E LD_BIND_NOW=1 \
-            -E "LD_LIBRARY_PATH=$devkit/x86_64/lib:$thunk/x86_64:$guest_suite/lib" "$binary" "$@")
+            -E "LD_PRELOAD=$libc_shim/x86_64/libc-shim.so" \
+            -E "LD_LIBRARY_PATH=$devkit/x86_64/lib:$thunk/x86_64:$guest_suite/lib:$libc_shim/x86_64" "$binary" "$@")
     fi
 }
 

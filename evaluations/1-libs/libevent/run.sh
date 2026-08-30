@@ -55,7 +55,10 @@ if [[ -e $work_dir && ! -f $work_dir/.lorelei-evaluations-workspace ]]; then
     echo "Refusing to replace unmarked work directory: $work_dir" >&2
     exit 2
 fi
-if [[ -e $work_dir ]]; then cmake -E remove_directory "$work_dir"; fi
+# Preserve ABI-matching vcpkg installs across runs. Reset only derived test and thunk files.
+for scratch_path in "$work_dir/tests" "$work_dir/thunks"; do
+    if [[ -e $scratch_path ]]; then cmake -E remove_directory "$scratch_path"; fi
+done
 mkdir -p "$work_dir" "$run_dir"/{generated/targets/event_core,logs/preparation,logs/native,logs/hecate}
 touch "$work_dir/.lorelei-evaluations-workspace"
 exec > >(tee "$run_dir/commands.log") 2>&1
@@ -194,4 +197,3 @@ printf '%s\n' "$hecate_status" >"$run_dir/logs/hecate/exit-status.txt"
 stage "Summarize native and Hecate results"
 python3 "$recipe_dir/tools/summarize.py" --run-dir "$run_dir"
 echo "Evidence: $run_dir"
-

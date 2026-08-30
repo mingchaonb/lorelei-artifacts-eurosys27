@@ -42,7 +42,9 @@ if [[ -e $work_dir && ! -f $work_dir/.lorelei-evaluations-workspace ]]; then
     echo "Refusing to replace unmarked work directory: $work_dir" >&2
     exit 2
 fi
-if [[ -e $work_dir ]]; then cmake -E remove_directory "$work_dir"; fi
+# Preserve ABI-matching vcpkg installs across runs. Reset only derived test and thunk files.
+if [[ -e $work_dir/thunk ]]; then cmake -E remove_directory "$work_dir/thunk"; fi
+cmake -E rm -f "$work_dir/test-native" "$work_dir/test-hecate"
 mkdir -p "$work_dir" "$run_dir"/{logs/preparation,logs/native,logs/hecate,generated}
 touch "$work_dir/.lorelei-evaluations-workspace"
 exec > >(tee "$run_dir/commands.log") 2>&1

@@ -73,16 +73,16 @@ if ! $install_only; then
     [[ -x $qemu ]] || { echo "Patched QEMU not found: $qemu" >&2; exit 2; }
 fi
 
-# Evidence is append-only. Build products live under the marked .work directory
-# and may be replaced. The marker prevents an accidental recursive deletion of a
-# user-created directory if the configured path is ever changed.
+# Evidence is append-only. ABI-matching vcpkg installs remain under the marked
+# .work directory. The marker guards the small set of regenerated scratch paths.
 run_dir=$results_root/$run_id
 [[ ! -e $run_dir ]] || { echo "Evidence already exists: $run_dir" >&2; exit 2; }
 if [[ -e $work_dir && ! -f $work_dir/.lorelei-evaluations-workspace ]]; then
     echo "Refusing to replace unmarked work directory: $work_dir" >&2
     exit 2
 fi
-if [[ -e $work_dir ]]; then cmake -E remove_directory "$work_dir"; fi
+# Preserve ABI-matching vcpkg installs across runs. Reset only generated thunks.
+if [[ -e $work_dir/thunks ]]; then cmake -E remove_directory "$work_dir/thunks"; fi
 mkdir -p "$work_dir" "$run_dir"/{generated,logs/preparation,logs/native,logs/hecate}
 touch "$work_dir/.lorelei-evaluations-workspace"
 

@@ -51,8 +51,8 @@ printf '%q ' "${invocation[@]}" >"$run_dir/invocation.txt"
 printf '\n' >>"$run_dir/invocation.txt"
 find "$port_dir" -type f -print0 | sort -z | xargs -0 sha256sum >"$run_dir/generated/port-inputs.sha256"
 sha256sum "$recipe_dir/tests/Test.c" "$recipe_dir/run.sh" \
-    "$repo_root/evaluations/1-libs/audio-signal-upstream.sh" \
-    "$repo_root/evaluations/1-libs/audio-signal-ctest.py" >"$run_dir/generated/evaluation-inputs.sha256"
+    "$repo_root/evaluations/1-libs/.common/audio-signal-upstream.sh" \
+    "$repo_root/evaluations/1-libs/.common/audio-signal-ctest.py" >"$run_dir/generated/evaluation-inputs.sha256"
 
 run_logged() {
     local log=$1 status
@@ -112,7 +112,7 @@ if $install_only; then
     tests_run=false
     status=installed
 else
-    qemu=$("$repo_root/evaluations/1-libs/audio-signal-upstream.sh" --resolve-qemu "$devkit" "$repo_root")
+    qemu=$("$repo_root/evaluations/1-libs/.common/audio-signal-upstream.sh" --resolve-qemu "$devkit" "$repo_root")
     mkdir -p "$work/tests/native" "$work/tests/guest" "$run_dir/logs/native" "$run_dir/logs/hecate"
     link_args=(-lsoxr -lm)
     native_search=(-L"$host_prefix/lib" -Wl,-rpath,"$host_prefix/lib")
@@ -141,7 +141,7 @@ else
     [[ $native_status == 0 && $hecate_status == 0 ]]
     tests_run=true
     status=pass
-    "$repo_root/evaluations/1-libs/audio-signal-upstream.sh" \
+    "$repo_root/evaluations/1-libs/.common/audio-signal-upstream.sh" \
         "soxr" "$repo_root" "$work" "$run_dir" "$devkit" "$qemu" \
         "$host_prefix" "$guest_prefix" "$host_runtime" "$guest_runtime" "$verbose"
 fi
