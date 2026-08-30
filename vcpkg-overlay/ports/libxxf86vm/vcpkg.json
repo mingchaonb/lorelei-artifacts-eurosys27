@@ -1,0 +1,25 @@
+{
+  "name": "libxxf86vm",
+  "version": "1.1.7",
+  "port-version": 1,
+  "description": "HLR-enabled XFree86 VidMode extension library",
+  "homepage": "https://gitlab.freedesktop.org/xorg/lib/libxxf86vm",
+  "license": "MIT",
+  "supports": "linux",
+  "dependencies": [
+    "libx11",
+    "libxext",
+    {"name": "vcpkg-make", "host": true},
+    "xorg-macros",
+    "xproto"
+  ],
+  "features": {
+    "hlr": {
+      "description": "Rewrite libXxf86vm.so.1 with Lorelei HLR",
+      "dependencies": [
+        {"name": "libx11", "features": ["hlr"]},
+        {"name": "libxext", "features": ["hlr"]}
+      ]
+    }
+  }
+}

@@ -16,12 +16,14 @@ add_custom_command(
         "-DNM=${CMAKE_NM}"
         "-DINPUT_LIBRARY=${SYSTEM_LIBRARY}"
         "-DEXTRA_SYMBOLS=${CMAKE_CURRENT_SOURCE_DIR}/lorelei/ExtraSymbols.conf"
+        "-DCALLBACK_SYMBOLS=${CMAKE_CURRENT_SOURCE_DIR}/lorelei/CallbackSymbols.conf"
         "-DOUTPUT_FILE=${VULKAN_SYMBOLS}"
         -P "${CMAKE_CURRENT_SOURCE_DIR}/GenerateSymbols.cmake"
     DEPENDS
         "${SYSTEM_LIBRARY}"
         "${CMAKE_CURRENT_SOURCE_DIR}/GenerateSymbols.cmake"
         "${CMAKE_CURRENT_SOURCE_DIR}/lorelei/ExtraSymbols.conf"
+        "${CMAKE_CURRENT_SOURCE_DIR}/lorelei/CallbackSymbols.conf"
     VERBATIM
 )
 add_custom_command(
@@ -34,7 +36,6 @@ add_custom_command(
         --desc "${CMAKE_CURRENT_SOURCE_DIR}/lorelei/Desc.h"
         --manifest-host "${CMAKE_CURRENT_SOURCE_DIR}/lorelei/Manifest_host.cpp"
         --manifest-guest "${CMAKE_CURRENT_SOURCE_DIR}/lorelei/Manifest_guest.cpp"
-        --no-callback-replace
         --devkit "${LORELEI_DEVKIT}"
         --keep-intermediates
         -- "-I${HEADER_DIR}" "-I${X11_INCLUDE}"

@@ -50,6 +50,14 @@
         {
           "name": "libxscrnsaver",
           "features": ["hlr"]
+        },
+        {
+          "name": "libxinerama",
+          "features": ["hlr"]
+        },
+        {
+          "name": "libxxf86vm",
+          "features": ["hlr"]
         }
       ]
     },

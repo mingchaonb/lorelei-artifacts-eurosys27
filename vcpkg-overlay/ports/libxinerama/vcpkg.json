@@ -1,0 +1,25 @@
+{
+  "name": "libxinerama",
+  "version": "1.1.6",
+  "port-version": 1,
+  "description": "HLR-enabled Xinerama extension library",
+  "homepage": "https://gitlab.freedesktop.org/xorg/lib/libxinerama",
+  "license": "MIT",
+  "supports": "linux",
+  "dependencies": [
+    "libx11",
+    "libxext",
+    {"name": "vcpkg-make", "host": true},
+    "xorg-macros",
+    "xproto"
+  ],
+  "features": {
+    "hlr": {
+      "description": "Rewrite libXinerama.so.1 with Lorelei HLR",
+      "dependencies": [
+        {"name": "libx11", "features": ["hlr"]},
+        {"name": "libxext", "features": ["hlr"]}
+      ]
+    }
+  }
+}

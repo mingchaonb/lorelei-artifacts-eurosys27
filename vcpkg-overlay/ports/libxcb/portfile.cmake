@@ -98,17 +98,6 @@ if(RUN_HLR)
         WORKING_DIRECTORY "${CURRENT_BUILDTREES_DIR}"
         LOGNAME hlr
     )
-    vcpkg_find_acquire_program(GIT)
-    vcpkg_execute_required_process(
-        COMMAND "${GIT}" apply --check "${CMAKE_CURRENT_LIST_DIR}/patches/post-hlr.patch"
-        WORKING_DIRECTORY "${SOURCE_PATH}"
-        LOGNAME post-hlr-check
-    )
-    vcpkg_execute_required_process(
-        COMMAND "${GIT}" apply "${CMAKE_CURRENT_LIST_DIR}/patches/post-hlr.patch"
-        WORKING_DIRECTORY "${SOURCE_PATH}"
-        LOGNAME post-hlr-apply
-    )
 endif()
 
 vcpkg_make_install()

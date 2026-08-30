@@ -21,6 +21,19 @@ extern "C" {
 #pragma clang diagnostic ignored "-Wregister"
 #include <X11/extensions/xtestext1.h>
 #pragma clang diagnostic pop
+
+typedef struct _XExtensionInfo XExtensionInfo;
+typedef struct _XExtDisplayInfo XExtDisplayInfo;
+typedef struct _XExtensionHooks XExtensionHooks;
+
+XExtensionInfo *XextCreateExtension(void);
+void XextDestroyExtension(XExtensionInfo *info);
+XExtDisplayInfo *XextAddDisplay(XExtensionInfo *extinfo, Display *dpy,
+                               _Xconst char *ext_name,
+                               XExtensionHooks *hooks, int nevents,
+                               XPointer data);
+int XextRemoveDisplay(XExtensionInfo *extinfo, Display *dpy);
+XExtDisplayInfo *XextFindDisplay(XExtensionInfo *extinfo, Display *dpy);
 }
 
 #ifdef Success

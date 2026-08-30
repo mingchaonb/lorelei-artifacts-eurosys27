@@ -14,7 +14,7 @@ vcpkg_cmake_configure(
     OPTIONS
         "-DLORELEI_DEVKIT=$ENV{LORELEI_DEVKIT}"
         "-DSYSTEM_LIBRARY=${SYSTEM_VULKAN}"
-        "-DAE_TEST_SOURCE=${REPO_ROOT}/evaluations/2-graphics/vulkan/tests/TestVulkan.c"
+        "-DAE_TEST_SOURCE=${REPO_ROOT}/evaluations/1-libs/vulkan-loader/tests/TestVulkan.c"
         "-DX11_INCLUDE=${CURRENT_INSTALLED_DIR}/include"
 )
 vcpkg_cmake_install()
