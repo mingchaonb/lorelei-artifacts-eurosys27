@@ -2,7 +2,7 @@
 
 This group contains reproducible recipes and evidence for game performance and playability. Library-level GLVND and Vulkan validation belongs under `evaluations/1-libs`.
 
-Each game has the same recipe layout as a library evaluation and is started by its own `run.sh`. `LORELEI_DEVKIT` follows the repository-wide default and is not positional. The optional watchdog duration in seconds is the only positional argument.
+Each game has the same recipe layout as a library evaluation and is started by its own `run.sh`. `LORELEI_DEVKIT` follows the repository-wide default. The optional `SECONDS` argument sets the watchdog duration.
 
 ```bash
 ./evaluations/4-games/openarena/run.sh 30

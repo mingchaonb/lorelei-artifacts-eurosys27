@@ -31,7 +31,7 @@ vcpkg-overlay/
 └── triplets/                       shared native and guest targets
 ```
 
-Every public recipe reads the Lorelei devkit from `LORELEI_DEVKIT`. The default is the sibling checkout `../lorelei-ae/build/install`, resolved from the artifact repository rather than the caller's current directory. Public recipes do not accept the devkit as a positional argument. `QEMU` similarly overrides the default sibling executable at `../qemu-ae/build/qemu-x86_64`. A library recipe may provide `--reference`, `--install-only`, and `--verbose`. Source acquisition, version verification, compilation, and installation belong to the repository-level vcpkg overlay. A recipe must use the repository-local `vcpkg/vcpkg` executable.
+Every public recipe reads the Lorelei devkit from `LORELEI_DEVKIT`. The default is the sibling checkout `../lorelei-ae/build/install`, resolved from the artifact repository. `QEMU` overrides the default sibling executable at `../qemu-ae/build/qemu-x86_64`. A library recipe may provide `--reference`, `--install-only`, and `--verbose`. Source acquisition, version verification, compilation, and installation belong to the repository-level vcpkg overlay. A recipe must use the repository-local `vcpkg/vcpkg` executable.
 
 Each recipe must perform these stages when applicable:
 

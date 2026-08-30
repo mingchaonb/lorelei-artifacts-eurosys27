@@ -37,7 +37,7 @@ Run one library directly:
 ./evaluations/1-libs/sdl2/run.sh --verbose
 ```
 
-All public recipes read the devkit from `LORELEI_DEVKIT`. They default to `../lorelei-ae/build/install`, resolved from this repository. They do not accept a devkit positional argument. The patched emulator similarly defaults to `../qemu-ae/build/qemu-x86_64` and can be overridden with `QEMU`:
+All public recipes read the devkit from `LORELEI_DEVKIT`, which defaults to `../lorelei-ae/build/install` resolved from this repository. The patched emulator defaults to `../qemu-ae/build/qemu-x86_64` and can be overridden with `QEMU`:
 
 ```bash
 LORELEI_DEVKIT=/absolute/path/to/devkit \

@@ -37,7 +37,7 @@ git -C vcpkg checkout 3f7b5a12ef0a55e7b59339b2b69cac4b56d6dbf9
 ./evaluations/1-libs/sdl2/run.sh --verbose
 ```
 
-所有公开配方都从 `LORELEI_DEVKIT` 读取 devkit。默认值是相对于本仓库解析的 `../lorelei-ae/build/install`，不再接受 devkit 位置参数。patched emulator 默认是 `../qemu-ae/build/qemu-x86_64`，可通过 `QEMU` 覆盖：
+所有公开配方都从 `LORELEI_DEVKIT` 读取 devkit，其默认值是相对于本仓库解析的 `../lorelei-ae/build/install`。patched emulator 默认是 `../qemu-ae/build/qemu-x86_64`，可通过 `QEMU` 覆盖：
 
 ```bash
 LORELEI_DEVKIT=/absolute/path/to/devkit \
