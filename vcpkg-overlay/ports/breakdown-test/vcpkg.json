@@ -1,0 +1,13 @@
+{
+  "name": "breakdown-test",
+  "version": "1.0.0",
+  "description": "Three-integer no-op library for the Lorelei call breakdown",
+  "license": "MIT",
+  "supports": "linux",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    }
+  ]
+}
