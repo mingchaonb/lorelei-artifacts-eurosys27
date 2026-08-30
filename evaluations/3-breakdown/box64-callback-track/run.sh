@@ -5,9 +5,7 @@ target_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 repo_root=$(cd "$target_dir/../../.." && pwd)
 [[ $# == 0 ]] || { echo "Unexpected positional argument: $1" >&2; exit 2; }
 devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/.work/devkit}")
-box64_source=${BOX64_SOURCE:-$repo_root/../ae-work/box64-breakdown}
-box64_build=${BOX64_BUILD:-$box64_source/build-breakdown}
-box64=${BOX64:-$box64_build/box64}
+box64=$(realpath -m "${BOX64_CALLBACK_TRACK:-$repo_root/vcpkg/installed/arm64-linux/tools/box64-callback-track-ae/box64-callback-track}")
 iterations=${ITERATIONS:-1000000}
 rounds=${ROUNDS:-5}
 cpu=${CPU:-0}
@@ -18,22 +16,12 @@ guest_prefix=$port_state/installed/guest/x64-linux-ae
 run_id=$(date -u +%Y%m%dT%H%M%SZ)
 result_dir=$target_dir/results/$run_id
 
-test -d "$box64_source/.git" || git -C "$box64_source" rev-parse --git-dir >/dev/null
+test -x "$box64"
 test -x "$devkit/bin/x86_64-linux-gnu-clang"
 test -f "$host_prefix/lib/libbreakdown_test.so.1"
 test -f "$guest_prefix/lib/libbreakdown_test.so.1"
 taskset -c "$cpu" true
-mkdir -p "$state" "$result_dir/raw" "$result_dir/build"
-
-cmake -S "$box64_source" -B "$box64_build" \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DARM64=ON \
-    -DARM_DYNAREC=ON \
-    -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-    >"$result_dir/build/configure.log" 2>&1
-cmake --build "$box64_build" -j"$(nproc)" \
-    >"$result_dir/build/build.log" 2>&1
-test -x "$box64"
+mkdir -p "$state" "$result_dir/raw"
 
 "$devkit/bin/x86_64-linux-gnu-clang" \
     --sysroot="$devkit/x86_64/sysroot" -O2 \
@@ -57,14 +45,12 @@ test -x "$box64"
         fi
     done
     "$box64" --version
-    git -C "$box64_source" rev-parse HEAD
-    git -C "$box64_source" branch --show-current
+    sha256sum "$box64"
+    "$repo_root/vcpkg/vcpkg" list | grep '^box64-callback-track-ae:arm64-linux' || true
+    printf 'box64_tool=%s\n' "$box64"
     printf 'iterations=%s\nrounds=%s\n' "$iterations" "$rounds"
     printf 'wrapper_signature_checks_per_sample=1000\n'
 } >"$result_dir/environment.txt" 2>&1
-git -C "$box64_source" status --short >"$result_dir/box64-source-status.txt"
-git -C "$box64_source" diff --stat >"$result_dir/box64-source-diffstat.txt"
-git -C "$box64_source" diff >"$result_dir/box64-source.patch"
 
 for round in $(seq 1 "$rounds"); do
     taskset -c "$cpu" env \

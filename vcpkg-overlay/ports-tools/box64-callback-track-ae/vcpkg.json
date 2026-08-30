@@ -1,0 +1,14 @@
+{
+  "name": "box64-callback-track-ae",
+  "version-date": "2026-08-30",
+  "description": "Instrumented Box64 executable for the callback address-origin breakdown",
+  "homepage": "https://github.com/mingchaonb/box64/tree/breakdown-test-wrapper",
+  "license": "MIT",
+  "supports": "linux & arm64",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    }
+  ]
+}

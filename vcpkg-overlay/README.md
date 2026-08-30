@@ -23,6 +23,7 @@ vcpkg-overlay/
 ├── ports-tools/
 │   ├── blink-ae/
 │   ├── box64-ae/
+│   ├── box64-callback-track-ae/
 │   ├── fex-ae/
 │   └── qemu-ae/
 └── triplets/
@@ -54,7 +55,7 @@ export LORELEI_DEVKIT=/path/to/devkit
   --overlay-triplets=vcpkg-overlay/triplets
 ```
 
-Executable infrastructure is kept in the separate `ports-tools` overlay. The public installer combines those pinned emulator ports with vcpkg's built-in native FFmpeg port:
+Executable infrastructure is kept in the separate `ports-tools` overlay. The public installer combines the four ordinary emulator ports, the separately instrumented Box64 callback-breakdown port, and vcpkg's built-in native FFmpeg port:
 
 ```bash
 ./evaluations/install-tools.sh

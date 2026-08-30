@@ -11,13 +11,13 @@
 
 ## Evaluation tools
 
-The released Lorelei devkit, native FFmpeg utility, and four pinned emulator forks are packaged separately from the libraries under test. Install all of them from any working directory:
+The released Lorelei devkit, native FFmpeg utility, and four pinned emulator forks are packaged separately from the libraries under test. An additional Box64 package contains only the timing probes used by the callback breakdown. Install all of them from any working directory:
 
 ```bash
 ./evaluations/install-tools.sh
 ```
 
-The installer downloads the architecture-matched AE devkit into `.work/devkit`, reuses packages already present in vcpkg, and places the public emulator and FFmpeg executables below `vcpkg/installed/arm64-linux/tools/`. The devkit step is also available independently as `evaluations/install-devkit.sh`. The emulator recipes live in `vcpkg-overlay/ports-tools`. Native FFmpeg comes from the built-in vcpkg port, not from the Hecate FFmpeg library-test recipe.
+The installer downloads the architecture-matched AE devkit into `.work/devkit`, reuses packages already present in vcpkg, and places the public emulator and FFmpeg executables below `vcpkg/installed/arm64-linux/tools/`. The devkit step is also available independently as `evaluations/install-devkit.sh`. The emulator recipes live in `vcpkg-overlay/ports-tools`. `box64-ae` remains the uninstrumented performance tool, while `box64-callback-track-ae` is used only by the callback breakdown. Native FFmpeg comes from the built-in vcpkg port, not from the Hecate FFmpeg library-test recipe.
 
 ## Directory contract
 
