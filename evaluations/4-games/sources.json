@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "architecture": "x86_64-linux",
+  "games": {
+    "assaultcube": {
+      "version": "1.3.0.2",
+      "url": "https://github.com/assaultcube/AC/releases/download/v1.3.0.2/AssaultCube_v1.3.0.2_LockdownEdition_RC1.tar.bz2",
+      "archive_sha256": "9b3118e7929253f0114fa06cad8310faab646d177b4660406011152f34086b55",
+      "archive_type": "tar.bz2",
+      "executable": "bin_unix/linux_64_client",
+      "executable_sha256": "f8209caa52644069f056421fd2488be5ab018293773f138651c7602ba68cb228",
+      "current_package_match": "exact executable"
+    },
+    "openarena": {
+      "version": "0.8.8",
+      "url": "https://downloads.sourceforge.net/project/oarena/openarena-0.8.8.zip?download",
+      "archive_sha256": "5a8faf7f5b51f351b0a1618c06b6b98a5f1a6758f1d39818de2c87df2a0bac4a",
+      "upstream_md5": "9f353d96d7889c377349d692c3905e5b",
+      "archive_type": "zip",
+      "executable": "openarena-0.8.8/openarena.x86_64",
+      "executable_sha256": "78f3cb91bf9ea487fbd3920e4409be71fce2822a6dd4c12c960f4963b49eb280",
+      "executable_build_id": "2d0f182f0748d1e1086095e75f92f9d61d8acdf0",
+      "current_package_match": "same version and build ID, locally postprocessed ELF"
+    },
+    "redeclipse": {
+      "version": "2.0.0",
+      "url": "https://github.com/redeclipse/base/releases/download/v2.0.0/redeclipse_2.0.0_nix.tar.bz2",
+      "archive_sha256": "b15c14214e4b86c232828b39d3531fa9217b41bc695892f10166aef746387190",
+      "archive_type": "tar.bz2",
+      "executable": "redeclipse-2.0.0/bin/amd64/redeclipse_linux",
+      "executable_sha256": "6b95908ab8740d7aa72572da6d5a6fb0ffd335b00f1cddaae958bef86fa86da0",
+      "current_package_match": "exact executable"
+    },
+    "supertux": {
+      "version": "0.6.3",
+      "url": "https://github.com/SuperTux/supertux/releases/download/v0.6.3/SuperTux-v0.6.3.glibc2.29-x86_64.AppImage",
+      "archive_sha256": "7f86cec168d63e34ad61038b816f46691d3d994dfac922f2483e7fcfcd53236a",
+      "archive_type": "appimage",
+      "executable": "usr/bin/supertux2",
+      "executable_sha256": "37831b7460440206f8d381a1a949a6a524ff61fe07ff89c2039a91fd7f7fe71e",
+      "current_package_match": "same version, current package is a local source build"
+    },
+    "supertuxkart": {
+      "version": "1.4",
+      "url": "https://downloads.sourceforge.net/project/supertuxkart/SuperTuxKart/1.4/SuperTuxKart-1.4-linux-x86_64.tar.xz?download",
+      "archive_sha256": "8d86438fc5c3d89e8ffa3f90a2e47023bc6d6253877fdd94170ccf6de905b7c9",
+      "archive_type": "tar.xz",
+      "executable": "SuperTuxKart-1.4-linux-x86_64/bin/supertuxkart",
+      "executable_sha256": "a1b02f42c3220223f8362e35d61cb73637e26f407c31693c0e2b99b29192d3db",
+      "executable_build_id": "aeb163b724a4c6ee0a38a335130479ead80ce0e9",
+      "current_package_match": "same version and build ID, locally postprocessed ELF"
+    }
+  },
+  "excluded": {
+    "hollow-knight": "Paid proprietary game files are not downloaded or redistributed by this artifact."
+  }
+}

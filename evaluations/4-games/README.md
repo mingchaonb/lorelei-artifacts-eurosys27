@@ -10,6 +10,10 @@ Each game has the same recipe layout as a library evaluation and is started by i
 HOLLOW_USE_VULKAN=1 ./evaluations/4-games/hollow-knight/run.sh 45
 ```
 
+The official x86-64 release archives, versions, checksums and executable paths are pinned in `sources.json`. Hollow Knight is intentionally excluded from the download list because its paid proprietary game files cannot be downloaded or redistributed by the artifact. Its runner remains available for evaluators who legally provide their own copy.
+
+The five redistributable games are vcpkg ports. Run `./evaluations/install-games.sh` to install an AArch64 native package and an x86-64 guest package for each game. There is intentionally no separate Hecate game package. Hecate executes the unmodified executable from the guest package while the translated libraries come from the library evaluations. Each per-game `run.sh` also installs or reuses its own two game packages before launching. Set `GAMES_ROOT` only to use the legacy external packages instead.
+
 The watchdog defaults to 30 seconds. Per-game evidence is written under that game's `results/` directory. Writable home directories are runtime state under `.work/evaluations/games/runtime-home`. Override the location with `RUNTIME_HOME_ROOT` when needed.
 
 Before launching a game, the shared harness builds x86-64 probes from `_common/tests` with the selected Lorelei devkit. Every game runs the XRandR probe and verifies that GL and Vulkan proc-address dispatch work together with the ordered thunk database list. OpenArena additionally runs the SDL 1.2 video probe, while the other games run the SDL2 display probe. Build output, probe logs and exit statuses are recorded with the game evidence, and a failed preflight prevents the game from starting.

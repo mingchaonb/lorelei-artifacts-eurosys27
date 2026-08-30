@@ -11,7 +11,7 @@ watchdog duration and defaults to 30.
 Common environment overrides:
   LORELEI_DEVKIT        Lorelei devkit installation
   QEMU                  Patched qemu-x86_64 executable
-  GAMES_ROOT            Packaged game directory
+  GAMES_ROOT            Legacy packaged game directory override
   GUI_ENV               File containing DISPLAY and XAUTHORITY
   RUNTIME_HOME_ROOT     Per-game writable home directories
   MANGOHUD_ENABLED      Set to 0 to disable FPS collection
@@ -66,6 +66,24 @@ vk_prefix=$repo_root/.work/evaluations/vulkan-loader/installed/arm64-linux-ae
 xcb_thunk=$repo_root/.work/evaluations/libxcb/thunks/hecate
 x11_thunk=$repo_root/.work/evaluations/libx11/thunk
 
+native_game_prefix=
+guest_game_prefix=
+if [[ $game != hollow-knight && -z ${GAMES_ROOT:-} ]]; then
+    game_work_dir=$repo_root/.work/evaluations/games/$game
+    game_installed=$game_work_dir/installed
+    game_buildtrees=$game_work_dir/buildtrees
+    game_packages=$game_work_dir/packages
+    vcpkg=$repo_root/vcpkg/vcpkg
+    overlay=$repo_root/vcpkg-overlay
+    "$vcpkg" install "$game:arm64-linux-ae" "$game:x64-linux-ae" \
+        --overlay-ports="$overlay/ports" --overlay-triplets="$overlay/triplets" \
+        --downloads-root="$repo_root/vcpkg/downloads" \
+        --x-install-root="$game_installed" --x-buildtrees-root="$game_buildtrees" \
+        --x-packages-root="$game_packages"
+    native_game_prefix=$game_installed/arm64-linux-ae
+    guest_game_prefix=$game_installed/x64-linux-ae
+fi
+
 for required in "$qemu" "$gui_env" "$devkit/bin/x86_64-linux-gnu-clang" \
     "$devkit/x86_64/sysroot" "$devkit/lib/libLoreHostHLRExtension.so" \
     "$devkit/x86_64/lib/libLoreGuestHLRExtension.so" \
@@ -80,7 +98,11 @@ done
 
 case "$game" in
     assaultcube)
-        game_dir=$games_root/assaultcube
+        if [[ -n $guest_game_prefix ]]; then
+            game_dir=$guest_game_prefix/tools/assaultcube/game
+        else
+            game_dir=$games_root/assaultcube
+        fi
         executable=$game_dir/bin_unix/linux_64_client
         game_library_path=""
         game_args=("--home=$runtime_home_root/assaultcube" --init)
@@ -97,13 +119,21 @@ case "$game" in
         fi
         ;;
     redeclipse)
-        game_dir=$games_root/redeclipse
+        if [[ -n $guest_game_prefix ]]; then
+            game_dir=$guest_game_prefix/tools/redeclipse/game
+        else
+            game_dir=$games_root/redeclipse
+        fi
         executable=$game_dir/bin/amd64/redeclipse_linux
         game_library_path=$game_dir/bin/amd64
         game_args=()
         ;;
     openarena)
-        game_dir=$games_root/openarena
+        if [[ -n $guest_game_prefix ]]; then
+            game_dir=$guest_game_prefix/tools/openarena/game
+        else
+            game_dir=$games_root/openarena
+        fi
         executable=$game_dir/openarena.x86_64
         game_library_path=""
         game_args=(+set r_fullscreen 0 +set r_mode -1 +set r_customwidth 1280
@@ -126,13 +156,24 @@ case "$game" in
         fi
         ;;
     supertux)
-        game_dir=$games_root/supertux
-        executable=$game_dir/build/RelWithDebInfo/supertux2
-        game_library_path=$game_dir/runtime-libs
-        game_args=(--datadir "$game_dir/build/install/share/games/supertux2")
+        if [[ -n $guest_game_prefix ]]; then
+            game_dir=$guest_game_prefix/tools/supertux/game/usr
+            executable=$game_dir/bin/supertux2
+            game_library_path=$game_dir/lib/x86_64-linux-gnu
+            game_args=(--datadir "$game_dir/share/supertux2")
+        else
+            game_dir=$games_root/supertux
+            executable=$game_dir/build/RelWithDebInfo/supertux2
+            game_library_path=$game_dir/runtime-libs
+            game_args=(--datadir "$game_dir/build/install/share/games/supertux2")
+        fi
         ;;
     supertuxkart)
-        game_dir=$games_root/supertuxkart
+        if [[ -n $guest_game_prefix ]]; then
+            game_dir=$guest_game_prefix/tools/supertuxkart/game
+        else
+            game_dir=$games_root/supertuxkart
+        fi
         executable=$game_dir/bin/supertuxkart
         game_library_path=$game_dir/lib
         game_args=()
@@ -288,6 +329,8 @@ fi
     echo "executable=$executable"
     echo "watchdog_seconds=$run_seconds"
     echo "mangohud_enabled=$mangohud_enabled"
+    echo "native_game_prefix=$native_game_prefix"
+    echo "guest_game_prefix=$guest_game_prefix"
 } > "$run_dir/run.env"
 
 set +e
