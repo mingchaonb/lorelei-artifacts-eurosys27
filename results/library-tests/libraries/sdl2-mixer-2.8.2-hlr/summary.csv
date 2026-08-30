@@ -1,4 +1,0 @@
-lane,status,output
-native,pass,effect-calls:90 done-calls:1
-hlr-with-thread-hook,pass,effect-calls:90 done-calls:1
-hlr-without-thread-hook,expected-fail,SIGSEGV exit 139

@@ -1,0 +1,9 @@
+# Local runs are disposable and must not enter the repository.
+**/results/
+**/upstream-results/
+
+# Reference evidence remains visible and can be committed explicitly.
+!**/reference-results/
+!**/reference-results/**
+!**/upstream-reference-results/
+!**/upstream-reference-results/**
