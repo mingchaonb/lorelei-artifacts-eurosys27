@@ -17,8 +17,7 @@ sudo apt install -y build-essential cmake ninja-build gcc-x86-64-linux-gnu g++-x
 ```text
 /home/user/
 ├── eurosys-lorelei-artifacts/
-├── lorelei-ae/build/install/
-└── qemu-ae/build/qemu-x86_64
+└── lorelei-ae/build/install/
 ```
 
 首次使用时，在 artifact 仓库根目录 clone 固定版本的 vcpkg，再完成初始化：
@@ -27,6 +26,7 @@ sudo apt install -y build-essential cmake ninja-build gcc-x86-64-linux-gnu g++-x
 git clone https://github.com/microsoft/vcpkg.git vcpkg
 git -C vcpkg checkout 2026.07.29
 ./vcpkg/bootstrap-vcpkg.sh -disableMetrics
+./evaluations/install-tools.sh
 ```
 
 依次运行已经验证的 library 集合：
@@ -43,11 +43,14 @@ git -C vcpkg checkout 2026.07.29
 ./evaluations/1-libs/sdl2/run.sh --verbose
 ```
 
-所有公开配方都从 `LORELEI_DEVKIT` 读取 devkit，其默认值是相对于本仓库解析的 `../lorelei-ae/build/install`。patched emulator 默认是 `../qemu-ae/build/qemu-x86_64`，可通过 `QEMU` 覆盖：
+所有公开配方都从 `LORELEI_DEVKIT` 读取 devkit，其默认值是相对于本仓库解析的 `../lorelei-ae/build/install`。四个固定版本的模拟器默认使用 `evaluations/install-tools.sh` 安装到 `vcpkg/installed/arm64-linux/tools/` 下的可执行文件，可通过 `QEMU`、`BLINK`、`BOX64` 和 `FEX` 覆盖：
 
 ```bash
 LORELEI_DEVKIT=/absolute/path/to/devkit \
 QEMU=/absolute/path/to/qemu-x86_64 \
+BLINK=/absolute/path/to/blink \
+BOX64=/absolute/path/to/box64 \
+FEX=/absolute/path/to/FEX \
   ./evaluations/1-libs/sdl2/run.sh --verbose
 ```
 
@@ -59,7 +62,7 @@ QEMU=/absolute/path/to/qemu-x86_64 \
 2. [`evaluations/2-cli-benchmarks/`](evaluations/2-cli-benchmarks/) 预留给八个命令行性能 workload。
 3. [`evaluations/3-breakdown/`](evaluations/3-breakdown/) 保存调用、callback、emulator 和机制开销拆分。
 4. [`evaluations/4-games/`](evaluations/4-games/) 保存游戏 preflight、可玩性和帧率配方。
-5. [`vcpkg-overlay/`](vcpkg-overlay/) 保存固定版本的 port、经过审查的 patch、Lorelei metadata，以及 native 和 guest triplet。
+5. [`vcpkg-overlay/`](vcpkg-overlay/) 保存 library port、固定版本的 AE 工具 port、经过审查的 patch、Lorelei metadata，以及 native 和 guest triplet。
 6. `vcpkg/` 是仓库内的 package manager 和共享源码归档缓存。
 7. `.work/evaluations/` 保存可复用的 package、build、install 和生成机制状态，不属于证据。
 

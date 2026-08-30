@@ -4,7 +4,7 @@ set -euo pipefail
 if [[ ${1:-} == --resolve-qemu ]]; then
     devkit=$2
     repo_root=$3
-    candidate=${QEMU:-$repo_root/../qemu-ae/build/qemu-x86_64}
+    candidate=${QEMU:-$repo_root/vcpkg/installed/arm64-linux/tools/qemu-ae/qemu-x86_64}
     [[ -x $candidate ]] || { echo "Patched QEMU not found: $candidate" >&2; exit 2; }
     realpath "$candidate"
     exit 0

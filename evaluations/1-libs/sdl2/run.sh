@@ -38,7 +38,7 @@ while (($#)); do
     shift
 done
 devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/../lorelei-ae/build/install}")
-qemu=$(realpath -m "${QEMU:-$repo_root/../qemu-ae/build/qemu-x86_64}")
+qemu=$(realpath -m "${QEMU:-$repo_root/vcpkg/installed/arm64-linux/tools/qemu-ae/qemu-x86_64}")
 # Keep the documented default stable. Developers may select another disposable
 # marked workspace to avoid colliding with a concurrent graphics evaluation.
 work_dir=${LORELEI_EVALUATION_WORK_DIR:-$repo_root/.work/evaluations/sdl2}

@@ -41,7 +41,7 @@ vcpkg-overlay/
 └── triplets/                       shared native and guest targets
 ```
 
-Every public recipe reads the Lorelei devkit from `LORELEI_DEVKIT`. The default is the sibling checkout `../lorelei-ae/build/install`, resolved from the artifact repository. `QEMU` overrides the default sibling executable at `../qemu-ae/build/qemu-x86_64`. A library recipe may provide `--reference`, `--install-only`, and `--verbose`. Source acquisition, version verification, compilation, and installation belong to the repository-level vcpkg overlay. A recipe must use the repository-local `vcpkg/vcpkg` executable.
+Every public recipe reads the Lorelei devkit from `LORELEI_DEVKIT`. The default is the sibling checkout `../lorelei-ae/build/install`, resolved from the artifact repository. Emulator defaults come from `vcpkg/installed/arm64-linux/tools/` after running `evaluations/install-tools.sh`. `QEMU`, `BLINK`, `BOX64`, and `FEX` override those packaged executables. A library recipe may provide `--reference`, `--install-only`, and `--verbose`. Source acquisition, version verification, compilation, and installation belong to the repository-level vcpkg overlay. A recipe must use the repository-local `vcpkg/vcpkg` executable.
 
 Each recipe must perform these stages when applicable:
 
@@ -59,7 +59,7 @@ The public command for a package must fit on one line. SDL2 is the reference imp
 ./evaluations/1-libs/sdl2/run.sh
 ```
 
-Another devkit or patched QEMU can be selected explicitly:
+Another devkit or emulator can be selected explicitly:
 
 ```bash
 LORELEI_DEVKIT=/path/to/devkit QEMU=/path/to/qemu-x86_64 \

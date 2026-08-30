@@ -4,11 +4,12 @@ set -euo pipefail
 target_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 repo_root=$(cd "$target_dir/../../.." && pwd)
 rover_root=$(cd "$repo_root/.." && pwd)
+emulator_tools=$repo_root/vcpkg/installed/arm64-linux/tools
 [[ $# == 0 ]] || { echo "Unexpected positional argument: $1" >&2; exit 2; }
 devkit=$(realpath -m "${LORELEI_DEVKIT:-$rover_root/lorelei-ae/build/install}")
-blink=${BLINK:-$rover_root/blink-ae/o/rel/blink/blink}
-box64=${BOX64:-$rover_root/box64-ae/build-ae/box64}
-fex=${FEX:-$rover_root/FEX-ae/build-ae-clang/Bin/FEX}
+blink=$(realpath -m "${BLINK:-$emulator_tools/blink-ae/blink}")
+box64=$(realpath -m "${BOX64:-$emulator_tools/box64-ae/box64}")
+fex=$(realpath -m "${FEX:-$emulator_tools/fex-ae/FEX}")
 iterations=${ITERATIONS:-1000}
 state=$repo_root/.work/evaluations/hecate-emulators
 host_prefix=$repo_root/.work/evaluations/breakdown-test/installed/hecate/arm64-linux-ae
@@ -78,11 +79,14 @@ done
     date -u --iso-8601=seconds
     uname -a
     printf 'iterations=%s\n' "$iterations"
-    for repo in blink-ae box64-ae FEX-ae lorelei-ae; do
-        printf '%s=' "$repo"
-        git -C "$rover_root/$repo" rev-parse HEAD
-    done
     printf 'blink=%s\nbox64=%s\nfex=%s\n' "$blink" "$box64" "$fex"
+    sha256sum "$blink" "$box64" "$fex"
+    "$repo_root/vcpkg/vcpkg" list | grep -E \
+        '^(blink-ae|box64-ae|fex-ae):arm64-linux' || true
+    if [[ -d $rover_root/lorelei-ae/.git ]]; then
+        printf 'lorelei-ae='
+        git -C "$rover_root/lorelei-ae" rev-parse HEAD
+    fi
 } >"$result_dir/environment.txt"
 
 echo "Evidence: $result_dir"

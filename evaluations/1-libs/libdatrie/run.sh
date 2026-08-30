@@ -20,7 +20,7 @@ while (($#)); do
   shift
 done
 devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/../lorelei-ae/build/install}")
-default_qemu=$repo_root/../qemu-ae/build/qemu-x86_64
+default_qemu=$repo_root/vcpkg/installed/arm64-linux/tools/qemu-ae/qemu-x86_64
 qemu=$(realpath -m "${QEMU:-$default_qemu}")
 vcpkg=$repo_root/vcpkg/vcpkg
 nm_tool=$(command -v llvm-nm-20 || command -v llvm-nm || command -v nm)

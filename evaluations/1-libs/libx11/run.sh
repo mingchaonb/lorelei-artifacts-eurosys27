@@ -19,7 +19,7 @@ while (($#)); do
     shift
 done
 devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/../lorelei-ae/build/install}")
-qemu=$(realpath "${QEMU:-$repo_root/../qemu-ae/build/qemu-x86_64}")
+qemu=$(realpath "${QEMU:-$repo_root/vcpkg/installed/arm64-linux/tools/qemu-ae/qemu-x86_64}")
 gui_env=${GUI_ENV:-$HOME/Desktop/spark-gui-env.txt}
 run_id=$(date -u +%Y%m%dT%H%M%SZ)
 results_root=$recipe_dir/results

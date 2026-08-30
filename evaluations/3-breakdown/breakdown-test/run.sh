@@ -5,7 +5,7 @@ target_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 repo_root=$(cd "$target_dir/../../.." && pwd)
 [[ $# == 0 ]] || { echo "Unexpected positional argument: $1" >&2; exit 2; }
 devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/../lorelei-ae/build/install}")
-qemu=${QEMU:-$repo_root/../qemu-ae/build/qemu-x86_64}
+qemu=$(realpath -m "${QEMU:-$repo_root/vcpkg/installed/arm64-linux/tools/qemu-ae/qemu-x86_64}")
 iterations=${ITERATIONS:-1000000}
 rounds=${ROUNDS:-5}
 overlay=$repo_root/vcpkg-overlay
@@ -67,8 +67,11 @@ ln -sfn libbreakdown_test.so "$thunk/x86_64/libbreakdown_test.so.1"
     lscpu
     uptime
     "$qemu" --version
-    git -C "$repo_root/../qemu-ae" rev-parse HEAD
-    git -C "$repo_root/../lorelei-ae" rev-parse HEAD
+    sha256sum "$qemu"
+    "$repo_root/vcpkg/vcpkg" list | grep '^qemu-ae:arm64-linux' || true
+    if [[ -d $repo_root/../lorelei-ae/.git ]]; then
+        git -C "$repo_root/../lorelei-ae" rev-parse HEAD
+    fi
     printf 'port=breakdown-test\nfunction=breakdown_test\narguments=3\niterations=%s\nrounds=%s\n' "$iterations" "$rounds"
 } >"$result_dir/environment.txt" 2>&1
 

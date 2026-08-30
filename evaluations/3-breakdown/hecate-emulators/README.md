@@ -10,4 +10,4 @@ Public commands use the sibling `../lorelei-ae/build/install` devkit by default.
 ./evaluations/3-breakdown/hecate-emulators/run.sh
 ```
 
-runner 默认使用同级 `blink-ae`、`box64-ae`、`FEX-ae` 和 `lorelei-ae`。可以用 `BLINK`、`BOX64`、`FEX` 和 `LORELEI_DEVKIT` 覆盖路径。原始输出和仓库提交号保存在本目录的 `results/<UTC 时间>/`。
+runner 默认使用 `evaluations/install-tools.sh` 安装的 Blink、Box64 和 FEX，以及同级 `lorelei-ae` 的 devkit。可以用 `BLINK`、`BOX64`、`FEX` 和 `LORELEI_DEVKIT` 覆盖路径。原始输出、工具哈希和 vcpkg 包版本保存在本目录的 `results/<UTC 时间>/`。

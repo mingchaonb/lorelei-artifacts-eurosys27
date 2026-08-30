@@ -17,8 +17,7 @@ The default setup places the source checkouts next to this repository under the 
 ```text
 /home/user/
 ├── eurosys-lorelei-artifacts/
-├── lorelei-ae/build/install/
-└── qemu-ae/build/qemu-x86_64
+└── lorelei-ae/build/install/
 ```
 
 Clone the pinned vcpkg release into the artifact repository root, then bootstrap it once:
@@ -27,6 +26,7 @@ Clone the pinned vcpkg release into the artifact repository root, then bootstrap
 git clone https://github.com/microsoft/vcpkg.git vcpkg
 git -C vcpkg checkout 2026.07.29
 ./vcpkg/bootstrap-vcpkg.sh -disableMetrics
+./evaluations/install-tools.sh
 ```
 
 Run the verified library set sequentially:
@@ -43,11 +43,14 @@ Run one library directly:
 ./evaluations/1-libs/sdl2/run.sh --verbose
 ```
 
-All public recipes read the devkit from `LORELEI_DEVKIT`, which defaults to `../lorelei-ae/build/install` resolved from this repository. The patched emulator defaults to `../qemu-ae/build/qemu-x86_64` and can be overridden with `QEMU`:
+All public recipes read the devkit from `LORELEI_DEVKIT`, which defaults to `../lorelei-ae/build/install` resolved from this repository. The four pinned emulators default to the executables installed by `evaluations/install-tools.sh` under `vcpkg/installed/arm64-linux/tools/`. They can be overridden with `QEMU`, `BLINK`, `BOX64`, and `FEX`:
 
 ```bash
 LORELEI_DEVKIT=/absolute/path/to/devkit \
 QEMU=/absolute/path/to/qemu-x86_64 \
+BLINK=/absolute/path/to/blink \
+BOX64=/absolute/path/to/box64 \
+FEX=/absolute/path/to/FEX \
   ./evaluations/1-libs/sdl2/run.sh --verbose
 ```
 
@@ -59,7 +62,7 @@ Use `--install-only` when a supported library recipe should prepare its vcpkg pa
 2. [`evaluations/2-cli-benchmarks/`](evaluations/2-cli-benchmarks/) is reserved for the eight command-line performance workloads.
 3. [`evaluations/3-breakdown/`](evaluations/3-breakdown/) contains call, callback, emulator, and mechanism breakdowns.
 4. [`evaluations/4-games/`](evaluations/4-games/) contains game preflight, playability, and frame-rate recipes.
-5. [`vcpkg-overlay/`](vcpkg-overlay/) contains pinned ports, reviewed patches, Lorelei metadata, and the native and guest triplets.
+5. [`vcpkg-overlay/`](vcpkg-overlay/) contains library ports, pinned AE tool ports, reviewed patches, Lorelei metadata, and the native and guest triplets.
 6. `vcpkg/` is the repository-local package manager and shared source archive cache.
 7. `.work/evaluations/` contains reusable package, build, install, and generated mechanism state. It is not evidence.
 

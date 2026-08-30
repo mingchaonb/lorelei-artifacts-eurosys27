@@ -46,7 +46,7 @@ summary = {"schema_version": 2, "package": "murmurhash", "status": "installed", 
 pathlib.Path(sys.argv[2]).write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n")
 PY
 if $install_only; then echo "Evidence: $run_dir"; exit 0; fi
-qemu=$(realpath -m "${QEMU:-$repo_root/../qemu-ae/build/qemu-x86_64}")
+qemu=$(realpath -m "${QEMU:-$repo_root/vcpkg/installed/arm64-linux/tools/qemu-ae/qemu-x86_64}")
 [[ -x $qemu ]] || { echo "Patched QEMU not found: $qemu" >&2; exit 2; }
 native=$work/installed/native/arm64-linux-ae
 guest=$work/installed/guest/x64-linux-ae

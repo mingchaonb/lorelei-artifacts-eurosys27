@@ -6,11 +6,12 @@ cli_common_init() {
     cli_root=$(cd "$workload_dir/.." && pwd)
     repo_root=$(cd "$cli_root/../.." && pwd)
     rover_root=$(cd "$repo_root/.." && pwd)
+    emulator_tools=$repo_root/vcpkg/installed/arm64-linux/tools
     devkit=$(realpath -m "${LORELEI_DEVKIT:-$rover_root/lorelei-ae/build/install}")
-    qemu=$(realpath -m "${QEMU:-$rover_root/qemu-ae/build/qemu-x86_64}")
-    blink=$(realpath -m "${BLINK:-$rover_root/blink-ae/o/rel/blink/blink}")
-    box64=$(realpath -m "${BOX64:-$rover_root/box64-ae/build-ae/box64}")
-    fex=$(realpath -m "${FEX:-$rover_root/FEX-ae/build-ae-clang/Bin/FEX}")
+    qemu=$(realpath -m "${QEMU:-$emulator_tools/qemu-ae/qemu-x86_64}")
+    blink=$(realpath -m "${BLINK:-$emulator_tools/blink-ae/blink}")
+    box64=$(realpath -m "${BOX64:-$emulator_tools/box64-ae/box64}")
+    fex=$(realpath -m "${FEX:-$emulator_tools/fex-ae/FEX}")
     repetitions=${REPETITIONS:-5}
     timeout_seconds=${TIMEOUT_SECONDS:-180}
     input_dir=$cli_root/_inputs
@@ -49,6 +50,11 @@ cli_begin_result() {
         uptime
         printf 'workload=%s\nrepetitions=%s\ntimeout_seconds=%s\nlanes=%s\n' \
             "$workload" "$repetitions" "$timeout_seconds" "$lanes"
+        printf 'qemu=%s\nblink=%s\nbox64=%s\nfex=%s\n' \
+            "$qemu" "$blink" "$box64" "$fex"
+        sha256sum "$qemu" "$blink" "$box64" "$fex"
+        "$repo_root/vcpkg/vcpkg" list | grep -E \
+            '^(qemu-ae|blink-ae|box64-ae|fex-ae):arm64-linux' || true
         for repo in lorelei-ae qemu-ae blink-ae box64-ae FEX-ae eurosys-lorelei-artifacts; do
             if [[ -d $rover_root/$repo/.git ]]; then
                 printf '%s=' "$repo"
