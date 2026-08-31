@@ -22,8 +22,12 @@ shared download cache are reused. Failures do not prevent later libraries from
 being attempted.
 
 vcpkg output is always streamed above the progress display.
+Recognized transient network failures are retried automatically.
 
   --plain  Disable the sticky terminal progress display.
+
+Environment:
+  INSTALL_NETWORK_ATTEMPTS  Maximum attempts after network failures, default: 5
 EOF
             exit 0
             ;;

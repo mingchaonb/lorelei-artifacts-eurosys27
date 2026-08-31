@@ -22,6 +22,7 @@ packages are reused. This script does not install the Lorelei devkit.
 
 Environment:
   VCPKG_DEFAULT_TRIPLET  Target triplet, default: arm64-linux
+  INSTALL_NETWORK_ATTEMPTS  Maximum attempts after network failures, default: 5
 EOF
 }
 

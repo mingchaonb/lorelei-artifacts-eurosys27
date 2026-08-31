@@ -16,8 +16,12 @@ game. Existing packages, downloads, and build state are reused. Failures do not
 prevent later games from being attempted.
 
 vcpkg output is always streamed above the progress display.
+Recognized transient network failures are retried automatically.
 
   --plain  Disable the sticky terminal progress display.
+
+Environment:
+  INSTALL_NETWORK_ATTEMPTS  Maximum attempts after network failures, default: 5
 EOF
 }
 

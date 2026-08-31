@@ -116,7 +116,10 @@ If vcpkg, Git, `yt-dlp`, or other tools inside the container also require the pr
   --env no_proxy="$no_proxy" \
 ```
 
-Proxy variables are fixed when the container is created. After changing the proxy address on the host, remove and recreate the evaluation container or export the corrected variables again in the current interactive shell. The four `install-*.sh` scripts fill the empty case variant when only one of the uppercase or lowercase forms is non-empty. When both forms are configured, each original value is preserved.
+Proxy variables are fixed when the container is created. After changing the proxy address on the host, remove and recreate the evaluation container or export the corrected variables again in the current interactive shell.
+
+- The four `install-*.sh` scripts fill the empty case variant when only one of the uppercase or lowercase forms is non-empty. When both forms are configured, each original value is preserved.
+- `install-tools.sh`, `install-libs.sh`, and `install-games.sh` automatically retry recognized transient network failures, with at most five attempts per item by default. Set `INSTALL_NETWORK_ATTEMPTS` to change this limit. Build failures, test failures, and user interrupts are not retried.
 
 The `/dev/dri` device, supplementary group, X11 socket, and Xauthority are required by game evaluations. They may be omitted when reproducing only library, command-line, and breakdown data. Hosts using the proprietary NVIDIA driver must expose the GPU through their configured container runtime.
 

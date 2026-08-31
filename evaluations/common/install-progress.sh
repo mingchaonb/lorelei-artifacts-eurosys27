@@ -10,6 +10,11 @@ install_progress_init() {
     install_progress_done=0
     install_progress_passed=0
     install_progress_failed=0
+    install_progress_network_attempts=${INSTALL_NETWORK_ATTEMPTS:-5}
+    if [[ ! $install_progress_network_attempts =~ ^[1-9][0-9]*$ ]]; then
+        echo "INSTALL_NETWORK_ATTEMPTS must be a positive integer" >&2
+        return 2
+    fi
     install_progress_current=Preparing
     install_progress_detail="0 of $install_progress_total complete"
     install_progress_active=false
@@ -57,6 +62,12 @@ install_progress_stream() {
     done
 }
 
+install_progress_is_network_failure() {
+    grep -Eiq \
+        'curl operation failed|Failed to connect|Could not resolve host|SSL_connect|Connection reset by peer|Timeout was reached|Operation too slow|Failure when receiving data from the peer|Temporary failure in name resolution|Recv failure' \
+        "$1"
+}
+
 install_progress_resize() {
     $install_progress_active || return 0
     install_progress_rows=$(tput lines)
@@ -82,24 +93,44 @@ install_progress_setup() {
 # Run one item without letting set -e abort the complete installation plan.
 # The function returns the child status after updating the dashboard counters.
 install_progress_run() {
-    local item=$1 index=$2 status outcome
+    local item=$1 index=$2 status outcome attempt=1 delay attempt_log
     shift 2
-    install_progress_current="INSTALL $item"
-    install_progress_detail="Item $index of $install_progress_total"
-    install_progress_draw
-    printf '\n[%d/%d] INSTALL %s\n' "$index" "$install_progress_total" "$item"
-    printf '  $'; printf ' %q' "$@"; printf '\n'
-    if $install_progress_active; then
-        set +e
-        "$@" 2>&1 | install_progress_stream
-        status=${PIPESTATUS[0]}
-        set -e
-    else
-        set +e
-        "$@"
-        status=$?
-        set -e
-    fi
+    attempt_log=$(mktemp)
+    while :; do
+        install_progress_current="INSTALL $item"
+        install_progress_detail="Item $index of $install_progress_total, attempt $attempt"
+        install_progress_draw
+        printf '\n[%d/%d] INSTALL %s, attempt %d/%d\n' \
+            "$index" "$install_progress_total" "$item" \
+            "$attempt" "$install_progress_network_attempts"
+        printf '  $'; printf ' %q' "$@"; printf '\n'
+        if $install_progress_active; then
+            set +e
+            "$@" 2>&1 | tee "$attempt_log" | install_progress_stream
+            status=${PIPESTATUS[0]}
+            set -e
+        else
+            set +e
+            "$@" 2>&1 | tee "$attempt_log"
+            status=${PIPESTATUS[0]}
+            set -e
+        fi
+        if ((status == 0 || status >= 128 || attempt >= install_progress_network_attempts)); then
+            break
+        fi
+        if ! install_progress_is_network_failure "$attempt_log"; then
+            break
+        fi
+        delay=$attempt
+        install_progress_current="RETRY $item"
+        install_progress_detail="Transient network failure, retry $((attempt + 1)) of $install_progress_network_attempts in ${delay}s"
+        install_progress_draw
+        printf '[%d/%d] RETRY %s after a transient network failure in %d second(s)\n' \
+            "$index" "$install_progress_total" "$item" "$delay"
+        sleep "$delay"
+        ((attempt += 1))
+    done
+    rm -f "$attempt_log"
     ((install_progress_done += 1))
     if ((status == 0)); then
         ((install_progress_passed += 1))
@@ -109,7 +140,7 @@ install_progress_run() {
         outcome=FAIL
     fi
     install_progress_current="$outcome $item"
-    install_progress_detail="Exit $status, item $index of $install_progress_total"
+    install_progress_detail="Exit $status after $attempt attempt(s), item $index of $install_progress_total"
     install_progress_draw
     printf '[%d/%d] %s %s, exit %d\n' "$index" "$install_progress_total" \
         "$outcome" "$item" "$status"

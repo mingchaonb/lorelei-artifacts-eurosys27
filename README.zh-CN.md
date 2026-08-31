@@ -116,7 +116,10 @@ docker run --detach \
   --env no_proxy="$no_proxy" \
 ```
 
-代理变量在创建容器时确定。修改 host 上的代理地址后，需要删除并重新创建评测容器，或者在当前交互 shell 中重新导出这些变量。四个 `install-*.sh` 会在大写或小写形式只有一侧非空时自动补齐另一侧。如果两侧都已设置，则保留各自的原值。
+代理变量在创建容器时确定。修改 host 上的代理地址后，需要删除并重新创建评测容器，或者在当前交互 shell 中重新导出这些变量。
+
+- 四个 `install-*.sh` 会在大写或小写形式只有一侧非空时自动补齐另一侧。如果两侧都已设置，则保留各自的原值。
+- `install-tools.sh`、`install-libs.sh` 和 `install-games.sh` 对可识别的临时网络错误自动重试，默认每项最多尝试 5 次。可通过 `INSTALL_NETWORK_ATTEMPTS` 调整次数。编译失败、测试失败和用户中断不会触发重试。
 
 `/dev/dri`、supplementary group、X11 socket 和 Xauthority 用于游戏评测。只复现 library、命令行和 breakdown 数据时可以省略这些参数。若 host 使用 NVIDIA 专有驱动，需要按 host 的容器运行时配置额外传入 GPU。
 
