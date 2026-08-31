@@ -175,6 +175,8 @@ Confirm that the `glxinfo -B` renderer names the intended physical GPU and that 
 
 The commands below read the Lorelei devkit from `.work/devkit/` and use the QEMU, Blink, Box64, and FEX executables installed by `install-tools.sh`. Select another installation with `LORELEI_DEVKIT`, `QEMU`, `BLINK`, `BOX64`, or `FEX` when necessary.
 
+**TL;DR: To follow the shortest end-to-end validation path, go directly to [Section 3.6, Quick walkthrough from the clean Docker image](#36-quick-walkthrough-from-the-clean-docker-image).**
+
 ### 3.1 Validate library correctness
 
 Our correctness claim is the following. For every package marked `[ALL TESTS PASSED]`, all upstream tests that are discoverable in the current shared-library configuration, belong to the target public C ABI, and are not explicitly excluded pass against the same upstream version in both the native AArch64 and Hecate x86-64 paths. This claim does not extend to other build configurations, static or private ABI tests, atomics and locks, signals, real devices, fuzzing, sanitizers, or stress tests that do not fit the AE time budget.
@@ -213,6 +215,8 @@ The complete set also includes packages with explicit exclusions or directed val
 - Both batch modes continue after failures.
 - Repeating the same command skips successful libraries and retries failed or interrupted entries.
 
+See [`evaluations/1-libs/README.md`](evaluations/1-libs/README.md) for the library-package layout, per-library entry points, test classification, and evidence format.
+
 ### 3.2 Validate command-line programs
 
 Run the eight command-line workloads:
@@ -236,6 +240,8 @@ python3 evaluations/3-breakdown/coverage-effort/run.py
 
 The call breakdown and Box64 callback breakdown use the `breakdown-test` package installed by `install-libs.sh` together with separate instrumented QEMU and Box64 packages from `install-tools.sh`. The Hecate callback boundary experiment uses the installed devkit. These runners do not read adjacent source repositories or rebuild emulators at evaluation time. Adjust the sample count, iteration count, and CPU with `ROUNDS`, `ITERATIONS`, and `CPU`. The three experiment READMEs document the exact measurement points.
 
+See [`evaluations/3-breakdown/README.md`](evaluations/3-breakdown/README.md) for the relationship between the breakdown experiments, their measurement definitions, and their entry points.
+
 ### 3.4 Validate games
 
 Complete all four installation scripts inside the container, exit it, and run games on the GUI host prepared in Section 2.5. The runners only reuse installation results in the bind-mounted repository. They do not rerun vcpkg, HLR, or thunk builds on the host. An evaluator may select any installed game. The argument is a watchdog duration in seconds and defaults to 30:
@@ -258,6 +264,8 @@ Complete all four installation scripts inside the container, exit it, and run ga
 ```bash
 GAME_DIR="/absolute/path/to/Hollow Knight" ./evaluations/4-games/hollow-knight/run.sh 30
 ```
+
+See [`evaluations/4-games/README.md`](evaluations/4-games/README.md) for each game's installation source, runtime prerequisites, FPS sampling window, and result format.
 
 ### 3.5 Export paper data and render plots
 
@@ -285,6 +293,8 @@ python3 evaluations/plots/plot-coverage-effort.py
 python3 evaluations/plots/plot-function-breakdown.py
 python3 evaluations/plots/plot-callback-track.py
 ```
+
+See [`evaluations/5-modifications/README.md`](evaluations/5-modifications/README.md), [`evaluations/paper-data/README.md`](evaluations/paper-data/README.md), and [`evaluations/plots/README.md`](evaluations/plots/README.md) for source-change analysis, CSV schemas, and plotting entry points.
 
 ### 3.6 Quick walkthrough from the clean Docker image
 

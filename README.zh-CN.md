@@ -175,6 +175,8 @@ vulkaninfo --summary
 
 以下命令默认把 Lorelei devkit 读取自 `.work/devkit/`，并使用 `install-tools.sh` 安装的 QEMU、Blink、Box64 和 FEX。需要使用其他安装时，可分别设置 `LORELEI_DEVKIT`、`QEMU`、`BLINK`、`BOX64` 和 `FEX`。
 
+**太长不看：如果只想按最短路径完成一次端到端验证，直接跳到 [3.6 从干净 Docker 镜像快速 walkthrough](#36-从干净-docker-镜像快速-walkthrough)。**
+
 ### 3.1 验证库正确性
 
 这里的正确性承诺是：对每个标记为 `[ALL TESTS PASSED]` 的 package，当前 shared-library 配置能够发现、属于目标公开 C ABI 且未被明确排除的上游测试，均在相同上游版本的 native AArch64 与 Hecate x86-64 两条路径通过。该承诺不扩展到其他构建配置、静态或私有 ABI 测试，以及原子操作与锁、signal、真实设备、fuzz、sanitizer 和不适合 AE 时间预算的压力测试。
@@ -211,6 +213,8 @@ vulkaninfo --summary
 - 两种批处理都会在失败后继续。
 - 再次执行相同命令会跳过已经成功的 library，并重试失败或中断的项目。
 
+library package 的目录约定、单库入口、测试分类和证据格式见 [`evaluations/1-libs/README.zh-CN.md`](evaluations/1-libs/README.zh-CN.md)。
+
 ### 3.2 验证命令行程序
 
 运行八个命令行 workload：
@@ -219,7 +223,7 @@ vulkaninfo --summary
 ./evaluations/2-cli-benchmarks/run-all.sh
 ```
 
-runner 会准备确定性压缩输入和公开媒体输入，并依次测量 FFTW、zlib、zstd、OpenSSL，以及四个 FFmpeg 编码 workload。正式运行默认对每条 lane 重复五次。可用 `REPETITIONS=1` 做单次快速检查。任一非 native lane 超过 native 的 20 倍会从 Figure 17 排除，单次执行达到 100 秒时会立即终止。结果保留完整命令、输入哈希、工具版本和每次原始时间。批处理支持断点恢复，再次执行会跳过已经成功的 workload。完整 lane、输入和结果说明见 [`evaluations/2-cli-benchmarks/README.md`](evaluations/2-cli-benchmarks/README.md)。
+runner 会准备确定性压缩输入和公开媒体输入，并依次测量 FFTW、zlib、zstd、OpenSSL，以及四个 FFmpeg 编码 workload。正式运行默认对每条 lane 重复五次。可用 `REPETITIONS=1` 做单次快速检查。任一非 native lane 超过 native 的 20 倍会从 Figure 17 排除，单次执行达到 100 秒时会立即终止。结果保留完整命令、输入哈希、工具版本和每次原始时间。批处理支持断点恢复，再次执行会跳过已经成功的 workload。完整 lane、输入和结果说明见 [`evaluations/2-cli-benchmarks/README.zh-CN.md`](evaluations/2-cli-benchmarks/README.zh-CN.md)。
 
 ### 3.3 验证 breakdown
 
@@ -233,6 +237,8 @@ python3 evaluations/3-breakdown/coverage-effort/run.py
 ```
 
 函数调用拆分和 Box64 callback 拆分使用 `install-libs.sh` 已安装的 `breakdown-test` 包，并分别使用 `install-tools.sh` 安装的独立插桩 QEMU 与 Box64。Hecate callback 地址边界实验使用已安装的 devkit。这些 runner 不读取相邻源码仓库，也不在运行时重新编译模拟器。采样轮数、迭代次数和 CPU 可分别通过 `ROUNDS`、`ITERATIONS` 和 `CPU` 调整。具体测量点见三个实验各自的 README。
+
+breakdown 的实验关系、统计口径和各入口说明见 [`evaluations/3-breakdown/README.zh-CN.md`](evaluations/3-breakdown/README.zh-CN.md)。
 
 ### 3.4 验证游戏
 
@@ -256,6 +262,8 @@ python3 evaluations/3-breakdown/coverage-effort/run.py
 ```bash
 GAME_DIR="/absolute/path/to/Hollow Knight" ./evaluations/4-games/hollow-knight/run.sh 30
 ```
+
+各游戏的安装来源、运行前提、FPS 采样窗口和结果格式见 [`evaluations/4-games/README.zh-CN.md`](evaluations/4-games/README.zh-CN.md)。
 
 ### 3.5 导出论文数据与构图
 
@@ -283,6 +291,8 @@ python3 evaluations/plots/plot-coverage-effort.py
 python3 evaluations/plots/plot-function-breakdown.py
 python3 evaluations/plots/plot-callback-track.py
 ```
+
+修改量统计、CSV schema 和绘图入口分别见 [`evaluations/5-modifications/README.zh-CN.md`](evaluations/5-modifications/README.zh-CN.md)、[`evaluations/paper-data/README.zh-CN.md`](evaluations/paper-data/README.zh-CN.md) 和 [`evaluations/plots/README.zh-CN.md`](evaluations/plots/README.zh-CN.md)。
 
 ### 3.6 从干净 Docker 镜像快速 walkthrough
 
