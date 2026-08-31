@@ -103,7 +103,7 @@ if ! $install_only; then
         | sort -u | grep -v '^nettle_get_' > "$dump/functions-with-meta.txt"
     sed '1i[Function]' "$dump/functions-with-meta.txt" > "$dump/Symbols.conf"
 
-    "$devkit/bin/LoreMakeThunk.py" --name nettle -o "$upstream/thunk" \
+    "$repo_root/evaluations/1-libs/_common/lore-make-thunk.py" "$devkit/bin/LoreMakeThunk.py" --name nettle -o "$upstream/thunk" \
         --lib "$host_lib" --symbols "$dump/Symbols.conf" \
         --desc "$native_tests/Desc.h" --manifest-host "$bench/Manifest_host.cpp" \
         --devkit "$devkit" --keep-intermediates -- \

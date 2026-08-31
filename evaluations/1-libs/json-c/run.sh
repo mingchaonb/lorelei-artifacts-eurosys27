@@ -103,7 +103,7 @@ for pattern in "${patterns[@]}"; do
   thunk="$work/thunks/$lib_name"
   version_script=$overlay_dir/ports/json-c/lorelei/json-c.sym
   cp "$version_script" "$audit/json-c.sym"
-  run_logged "$run_dir/logs/preparation/thunk-$lib_name.log" "$devkit/bin/LoreMakeThunk.py" --name "$lib_name" --out "$thunk" --lib "$host_lib" --symbols "$audit/Symbols.conf" --desc "$overlay_dir/ports/json-c/lorelei/Desc.h" --gtl-alias "$(basename "$host_lib")" --htl-arg=-DLORE_THUNK_CALLBACK_REPLACE --gtl-arg=-DLORE_THUNK_CALLBACK_REPLACE --gtl-arg=-Wl,--undefined-version --gtl-arg="-Wl,--version-script=$version_script" --devkit "$devkit" --keep-intermediates -- -I"$hecate_prefix/include" -I"$hecate_prefix/include/json-c"
+  run_logged "$run_dir/logs/preparation/thunk-$lib_name.log" "$repo_root/evaluations/1-libs/_common/lore-make-thunk.py" "$devkit/bin/LoreMakeThunk.py" --name "$lib_name" --out "$thunk" --lib "$host_lib" --symbols "$audit/Symbols.conf" --desc "$overlay_dir/ports/json-c/lorelei/Desc.h" --gtl-alias "$(basename "$host_lib")" --htl-arg=-DLORE_THUNK_CALLBACK_REPLACE --gtl-arg=-DLORE_THUNK_CALLBACK_REPLACE --gtl-arg=-Wl,--undefined-version --gtl-arg="-Wl,--version-script=$version_script" --devkit "$devkit" --keep-intermediates -- -I"$hecate_prefix/include" -I"$hecate_prefix/include/json-c"
   cp "$thunk/.gen/$lib_name/ThunkStat.json" "$audit/ThunkStat.json"
   thunk_host+=("$thunk")
   thunk_guest+=("$thunk/x86_64")
@@ -112,7 +112,7 @@ done
 host_path=$(IFS=:; echo "${thunk_host[*]}")
 guest_path=$(IFS=:; echo "${thunk_guest[*]}")
 host_libc=$(/usr/bin/cc -print-file-name=libc.so.6)
-run_logged "$run_dir/logs/preparation/thunk-errno-shim.log" "$devkit/bin/LoreMakeThunk.py" --name errno-shim --out "$work/thunk-errno-shim" --lib "$host_libc" --soname errno-shim.so --symbols "$recipe_dir/upstream/ErrnoSymbols.conf" --desc "$recipe_dir/upstream/ErrnoDesc.h" --devkit "$devkit" --keep-intermediates -- -D_GNU_SOURCE
+run_logged "$run_dir/logs/preparation/thunk-errno-shim.log" "$repo_root/evaluations/1-libs/_common/lore-make-thunk.py" "$devkit/bin/LoreMakeThunk.py" --name errno-shim --out "$work/thunk-errno-shim" --lib "$host_libc" --soname errno-shim.so --symbols "$recipe_dir/upstream/ErrnoSymbols.conf" --desc "$recipe_dir/upstream/ErrnoDesc.h" --devkit "$devkit" --keep-intermediates -- -D_GNU_SOURCE
 ln -sf "$host_libc" "$work/thunk-errno-shim/liberrno-shim.so"
 finish_install_only
 native_status=0

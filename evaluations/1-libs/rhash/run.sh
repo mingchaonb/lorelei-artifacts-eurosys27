@@ -84,7 +84,7 @@ if ! $install_only; then
     comm -12 "$dump/guest-undefined.txt" "$dump/host-functions.txt" > "$dump/functions.txt"
     sed '1i[Function]' "$dump/functions.txt" > "$dump/Symbols.conf"
 
-    "$devkit/bin/LoreMakeThunk.py" --name rhash -o "$upstream/thunk" \
+    "$repo_root/evaluations/1-libs/_common/lore-make-thunk.py" "$devkit/bin/LoreMakeThunk.py" --name rhash -o "$upstream/thunk" \
         --lib "$host_lib" --symbols "$dump/Symbols.conf" --desc "$bench/Desc.h" \
         --devkit "$devkit" --keep-intermediates --no-auto-link -- \
         -I"$native_prefix/include" > "$results/thunk.log" 2>&1
@@ -92,7 +92,7 @@ if ! $install_only; then
 
     shim=$bench/libc-shim
     host_libc=$(/usr/bin/cc -print-file-name=libc.so.6)
-    "$devkit/bin/LoreMakeThunk.py" --name c-shim -o "$upstream/thunk-libc" \
+    "$repo_root/evaluations/1-libs/_common/lore-make-thunk.py" "$devkit/bin/LoreMakeThunk.py" --name c-shim -o "$upstream/thunk-libc" \
         --lib "$host_libc" --soname libc-shim.so --symbols "$shim/Symbols.conf" \
         --desc "$shim/Desc.h" --manifest-host "$shim/Manifest_host.cpp" \
         --manifest-guest "$shim/Manifest_guest.cpp" --devkit "$devkit" \

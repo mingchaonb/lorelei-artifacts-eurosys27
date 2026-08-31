@@ -88,7 +88,7 @@ guest=$work_dir/installed/guest/x64-linux-ae
 hecate=$work_dir/installed/hecate/arm64-linux-ae
 host_library=$(find "$hecate/lib" -maxdepth 1 -type f -name 'libX11.so.*' | head -1)
 thunk=$work_dir/thunk
-run_logged "$run_dir/logs/preparation/thunk.log" "$devkit/bin/LoreMakeThunk.py" --name X11 --out "$thunk" --lib "$host_library" \
+run_logged "$run_dir/logs/preparation/thunk.log" "$repo_root/evaluations/1-libs/_common/lore-make-thunk.py" "$devkit/bin/LoreMakeThunk.py" --name X11 --out "$thunk" --lib "$host_library" \
     --symbols "$overlay/ports/libx11/lorelei/Symbols.conf" \
     --desc "$overlay/ports/libx11/lorelei/Desc.h" --no-callback-replace \
     --devkit "$devkit" --keep-intermediates \

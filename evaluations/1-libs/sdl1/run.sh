@@ -66,7 +66,7 @@ fi
 
 echo "[thunk] OpenArena SDL 1.2 ABI surface"
 host_library=$(find "$prefix/lib" -maxdepth 1 -type f -name 'libSDL-1.2.so.*' | head -1)
-"$devkit/bin/LoreMakeThunk.py" --name SDL --out "$thunk" --lib "$host_library" \
+"$repo_root/evaluations/1-libs/_common/lore-make-thunk.py" "$devkit/bin/LoreMakeThunk.py" --name SDL --out "$thunk" --lib "$host_library" \
     --symbols "$port_dir/lorelei/Symbols.conf" --desc "$port_dir/lorelei/Desc.h" \
     --manifest-host "$port_dir/lorelei/Manifest_host.cpp" \
     --manifest-guest "$port_dir/lorelei/Manifest_guest.cpp" \

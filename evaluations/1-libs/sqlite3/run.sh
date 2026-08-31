@@ -153,7 +153,7 @@ cp "$port_dir/lorelei/Symbols.conf" "$run_dir/generated/Symbols.conf"
 stage "Generate the Hecate SQLite thunk"
 host_library=$(find "$hecate_prefix/lib" -maxdepth 1 -type f -name 'libsqlite3.so.*' | head -1)
 thunk=$work_dir/thunks/hecate
-run_logged "$run_dir/logs/preparation/thunk-hecate.log" "$devkit/bin/LoreMakeThunk.py" \
+run_logged "$run_dir/logs/preparation/thunk-hecate.log" "$repo_root/evaluations/1-libs/_common/lore-make-thunk.py" "$devkit/bin/LoreMakeThunk.py" \
     --name sqlite3 --out "$thunk" --lib "$host_library" \
     --symbols "$port_dir/lorelei/Symbols.conf" --desc "$port_dir/lorelei/Desc.h" \
     --gtl-alias libsqlite3.so --gtl-alias libsqlite3.so.0 --no-callback-replace \

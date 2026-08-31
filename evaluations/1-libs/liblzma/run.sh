@@ -122,7 +122,7 @@ for pattern in "${patterns[@]}"; do
   thunk="$work/thunks/$lib_name"
   version_map=$native_suite/metadata/liblzma_linux.map
   [[ -f $version_map ]] || { echo "Installed liblzma version map not found: $version_map" >&2; exit 1; }
-  run_logged "$run_dir/logs/preparation/thunk-$lib_name.log" "$devkit/bin/LoreMakeThunk.py" --name "$lib_name" --out "$thunk" --lib "$host_lib" --symbols "$audit/Symbols.conf" --desc "$overlay_dir/ports/liblzma/lorelei/Desc.h" --gtl-alias "$(basename "$host_lib")" --gtl-arg="-Wl,--version-script=$version_map" --gtl-arg=-Wl,--undefined-version --devkit "$devkit" --keep-intermediates -- -I"$hecate_prefix/include"
+  run_logged "$run_dir/logs/preparation/thunk-$lib_name.log" "$repo_root/evaluations/1-libs/_common/lore-make-thunk.py" "$devkit/bin/LoreMakeThunk.py" --name "$lib_name" --out "$thunk" --lib "$host_lib" --symbols "$audit/Symbols.conf" --desc "$overlay_dir/ports/liblzma/lorelei/Desc.h" --gtl-alias "$(basename "$host_lib")" --gtl-arg="-Wl,--version-script=$version_map" --gtl-arg=-Wl,--undefined-version --devkit "$devkit" --keep-intermediates -- -I"$hecate_prefix/include"
   cp "$thunk/.gen/$lib_name/ThunkStat.json" "$audit/ThunkStat.json"
   thunk_host+=("$thunk")
   thunk_guest+=("$thunk/x86_64")
@@ -132,7 +132,7 @@ host_path=$(IFS=:; echo "${thunk_host[*]}")
 guest_path=$(IFS=:; echo "${thunk_guest[*]}")
 libc_shim=$work/thunks/libc-shim
 host_libc=$(cc -print-file-name=libc.so.6)
-run_logged "$run_dir/logs/preparation/thunk-libc-shim.log" "$devkit/bin/LoreMakeThunk.py" \
+run_logged "$run_dir/logs/preparation/thunk-libc-shim.log" "$repo_root/evaluations/1-libs/_common/lore-make-thunk.py" "$devkit/bin/LoreMakeThunk.py" \
   --name c-shim --out "$libc_shim" --lib "$host_libc" --soname libc-shim.so \
   --symbols "$repo_root/evaluations/common/libc-shim/Symbols.conf" \
   --desc "$repo_root/evaluations/common/libc-shim/Desc.h" \

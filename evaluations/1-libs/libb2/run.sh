@@ -86,7 +86,7 @@ if ! $install_only; then
         | sort -u > "$dump/host-functions.txt"
     comm -12 "$dump/guest-undefined.txt" "$dump/host-functions.txt" > "$dump/functions.txt"
     sed '1i[Function]' "$dump/functions.txt" > "$dump/Symbols.conf"
-    "$devkit/bin/LoreMakeThunk.py" --name b2 -o "$upstream/thunk" --lib "$host_lib" \
+    "$repo_root/evaluations/1-libs/_common/lore-make-thunk.py" "$devkit/bin/LoreMakeThunk.py" --name b2 -o "$upstream/thunk" --lib "$host_lib" \
         --symbols "$dump/Symbols.conf" --desc "$bench/Desc.h" --devkit "$devkit" \
         --keep-intermediates -- -I"$native_prefix/include" > "$results/thunk.log" 2>&1
     : > "$results/native.log"

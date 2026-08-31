@@ -214,7 +214,7 @@ for lib in avutil swresample swscale avcodec avformat avfilter avdevice; do
         >"$symbol_dir/functions.txt"
     { printf '[Function]\n'; cat "$symbol_dir/functions.txt"; } >"$symbol_dir/Symbols.conf"
     [[ -s $symbol_dir/functions.txt ]] || { echo "No imported functions found for lib$lib" >&2; exit 1; }
-    run_logged "$run_dir/logs/preparation/thunk-$lib.log" "$devkit/bin/LoreMakeThunk.py" \
+    run_logged "$run_dir/logs/preparation/thunk-$lib.log" "$repo_root/evaluations/1-libs/_common/lore-make-thunk.py" "$devkit/bin/LoreMakeThunk.py" \
         --name "$lib" --out "$pack" --lib "$host_library" \
         --symbols "$symbol_dir/Symbols.conf" --desc "$port_dir/lorelei/$lib/Desc.h" \
         --gtl-alias "lib$lib.so" --gtl-alias "lib$lib.so.${sonames[$lib]}" \

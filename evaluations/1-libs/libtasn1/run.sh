@@ -95,7 +95,7 @@ if ! $install_only; then
     comm -12 "$dump/guest-undefined.txt" "$dump/host-functions.txt" > "$dump/functions.txt"
     sed '1i[Function]' "$dump/functions.txt" > "$dump/Symbols.conf"
 
-    "$devkit/bin/LoreMakeThunk.py" \
+    "$repo_root/evaluations/1-libs/_common/lore-make-thunk.py" "$devkit/bin/LoreMakeThunk.py" \
         --name tasn1 -o "$upstream/thunk" --lib "$host_lib" \
         --symbols "$dump/Symbols.conf" --desc "$bench/Desc.h" \
         --manifest-guest "$bench/Manifest_guest.cpp" \
@@ -107,7 +107,7 @@ if ! $install_only; then
     # package-local libc shim keeps those streams on the guest side while the
     # libtasn1 calls continue through the generated thunk.
     host_libc=$(/usr/bin/cc -print-file-name=libc.so.6)
-    "$devkit/bin/LoreMakeThunk.py" \
+    "$repo_root/evaluations/1-libs/_common/lore-make-thunk.py" "$devkit/bin/LoreMakeThunk.py" \
         --name c-shim -o "$upstream/thunk-libc-shim" --lib "$host_libc" \
         --soname libc-shim.so --symbols "$libc_shim/Symbols.conf" \
         --desc "$libc_shim/Desc.h" --manifest-host "$libc_shim/Manifest_host.cpp" \

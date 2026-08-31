@@ -99,7 +99,7 @@ for pattern in "${patterns[@]}"; do
   [[ -s $audit/used-functions.txt ]] || { echo "No tested functions found for $lib_name" >&2; exit 1; }
   thunk="$work/thunks/$lib_name"
   manifest_args=(--manifest-host "$overlay_dir/ports/libcsv/lorelei/Manifest_host.cpp")
-  run_logged "$run_dir/logs/preparation/thunk-$lib_name.log" "$devkit/bin/LoreMakeThunk.py" --name "$lib_name" --out "$thunk" --lib "$host_lib" --symbols "$audit/Symbols.conf" --desc "$overlay_dir/ports/libcsv/lorelei/Desc.h" --gtl-alias "$(basename "$host_lib")" "${manifest_args[@]}" --devkit "$devkit" --keep-intermediates -- -I"$hecate_prefix/include"
+  run_logged "$run_dir/logs/preparation/thunk-$lib_name.log" "$repo_root/evaluations/1-libs/_common/lore-make-thunk.py" "$devkit/bin/LoreMakeThunk.py" --name "$lib_name" --out "$thunk" --lib "$host_lib" --symbols "$audit/Symbols.conf" --desc "$overlay_dir/ports/libcsv/lorelei/Desc.h" --gtl-alias "$(basename "$host_lib")" "${manifest_args[@]}" --devkit "$devkit" --keep-intermediates -- -I"$hecate_prefix/include"
   cp "$thunk/.gen/$lib_name/ThunkStat.json" "$audit/ThunkStat.json"
   thunk_host+=("$thunk")
   thunk_guest+=("$thunk/x86_64")

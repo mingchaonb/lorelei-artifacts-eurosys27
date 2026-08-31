@@ -52,7 +52,7 @@ native_test=$native/tools/murmurhash/upstream-tests/test
 guest_test=$guest/tools/murmurhash/upstream-tests/test
 [[ -x $native_test && -x $guest_test ]] || { echo "Installed upstream tests are missing" >&2; exit 2; }
 host_library=$(find "$native/lib" -maxdepth 1 -type f -name 'libmurmurhash.so*' | head -1)
-"$devkit/bin/LoreMakeThunk.py" --name murmurhash --out "$work/thunks/murmurhash" --lib "$host_library" --symbols "$recipe_dir/lorelei/Symbols.conf" --desc "$recipe_dir/lorelei/Desc.h" --devkit "$devkit" --keep-intermediates -- -I"$native/include" >"$run_dir/logs/preparation/thunk.log" 2>&1
+"$repo_root/evaluations/1-libs/_common/lore-make-thunk.py" "$devkit/bin/LoreMakeThunk.py" --name murmurhash --out "$work/thunks/murmurhash" --lib "$host_library" --symbols "$recipe_dir/lorelei/Symbols.conf" --desc "$recipe_dir/lorelei/Desc.h" --devkit "$devkit" --keep-intermediates -- -I"$native/include" >"$run_dir/logs/preparation/thunk.log" 2>&1
 readelf -d "$guest_test" >"$run_dir/generated/guest-test-dynamic.txt"
 grep -q 'libmurmurhash.so' "$run_dir/generated/guest-test-dynamic.txt"
 cp "$work/thunks/murmurhash/.gen/murmurhash/ThunkStat.json" "$run_dir/generated/TLC-ThunkStat.json"

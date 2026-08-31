@@ -100,7 +100,7 @@ for spec in "${target_specs[@]}"; do
     alias_args=()
     IFS=',' read -r -a alias_list <<< "$aliases"
     for alias in "${alias_list[@]}"; do alias_args+=(--gtl-alias "$alias"); done
-    run_logged "$run_dir/logs/thunk-$thunk_name.log" "$devkit/bin/LoreMakeThunk.py"         --name "$thunk_name" --out "$work/thunks/$thunk_name" --lib "$host_library"         --symbols "$port_dir/lorelei/$symbols" --desc "$port_dir/lorelei/Desc.h"         "${alias_args[@]}" --devkit "$devkit" --keep-intermediates -- -I"$host_prefix/include"
+    run_logged "$run_dir/logs/thunk-$thunk_name.log" "$repo_root/evaluations/1-libs/_common/lore-make-thunk.py" "$devkit/bin/LoreMakeThunk.py"         --name "$thunk_name" --out "$work/thunks/$thunk_name" --lib "$host_library"         --symbols "$port_dir/lorelei/$symbols" --desc "$port_dir/lorelei/Desc.h"         "${alias_args[@]}" --devkit "$devkit" --keep-intermediates -- -I"$host_prefix/include"
     cp "$work/thunks/$thunk_name/.gen/$thunk_name/ThunkStat.json" "$run_dir/generated/$thunk_name-ThunkStat.json"
 done
 

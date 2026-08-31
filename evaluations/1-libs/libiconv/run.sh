@@ -108,7 +108,7 @@ iconv_wchar_wc_to_mb_fallback
 EOF
   [[ -s $audit/used-functions.txt ]] || { echo "No tested functions found for $lib_name" >&2; exit 1; }
   thunk="$work/thunks/$lib_name"
-  run_logged "$run_dir/logs/preparation/thunk-$lib_name.log" "$devkit/bin/LoreMakeThunk.py" --name "$lib_name" --out "$thunk" --lib "$host_lib" --symbols "$audit/Symbols.conf" --desc "$overlay_dir/ports/libiconv/lorelei/Desc.h" --manifest-host "$overlay_dir/ports/libiconv/lorelei/Manifest_host.cpp" --gtl-alias "$(basename "$host_lib")" --devkit "$devkit" --keep-intermediates -- -I"$hecate_prefix/include"
+  run_logged "$run_dir/logs/preparation/thunk-$lib_name.log" "$repo_root/evaluations/1-libs/_common/lore-make-thunk.py" "$devkit/bin/LoreMakeThunk.py" --name "$lib_name" --out "$thunk" --lib "$host_lib" --symbols "$audit/Symbols.conf" --desc "$overlay_dir/ports/libiconv/lorelei/Desc.h" --manifest-host "$overlay_dir/ports/libiconv/lorelei/Manifest_host.cpp" --gtl-alias "$(basename "$host_lib")" --devkit "$devkit" --keep-intermediates -- -I"$hecate_prefix/include"
   cp "$thunk/.gen/$lib_name/ThunkStat.json" "$audit/ThunkStat.json"
   thunk_host+=("$thunk")
   thunk_guest+=("$thunk/x86_64")
@@ -119,7 +119,7 @@ guest_path=$(IFS=:; echo "${thunk_guest[*]}")
 run_logged "$run_dir/logs/preparation/guest-metadata.log" "$devkit/bin/x86_64-linux-gnu-clang" --sysroot="$devkit/x86_64/sysroot" -shared -fPIC "$overlay_dir/ports/libiconv/lorelei/GuestMetadata.c" -o "$work/thunks/guest-metadata.so"
 host_libc=$(cc -print-file-name=libc.so.6)
 errno_thunk=$work/thunks/errno-shim
-run_logged "$run_dir/logs/preparation/thunk-errno.log" "$devkit/bin/LoreMakeThunk.py" --name errno-shim --out "$errno_thunk" --lib "$host_libc" --soname errno-shim.so --symbols "$overlay_dir/ports/libiconv/lorelei/ErrnoSymbols.conf" --desc "$overlay_dir/ports/libiconv/lorelei/ErrnoDesc.h" --devkit "$devkit" --keep-intermediates -- -D_GNU_SOURCE
+run_logged "$run_dir/logs/preparation/thunk-errno.log" "$repo_root/evaluations/1-libs/_common/lore-make-thunk.py" "$devkit/bin/LoreMakeThunk.py" --name errno-shim --out "$errno_thunk" --lib "$host_libc" --soname errno-shim.so --symbols "$overlay_dir/ports/libiconv/lorelei/ErrnoSymbols.conf" --desc "$overlay_dir/ports/libiconv/lorelei/ErrnoDesc.h" --devkit "$devkit" --keep-intermediates -- -D_GNU_SOURCE
 ln -sf "$host_libc" "$errno_thunk/liberrno-shim.so"
 host_path="$host_path:$errno_thunk"
 guest_path="$guest_path:$errno_thunk/x86_64"

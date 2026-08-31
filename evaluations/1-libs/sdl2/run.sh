@@ -209,7 +209,7 @@ cp "$sdl_port/lorelei/Symbols.conf" "$run_dir/generated/Symbols.conf"
 make_sdl_thunk() {
     local prefix=$1 output=$2 host_library
     host_library=$(find "$prefix/lib" -maxdepth 1 -type f -name 'libSDL2-2.0.so.*' | head -1)
-    "$devkit/bin/LoreMakeThunk.py" --name SDL2 --out "$output" --lib "$host_library" \
+    "$repo_root/evaluations/1-libs/_common/lore-make-thunk.py" "$devkit/bin/LoreMakeThunk.py" --name SDL2 --out "$output" --lib "$host_library" \
         --symbols "$sdl_port/lorelei/Symbols.conf" --desc "$sdl_port/lorelei/Desc.h" \
         --manifest-host "$sdl_port/lorelei/Manifest_host.cpp" --manifest-guest "$sdl_port/lorelei/Manifest_guest.cpp" \
         --gtl-alias libSDL2-2.0.so --gtl-alias libSDL2-2.0.so.0 --htl-alias libSDL2-2.0_HTL.so \
@@ -222,7 +222,7 @@ make_sdl_thunk() {
 stage "Generate the shared libc shim"
 libc_shim=$work_dir/thunks/libc-shim
 host_libc=$(cc -print-file-name=libc.so.6)
-run_logged "$run_dir/logs/preparation/thunk-libc-shim.log" "$devkit/bin/LoreMakeThunk.py" \
+run_logged "$run_dir/logs/preparation/thunk-libc-shim.log" "$repo_root/evaluations/1-libs/_common/lore-make-thunk.py" "$devkit/bin/LoreMakeThunk.py" \
     --name c-shim --out "$libc_shim" --lib "$host_libc" --soname libc-shim.so \
     --symbols "$common_dir/libc-shim/Symbols.conf" --desc "$common_dir/libc-shim/Desc.h" \
     --manifest-host "$common_dir/libc-shim/Manifest_host.cpp" --manifest-guest "$common_dir/libc-shim/Manifest_guest.cpp" \

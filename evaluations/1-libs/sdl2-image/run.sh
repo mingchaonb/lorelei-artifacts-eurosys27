@@ -155,7 +155,7 @@ cp "$image_port/lorelei/Symbols.conf" "$run_dir/generated/Symbols.conf"
 make_sdl_thunk() {
     local prefix=$1 output=$2 host_library
     host_library=$(find "$prefix/lib" -maxdepth 1 -type f -name 'libSDL2-2.0.so.*' | head -1)
-    "$devkit/bin/LoreMakeThunk.py" --name SDL2 --out "$output" --lib "$host_library" \
+    "$repo_root/evaluations/1-libs/_common/lore-make-thunk.py" "$devkit/bin/LoreMakeThunk.py" --name SDL2 --out "$output" --lib "$host_library" \
         --symbols "$sdl_port/lorelei/Symbols.conf" --desc "$sdl_port/lorelei/Desc.h" \
         --manifest-host "$sdl_port/lorelei/Manifest_host.cpp" --manifest-guest "$sdl_port/lorelei/Manifest_guest.cpp" \
         --gtl-alias libSDL2-2.0.so --gtl-alias libSDL2-2.0.so.0 --htl-alias libSDL2-2.0_HTL.so \
@@ -171,7 +171,7 @@ run_logged "$run_dir/logs/preparation/thunk-SDL2.log" make_sdl_thunk "$hecate_pr
 stage "Generate the Hecate SDL2_image thunk"
 image_library=$(find "$hecate_prefix/lib" -maxdepth 1 -type f -name 'libSDL2_image-2.0.so.*' | head -1)
 image_thunk=$work_dir/thunks/SDL2_image
-run_logged "$run_dir/logs/preparation/thunk-SDL2-image.log" "$devkit/bin/LoreMakeThunk.py" \
+run_logged "$run_dir/logs/preparation/thunk-SDL2-image.log" "$repo_root/evaluations/1-libs/_common/lore-make-thunk.py" "$devkit/bin/LoreMakeThunk.py" \
     --name SDL2_image --out "$image_thunk" --lib "$image_library" \
     --symbols "$image_port/lorelei/Symbols.conf" --desc "$image_port/lorelei/Desc.h" \
     --gtl-alias libSDL2_image-2.0.so --gtl-alias libSDL2_image-2.0.so.0 --no-callback-replace \

@@ -145,7 +145,7 @@ done
 stage "Generate the SpeexDSP TLC thunk"
 host_library=$(find "$host_prefix/lib" -maxdepth 1 -type f -name 'libspeexdsp.so.*' | sort | head -1)
 [[ -n $host_library ]] || { echo "Installed SpeexDSP DSO not found" >&2; exit 1; }
-run_logged "$run_dir/logs/preparation/thunk.log" "$devkit/bin/LoreMakeThunk.py" \
+run_logged "$run_dir/logs/preparation/thunk.log" "$repo_root/evaluations/1-libs/_common/lore-make-thunk.py" "$devkit/bin/LoreMakeThunk.py" \
     --name speexdsp --out "$work/thunk" --lib "$host_library" \
     --symbols "$port_dir/lorelei/Symbols.conf" --desc "$port_dir/lorelei/Desc.h" \
     --gtl-alias libspeexdsp.so --gtl-alias libspeexdsp.so.1 \

@@ -156,7 +156,7 @@ cp "$mixer_port/lorelei/Symbols.conf" "$run_dir/generated/Symbols.conf"
 stage "Generate the Hecate SDL2 dependency thunk"
 sdl_library=$(find "$hecate_prefix/lib" -maxdepth 1 -type f -name 'libSDL2-2.0.so.*' | head -1)
 sdl_thunk=$work_dir/thunks/SDL2
-run_logged "$run_dir/logs/preparation/thunk-SDL2.log" "$devkit/bin/LoreMakeThunk.py" \
+run_logged "$run_dir/logs/preparation/thunk-SDL2.log" "$repo_root/evaluations/1-libs/_common/lore-make-thunk.py" "$devkit/bin/LoreMakeThunk.py" \
     --name SDL2 --out "$sdl_thunk" --lib "$sdl_library" \
     --symbols "$sdl_port/lorelei/Symbols.conf" --desc "$sdl_port/lorelei/Desc.h" \
     --manifest-host "$sdl_port/lorelei/Manifest_host.cpp" --manifest-guest "$sdl_port/lorelei/Manifest_guest.cpp" \
@@ -168,7 +168,7 @@ run_logged "$run_dir/logs/preparation/thunk-SDL2.log" "$devkit/bin/LoreMakeThunk
 stage "Generate the Hecate SDL2_mixer thunk"
 mixer_library=$(find "$hecate_prefix/lib" -maxdepth 1 -type f -name 'libSDL2_mixer-2.0.so.*' | head -1)
 mixer_thunk=$work_dir/thunks/SDL2_mixer
-run_logged "$run_dir/logs/preparation/thunk-SDL2-mixer.log" "$devkit/bin/LoreMakeThunk.py" \
+run_logged "$run_dir/logs/preparation/thunk-SDL2-mixer.log" "$repo_root/evaluations/1-libs/_common/lore-make-thunk.py" "$devkit/bin/LoreMakeThunk.py" \
     --name SDL2_mixer --out "$mixer_thunk" --lib "$mixer_library" \
     --symbols "$mixer_port/lorelei/Symbols.conf" --desc "$mixer_port/lorelei/Desc.h" \
     --gtl-alias libSDL2_mixer-2.0.so --gtl-alias libSDL2_mixer-2.0.so.0 --no-callback-replace \
