@@ -17,6 +17,13 @@ include("${cmake_vars_file}")
 vcpkg_configure_make(SOURCE_PATH "${SOURCE_PATH}" SKIP_CONFIGURE)
 file(COPY "${SOURCE_PATH}/" DESTINATION "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel")
 configure_file("${SOURCE_PATH}/GNUmakefile" "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/Makefile" COPYONLY)
+if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x64")
+    vcpkg_execute_required_process(
+        COMMAND make -j${VCPKG_CONCURRENCY} snowball CC=/usr/bin/cc
+        WORKING_DIRECTORY "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel"
+        LOGNAME build-native-generator
+    )
+endif()
 vcpkg_build_make(BUILD_TARGET libstemmer.a OPTIONS "CFLAGS=-O2 -fPIC")
 vcpkg_build_make(BUILD_TARGET examples/stemwords.o OPTIONS "CFLAGS=-O2 -fPIC")
 file(MAKE_DIRECTORY "${CURRENT_PACKAGES_DIR}/lib" "${CURRENT_PACKAGES_DIR}/include")

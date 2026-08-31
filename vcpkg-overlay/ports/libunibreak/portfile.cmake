@@ -5,7 +5,13 @@ vcpkg_from_github(
     SHA512 c1abc74335e4b5c9af24428aaba4826cc1ed27e8a9a3d0e9738feb95ea3d81d67946aa8e6ddd0ac9c7690643b170483eb803311c52670caf5a90f62ed9b0ac98
     HEAD_REF master
 )
-vcpkg_configure_make(SOURCE_PATH "${SOURCE_PATH}" AUTOCONFIG OPTIONS --disable-static)
+set(CONFIGURE_TRIPLET)
+if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x64")
+    set(CONFIGURE_TRIPLET BUILD_TRIPLET "--host=x86_64-linux-gnu")
+endif()
+vcpkg_configure_make(SOURCE_PATH "${SOURCE_PATH}" AUTOCONFIG
+    ${CONFIGURE_TRIPLET}
+    OPTIONS --disable-static)
 vcpkg_build_make(SUBPATH src BUILD_TARGET tests)
 vcpkg_install_make()
 vcpkg_fixup_pkgconfig()

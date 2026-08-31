@@ -943,16 +943,11 @@
      hwmap->priv  = priv;
  
      dst->buf[0] = av_buffer_create((uint8_t*)hwmap, sizeof(*hwmap),
--                                   &LORE_FDG_7_6(ff_hwframe_unmap), ctx, 0);
+-                                   &LORE_FDG_8_6(ff_hwframe_unmap), ctx, 0);
 +                                   &ff_hwframe_unmap, ctx, 0);
      if (!dst->buf[0]) {
          ret = AVERROR(ENOMEM);
          goto fail;
-@@ -948,4 +948,3 @@
- LORE_FDG_IMPL(7, 4, hwdevice_ctx_free)
- LORE_FDG_IMPL(7, 5, hwframe_ctx_free)
- LORE_FDG_IMPL(7, 6, ff_hwframe_unmap)
--
 --- a/libavutil/iamf.c	2026-08-30 08:27:15.481298633 +0000
 +++ b/libavutil/iamf.c	2026-08-30 08:28:36.757067856 +0000
 @@ -84,7 +84,7 @@
@@ -1025,7 +1020,7 @@
 +    .item_name           = av_default_item_name,
      .version             = LIBAVUTIL_VERSION_INT,
      .option              = submix_element_options,
--    .child_next          = LORE_FDG_8_1(submix_element_child_next),
+-    .child_next          = LORE_FDG_9_1(submix_element_child_next),
 -    .child_class_iterate = LORE_FDG_2_3(submix_element_child_iterate),
 +    .child_next          = submix_element_child_next,
 +    .child_class_iterate = submix_element_child_iterate,
@@ -1049,7 +1044,7 @@
 +    .item_name           = av_default_item_name,
      .version             = LIBAVUTIL_VERSION_INT,
      .option              = submix_presentation_options,
--    .child_next          = LORE_FDG_8_2(submix_presentation_child_next),
+-    .child_next          = LORE_FDG_9_2(submix_presentation_child_next),
 -    .child_class_iterate = LORE_FDG_2_4(submix_presentation_child_iterate),
 +    .child_next          = submix_presentation_child_next,
 +    .child_class_iterate = submix_presentation_child_iterate,
@@ -1086,7 +1081,7 @@
  }
  
  static void (*av_log_callback)(void*, int, const char*, va_list) =
--    LORE_FDG_6_1(av_log_default_callback);
+-    LORE_FDG_7_1(av_log_default_callback);
 +    av_log_default_callback;
  
  void av_log(void* avcl, int level, const char *fmt, ...)
@@ -1133,3 +1128,59 @@
  
  void av_buffersink_set_frame_size(AVFilterContext *ctx, unsigned frame_size)
  {
+--- a/libavutil/aarch64/tx_float_init.c
++++ b/libavutil/aarch64/tx_float_init.c
+@@ -56,2 +56,28 @@
++/* These codelets live in static aggregate initializers and must retain their
++ * link-time function addresses.  Runtime FDG lookups are not constant C
++ * expressions and therefore cannot initialize the table. */
++#undef LORE_FDG_5_1
++#undef LORE_FDG_5_2
++#undef LORE_FDG_5_3
++#undef LORE_FDG_5_4
++#undef LORE_FDG_5_5
++#undef LORE_FDG_5_6
++#undef LORE_FDG_5_7
++#undef LORE_FDG_5_8
++#undef LORE_FDG_5_9
++#undef LORE_FDG_5_10
++#undef LORE_FDG_5_11
++#define LORE_FDG_5_1(function) function
++#define LORE_FDG_5_2(function) function
++#define LORE_FDG_5_3(function) function
++#define LORE_FDG_5_4(function) function
++#define LORE_FDG_5_5(function) function
++#define LORE_FDG_5_6(function) function
++#define LORE_FDG_5_7(function) function
++#define LORE_FDG_5_8(function) function
++#define LORE_FDG_5_9(function) function
++#define LORE_FDG_5_10(function) function
++#define LORE_FDG_5_11(function) function
++
+ const FFTXCodelet * const ff_tx_codelet_list_float_aarch64[] = {
+     &(const FFTXCodelet){ .name = "fft2" "_float_" "neon", .function = LORE_FDG_5_1(ff_tx_fft2_float_neon), .type = AV_TX_FLOAT_FFT, .flags = (1ULL << 62) | (1ULL << 63) | AV_TX_INPLACE, .factors = { (2), (0) }, .nb_factors = !!(2) + !!(0), .min_len = 2, .max_len = 2, .init = ((void*)0), .cpu_flags = 0 | (1 << 5), .prio = 128, },
+     &(const FFTXCodelet){ .name = "fft2" "_float_" "neon", .function = LORE_FDG_5_1(ff_tx_fft2_float_neon), .type = AV_TX_FLOAT_FFT, .flags = (1ULL << 62) | (1ULL << 63) | AV_TX_INPLACE | (1ULL << 61), .factors = { (2), (0) }, .nb_factors = !!(2) + !!(0), .min_len = 2, .max_len = 2, .init = neon_init, .cpu_flags = 0 | (1 << 5), .prio = 192, },
+--- a/libavutil/tx.c
++++ b/libavutil/tx.c
+@@ -331 +331 @@
+-    .function   = LORE_FDG_5_12(ff_tx_null),
++    .function   = ff_tx_null,
+--- a/libavformat/img2dec.c
++++ b/libavformat/img2dec.c
+@@ -660 +660 @@
+-    .item_name  = LORE_FDG_2_3(av_default_item_name),
++    .item_name  = av_default_item_name,
+@@ -684 +684 @@
+-    .item_name  = LORE_FDG_2_3(av_default_item_name),
++    .item_name  = av_default_item_name,
+--- a/libavformat/rawvideodec.c
++++ b/libavformat/rawvideodec.c
+@@ -157 +157 @@
+-    .item_name  = LORE_FDG_2_3(av_default_item_name),
++    .item_name  = av_default_item_name,
+@@ -176 +176 @@
+-    .item_name  = LORE_FDG_2_3(av_default_item_name),
++    .item_name  = av_default_item_name,
+@@ -197 +197 @@
+-    .item_name  = LORE_FDG_2_3(av_default_item_name),
++    .item_name  = av_default_item_name,

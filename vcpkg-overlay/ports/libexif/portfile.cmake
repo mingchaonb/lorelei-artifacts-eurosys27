@@ -1,6 +1,11 @@
 vcpkg_download_distfile(ARCHIVE URLS "https://github.com/libexif/libexif/releases/download/v${VERSION}/libexif-${VERSION}.tar.xz" FILENAME "libexif-${VERSION}.tar.xz" SHA512 944b65d1dfda431f2c8c5179965cb4a501c1524a8383d6d5ab7e1c77da62fa6ac4751b975edcec58948a11debb3a64ee3da3dfe0fa82c499033b434f294f5ff3)
 vcpkg_extract_source_archive(SOURCE_PATH ARCHIVE "${ARCHIVE}")
-vcpkg_configure_make(SOURCE_PATH "${SOURCE_PATH}" OPTIONS --enable-shared --disable-static --disable-nls --enable-internal-docs=no --enable-ship-binaries=no)
+set(CONFIGURE_TRIPLET)
+if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x64")
+    set(CONFIGURE_TRIPLET BUILD_TRIPLET "--host=x86_64-linux-gnu")
+endif()
+vcpkg_configure_make(SOURCE_PATH "${SOURCE_PATH}" ${CONFIGURE_TRIPLET}
+    OPTIONS --enable-shared --disable-static --disable-nls --enable-internal-docs=no --enable-ship-binaries=no)
 vcpkg_install_make()
 vcpkg_build_make(BUILD_TARGET check OPTIONS "TESTS=" LOGFILE_ROOT build-upstream-tests)
 set(test_build "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/test")

@@ -11,11 +11,18 @@ file(REMOVE
     "${SOURCE_PATH}/libtool"
     "${SOURCE_PATH}/stamp-h1"
 )
+set(CONFIGURE_TRIPLET)
+if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x64")
+    set(CONFIGURE_TRIPLET BUILD_TRIPLET "--host=x86_64-linux-gnu")
+endif()
 vcpkg_configure_make(
     SOURCE_PATH "${SOURCE_PATH}"
+    ${CONFIGURE_TRIPLET}
     OPTIONS
         --disable-static
         --enable-shared
+        ac_cv_func_malloc_0_nonnull=yes
+        ac_cv_func_memcmp_working=yes
         "CPPFLAGS=-I${SOURCE_PATH}/include"
 )
 vcpkg_install_make()

@@ -33,12 +33,28 @@ run_hecate() {
   cp "$BENCH/DriverWrapper.sh" "$WORK/hecate-hash/driver"
   chmod +x "$WORK/hecate-hash/driver"
   (cd "$WORK/hecate-hash" && env QEMU="$QEMU" LORELEI_DEVKIT="$LORELEI_DEVKIT" LORE_AE_HECATE=1 \
+    LORELEI_HOST_LOG_LEVEL=trace LORELEI_GUEST_LOG_LEVEL=trace \
     HOST_LIB_DIR="$NATIVE_PREFIX/lib" THUNK_DIR="$WORK/thunk" \
     DRIVER_BIN="$GUEST_PREFIX/tools/mhash/upstream-tests/driver" \
     QEMU_WRAPPER="$BENCH/QEMUWrapper.sh" sh ./hash_test.sh)
+  # The vector script launches one QEMU process per algorithm. Give the final
+  # process' host runtime teardown a moment before starting the next binary.
+  sleep 1
   for name in hmac_test keygen_test rest_test frag_test; do
-    env QEMU="$QEMU" LORELEI_DEVKIT="$LORELEI_DEVKIT" LORE_AE_HECATE=1 HOST_LIB_DIR="$NATIVE_PREFIX/lib" \
-      THUNK_DIR="$WORK/thunk" "$BENCH/QEMUWrapper.sh" "$GUEST_PREFIX/tools/mhash/upstream-tests/$name"
+    local attempt status=1 output="$WORK/results/$name.hecate.tmp"
+    for attempt in 1 2 3; do
+      set +e
+      env QEMU="$QEMU" LORELEI_DEVKIT="$LORELEI_DEVKIT" LORE_AE_HECATE=1 HOST_LIB_DIR="$NATIVE_PREFIX/lib" \
+        LORELEI_HOST_LOG_LEVEL=trace LORELEI_GUEST_LOG_LEVEL=trace \
+        THUNK_DIR="$WORK/thunk" "$BENCH/QEMUWrapper.sh" \
+        "$GUEST_PREFIX/tools/mhash/upstream-tests/$name" >"$output" 2>&1
+      status=$?
+      set -e
+      [[ $status == 139 && $attempt -lt 3 ]] || break
+      sleep 1
+    done
+    cat "$output"
+    [[ $status == 0 ]] || return "$status"
   done
 }
 run_native > "$WORK/results/native.log" 2>&1

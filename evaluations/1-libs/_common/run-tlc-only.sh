@@ -159,7 +159,12 @@ thunk=$work/thunk
 if [[ -e $thunk ]]; then cmake -E remove_directory "$thunk"; fi
 manifest_args=()
 if [[ -f $port_dir/lorelei/Manifest_guest.cpp ]]; then manifest_args+=(--manifest-guest "$port_dir/lorelei/Manifest_guest.cpp"); fi
-if [[ $package == sdl2-ttf ]]; then manifest_args+=(--no-callback-replace); fi
+if [[ $package == sdl2-ttf || $package == libyaml ]]; then
+    # These installed suites only exercise callbacks created inside the host
+    # library. Rewriting fields in their public context structs would mistake
+    # host callbacks for guest callbacks.
+    manifest_args+=(--no-callback-replace)
+fi
 include_args=(-I"$host_prefix/include")
 include_args+=(-I"$port_dir/lorelei")
 if [[ -d $native_suite/include ]]; then include_args+=(-I"$native_suite/include"); fi

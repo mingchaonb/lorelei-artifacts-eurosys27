@@ -267,7 +267,7 @@ printf '#!/usr/bin/env bash\nexec env LD_LIBRARY_PATH=%q "$@"\n' "$native_prefix
 printf '#!/usr/bin/env bash\nexec env LORELEI_HOST_EXTENSIONS=%q LD_PRELOAD=%q LD_LIBRARY_PATH=%q %q -L %q -U LD_PRELOAD -E LD_BIND_NOW=1 -E LORELEI_GUEST_EXTENSIONS=%q -E LD_LIBRARY_PATH=%q "$@"\n' \
     "$devkit/lib/libLoreHostHLRExtension.so" "$devkit/lib/libLoreQEMUThreadHook.so" \
     "$devkit/lib:$pack:$hecate_prefix/lib" "$qemu" "$devkit/x86_64/sysroot" \
-    "$devkit/x86_64/lib/libLoreGuestHLRExtension.so" "$devkit/x86_64/lib:$pack/x86_64" \
+    "$devkit/x86_64/lib/libLoreGuestHLRExtension.so" "$devkit/x86_64/lib:$pack/x86_64:$guest_prefix/lib" \
     >"$hecate_exec"
 chmod +x "$native_exec" "$hecate_exec"
 

@@ -13,10 +13,15 @@
             "fileName": "libnvidia-glcore.so",
             "thunks": ["libvulkan"]
         },
-        {
-            "name": "libnvidia-eglcore",
-            "fileName": "libnvidia-eglcore.so",
-            "thunks": ["libvulkan"]
-        }
+    {
+      "name": "libnvidia-eglcore",
+      "fileName": "libnvidia-eglcore.so",
+      "thunks": ["libvulkan"]
+    },
+    {
+      "name": "libvulkan-lvp",
+      "fileName": "libvulkan_lvp.so",
+      "thunks": ["libvulkan"]
+    }
     ]
 }

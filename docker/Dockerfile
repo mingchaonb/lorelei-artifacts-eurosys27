@@ -23,17 +23,18 @@ RUN case "${USE_USTC_MIRROR}" in \
     && echo 'Acquire::Retries "5";' >/etc/apt/apt.conf.d/80-retries \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
-        sudo ca-certificates git curl wget file patch patchelf \
+        sudo ca-certificates git curl wget file patch patchelf ripgrep \
         build-essential autoconf automake bear bison cmake flex libtool m4 \
         meson ninja-build nasm yasm pkg-config \
-        xz-utils zip unzip tar squashfs-tools \
+        xz-utils zip unzip tar squashfs-tools time xxd \
         python3 python3-pip python3-venv python3-numpy python3-matplotlib python3-tomli \
         gcc-x86-64-linux-gnu g++-x86-64-linux-gnu \
         clang-20 llvm-20-dev libclang-20-dev \
         libglib2.0-dev libdw-dev libelf-dev libcapstone-dev libfdt-dev \
         libpixman-1-dev libslirp-dev libffi-dev libffcall-dev libssl-dev \
-        libvulkan1 libvulkan-dev libgl1 libglx0 libgl-dev libglx-dev libx11-dev \
-        yt-dlp mangohud x11-xserver-utils x11-utils xdotool \
+        libvulkan1 libvulkan-dev mesa-vulkan-drivers \
+        libgl1 libglx0 libgl-dev libglx-dev libx11-dev \
+        yt-dlp mangohud xauth xvfb x11-xserver-utils x11-utils xdotool \
     && rm -rf /var/lib/apt/lists/*
 
 # Match the host account so bind-mounted sources and generated evidence keep

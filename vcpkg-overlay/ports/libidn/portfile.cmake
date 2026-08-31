@@ -1,6 +1,11 @@
 vcpkg_download_distfile(ARCHIVE URLS "https://ftp.gnu.org/gnu/libidn/libidn-${VERSION}.tar.gz" FILENAME "libidn-${VERSION}.tar.gz" SHA512 a098d9c1df9d47181e7707a115dcfa12ba4b1aba68b1d070eff4f0578fd2e09b9c453457f83fc1a704726eac3a6f90e5a00772ab116affd07efe1e1ab9d5b0f1)
 vcpkg_extract_source_archive(SOURCE_PATH ARCHIVE "${ARCHIVE}")
-vcpkg_configure_make(SOURCE_PATH "${SOURCE_PATH}" OPTIONS --enable-shared --disable-static --disable-doc --disable-nls --disable-java --disable-csharp)
+set(CONFIGURE_TRIPLET)
+if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x64")
+    set(CONFIGURE_TRIPLET BUILD_TRIPLET "--host=x86_64-linux-gnu")
+endif()
+vcpkg_configure_make(SOURCE_PATH "${SOURCE_PATH}" ${CONFIGURE_TRIPLET}
+    OPTIONS --enable-shared --disable-static --disable-doc --disable-nls --disable-java --disable-csharp)
 vcpkg_install_make()
 vcpkg_build_make(BUILD_TARGET check OPTIONS "TESTS=" LOGFILE_ROOT build-upstream-tests)
 set(test_build "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/tests")

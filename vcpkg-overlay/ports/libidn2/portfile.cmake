@@ -1,6 +1,11 @@
 vcpkg_download_distfile(ARCHIVE URLS "https://ftp.gnu.org/gnu/libidn/libidn2-${VERSION}.tar.gz" FILENAME "libidn2-${VERSION}.tar.gz" SHA512 4d8427c0f115268132f7544e80a808c883ab1406338f6c529b1a586b016d57aedb0857f66166eb8d9f37d70efc9dccf907b673b43b17bcf258c8797db1e829ce)
 vcpkg_extract_source_archive(SOURCE_PATH ARCHIVE "${ARCHIVE}" PATCHES patches/relocatable-tests.patch patches/avoid-getline-in-installed-test.patch)
-vcpkg_configure_make(SOURCE_PATH "${SOURCE_PATH}" OPTIONS --enable-shared --disable-static --disable-doc --disable-gtk-doc --disable-nls --disable-gcc-warnings --with-included-libunistring --enable-cross-guesses=risky)
+set(CONFIGURE_TRIPLET)
+if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x64")
+    set(CONFIGURE_TRIPLET BUILD_TRIPLET "--host=x86_64-linux-gnu")
+endif()
+vcpkg_configure_make(SOURCE_PATH "${SOURCE_PATH}" ${CONFIGURE_TRIPLET}
+    OPTIONS --enable-shared --disable-static --disable-doc --disable-gtk-doc --disable-nls --disable-gcc-warnings --with-included-libunistring --enable-cross-guesses=risky)
 vcpkg_install_make()
 vcpkg_build_make(BUILD_TARGET check OPTIONS "TESTS=" LOGFILE_ROOT build-upstream-tests)
 set(test_build "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel")

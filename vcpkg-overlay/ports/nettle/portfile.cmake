@@ -20,6 +20,7 @@ vcpkg_configure_make(
         --disable-openssl
         --disable-assembler
         --disable-public-key
+        CC_FOR_BUILD=/usr/bin/cc
         ${NETTLE_CROSS_OPTIONS}
 )
 vcpkg_install_make()

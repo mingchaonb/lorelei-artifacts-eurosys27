@@ -5,7 +5,13 @@ vcpkg_from_github(
     SHA512 0e3dadb26465cd514508ecf9060c47839c9ec3b421dd2c2a57f5c15dff5d7764302dd7711b4371e8b164241323fe2b9f8fa576bc466abae7c8098d8df707a939
 )
 
-vcpkg_configure_make(SOURCE_PATH "${SOURCE_PATH}" AUTOCONFIG OPTIONS --disable-static --disable-asm)
+set(CONFIGURE_TRIPLET)
+if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x64")
+    set(CONFIGURE_TRIPLET BUILD_TRIPLET "--host=x86_64-linux-gnu")
+endif()
+vcpkg_configure_make(SOURCE_PATH "${SOURCE_PATH}" AUTOCONFIG
+    ${CONFIGURE_TRIPLET}
+    OPTIONS --disable-static --disable-asm)
 vcpkg_install_make()
 set(BUILD_DIR "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel")
 execute_process(

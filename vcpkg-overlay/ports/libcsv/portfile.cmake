@@ -1,5 +1,10 @@
 vcpkg_from_github(OUT_SOURCE_PATH SOURCE_PATH REPO rgamble/libcsv REF b1d5212831842ee5869d99bc208a21837e4037d5 SHA512 2e6ea0b68768d502e9bdb3bb801a1eb64b7fb0010a5006dec1b36a0fe705ec717560ec91f586572654c015db1f0d3a6e804dbcaa666a419192e93820b2c5e891 HEAD_REF master)
-vcpkg_configure_make(SOURCE_PATH "${SOURCE_PATH}" OPTIONS --enable-shared --disable-static)
+set(CONFIGURE_TRIPLET)
+if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x64")
+    set(CONFIGURE_TRIPLET BUILD_TRIPLET "--host=x86_64-linux-gnu")
+endif()
+vcpkg_configure_make(SOURCE_PATH "${SOURCE_PATH}" ${CONFIGURE_TRIPLET}
+    OPTIONS --enable-shared --disable-static)
 vcpkg_install_make()
 vcpkg_build_make(BUILD_TARGET check OPTIONS "TESTS=" LOGFILE_ROOT build-upstream-tests)
 set(test_build "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel")

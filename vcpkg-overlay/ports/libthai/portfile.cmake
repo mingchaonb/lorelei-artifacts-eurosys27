@@ -6,7 +6,13 @@ vcpkg_from_github(
     HEAD_REF master
     PATCHES patches/link-tests-to-shared-library.patch
 )
-vcpkg_configure_make(SOURCE_PATH "${SOURCE_PATH}" AUTOCONFIG OPTIONS
+set(CONFIGURE_TRIPLET)
+if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x64")
+    set(CONFIGURE_TRIPLET BUILD_TRIPLET "--host=x86_64-linux-gnu")
+endif()
+vcpkg_configure_make(SOURCE_PATH "${SOURCE_PATH}" AUTOCONFIG
+    ${CONFIGURE_TRIPLET}
+    OPTIONS
     --disable-static
     --disable-doxygen-doc
     "TRIETOOL=${CURRENT_HOST_INSTALLED_DIR}/tools/libdatrie/trietool"

@@ -84,10 +84,10 @@ set(COMMON_OPTIONS
     --enable-libfdk-aac
     --enable-libvorbis
     --enable-libx264
-    --enable-encoder=libmp3lame,libfdk_aac,libvorbis,libx264
-    --enable-decoder=mp3,aac,vorbis,h264,pcm_s16le,rawvideo,wrapped_avframe
-    --enable-muxer=mp3,adts,ogg,matroska,null,framecrc
-    --enable-demuxer=mp3,aac,ogg,matroska,yuv4mpegpipe,wav
+    --enable-encoder=libmp3lame,libfdk_aac,libvorbis,libx264,rawvideo
+    --enable-decoder=mp3,aac,vorbis,h264,pcm_s16le,pgmyuv,rawvideo,wrapped_avframe
+    --enable-muxer=mp3,adts,ogg,matroska,null,framecrc,rawvideo
+    --enable-demuxer=mp3,aac,ogg,image2,matroska,rawvideo,yuv4mpegpipe,wav
     --enable-parser=mpegaudio,aac,h264,vorbis
 )
 
@@ -95,7 +95,7 @@ set(COMMON_OPTIONS
 set(PRIMARY_BUILD "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel")
 file(REMOVE_RECURSE "${PRIMARY_BUILD}")
 file(MAKE_DIRECTORY "${PRIMARY_BUILD}")
-set(PRIMARY_CFLAGS "-I${CURRENT_INSTALLED_DIR}/include")
+set(PRIMARY_CFLAGS "-D_GNU_SOURCE -I${CURRENT_INSTALLED_DIR}/include")
 set(PRIMARY_OPTIONS
     ${COMMON_OPTIONS}
     --prefix=${CURRENT_PACKAGES_DIR}

@@ -9,7 +9,12 @@ endif()
 
 vcpkg_download_distfile(ARCHIVE URLS "https://ftp.gnu.org/gnu/libiconv/libiconv-${VERSION}.tar.gz" FILENAME "libiconv-${VERSION}.tar.gz" SHA512 a55eb3b7b785a78ab8918db8af541c9e11deb5ff4f89d54483287711ed797d87848ce0eafffa7ce26d9a7adb4b5a9891cb484f94bd4f51d3ce97a6a47b4c719a)
 vcpkg_extract_source_archive(SOURCE_PATH ARCHIVE "${ARCHIVE}")
-vcpkg_configure_make(SOURCE_PATH "${SOURCE_PATH}" OPTIONS --enable-shared --disable-static --enable-extra-encodings --without-libiconv-prefix --without-libintl-prefix)
+set(CONFIGURE_TRIPLET)
+if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x64")
+    set(CONFIGURE_TRIPLET BUILD_TRIPLET "--host=x86_64-linux-gnu")
+endif()
+vcpkg_configure_make(SOURCE_PATH "${SOURCE_PATH}" ${CONFIGURE_TRIPLET}
+    OPTIONS --enable-shared --disable-static --enable-extra-encodings --without-libiconv-prefix --without-libintl-prefix)
 vcpkg_install_make()
 file(COPY "${SOURCE_PATH}/tests/genutf8.c" "${SOURCE_PATH}/tests/gengb18030z.c" DESTINATION "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/tests")
 file(COPY "${SOURCE_PATH}/srclib/binary-io.h" DESTINATION "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/srclib")

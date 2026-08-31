@@ -5,7 +5,23 @@ vcpkg_from_github(
     SHA512 cf29cf9391ae37a978eb6618de6f856f3defa622b8f56c2d5a519ab34fd5e4d91f3bb868601a44e9c9164a2992e80dde188ccc4d1605dffbdf93687336226f8d
 )
 
-vcpkg_configure_make(SOURCE_PATH "${SOURCE_PATH}" AUTOCONFIG OPTIONS --disable-static --disable-native --disable-openmp)
+set(CONFIGURE_TRIPLET)
+if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x64")
+    # The Lorelei compiler is Clang-based, so vcpkg cannot infer the GNU host
+    # tuple from its executable name. Tell Autoconf explicitly that the output
+    # runs on x86-64 instead of probing it on the AArch64 build machine.
+    set(CONFIGURE_TRIPLET BUILD_TRIPLET "--host=x86_64-linux-gnu")
+endif()
+
+vcpkg_configure_make(
+    SOURCE_PATH "${SOURCE_PATH}"
+    AUTOCONFIG
+    ${CONFIGURE_TRIPLET}
+    OPTIONS
+        --disable-static
+        --disable-native
+        --disable-openmp
+)
 vcpkg_install_make()
 set(BUILD_DIR "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel")
 vcpkg_execute_required_process(COMMAND make -j${VCPKG_CONCURRENCY} check TESTS=

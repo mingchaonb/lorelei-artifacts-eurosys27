@@ -1,6 +1,11 @@
 vcpkg_download_distfile(ARCHIVE URLS "https://github.com/rockdaboot/libpsl/releases/download/${VERSION}/libpsl-${VERSION}.tar.gz" FILENAME "libpsl-${VERSION}.tar.gz" SHA512 c14d575cecc0f1693894dd79565b6b9220084ddfa43b908a1cefe16d147cdd5ec47796eb0c2135e2f829a951abaf39d8a371ab5c1352f57b36e610e25adf91f5)
 vcpkg_extract_source_archive(SOURCE_PATH ARCHIVE "${ARCHIVE}" PATCHES patches/relocatable-fuzz-tests.patch)
-vcpkg_configure_make(SOURCE_PATH "${SOURCE_PATH}" OPTIONS --disable-static --enable-shared --disable-runtime --enable-builtin)
+set(CONFIGURE_TRIPLET)
+if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x64")
+    set(CONFIGURE_TRIPLET BUILD_TRIPLET "--host=x86_64-linux-gnu")
+endif()
+vcpkg_configure_make(SOURCE_PATH "${SOURCE_PATH}" ${CONFIGURE_TRIPLET}
+    OPTIONS --disable-static --enable-shared --disable-runtime --enable-builtin)
 vcpkg_install_make()
 vcpkg_build_make(BUILD_TARGET check OPTIONS "TESTS=" LOGFILE_ROOT build-upstream-tests)
 set(test_build "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/tests")

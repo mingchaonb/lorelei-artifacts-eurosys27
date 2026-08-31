@@ -64,7 +64,7 @@ install_progress_stream() {
 
 install_progress_is_network_failure() {
     grep -Eiq \
-        'curl operation failed|Failed to connect|Could not resolve host|SSL_connect|Connection reset by peer|Timeout was reached|Operation too slow|Failure when receiving data from the peer|Temporary failure in name resolution|Recv failure' \
+        'curl operation failed|Failed to connect|Could not resolve host|SSL_connect|Connection reset by peer|Timeout was reached|Download timed out|Operation too slow|Failure when receiving data from the peer|Temporary failure in name resolution|Recv failure' \
         "$1"
 }
 

@@ -4,7 +4,13 @@ vcpkg_download_distfile(ARCHIVE
     SHA512 6a581c4c072b168bf29a0dec7e59a9329a798e392b7d1033791d0e3166a5d1164e2a7065373a84018d500a01563657900c318b1fd437c227c3174b754f9998d3
 )
 vcpkg_extract_source_archive(SOURCE_PATH ARCHIVE "${ARCHIVE}")
-vcpkg_configure_make(SOURCE_PATH "${SOURCE_PATH}" OPTIONS --disable-static --disable-doc --disable-gcc-warnings)
+set(CONFIGURE_TRIPLET)
+if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x64")
+    set(CONFIGURE_TRIPLET BUILD_TRIPLET "--host=x86_64-linux-gnu")
+endif()
+vcpkg_configure_make(SOURCE_PATH "${SOURCE_PATH}"
+    ${CONFIGURE_TRIPLET}
+    OPTIONS --disable-static --disable-doc --disable-gcc-warnings)
 vcpkg_install_make()
 set(BUILD_DIR "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel")
 foreach(SUBDIR fuzz tests)

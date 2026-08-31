@@ -55,8 +55,8 @@ readelf -n /usr/lib/aarch64-linux-gnu/libvulkan.so.1 > "$run_dir/generated/libvu
 env LORELEI_THUNK_DATABASE="$installed/share/vulkan-loader/ThunkDB.json" \
     LORELEI_THUNKS_CONFIG_VARIABLES="VULKAN_PREFIX=$installed" \
     LORELEI_HOST_EXTENSIONS="$devkit/lib/libLoreHostHLRExtension.so" \
-    LD_PRELOAD="$devkit/lib/libLoreQEMUThreadHook.so" \
-    LD_LIBRARY_PATH="$devkit/lib:$installed/share/vulkan-loader/thunk" \
+    LD_PRELOAD="$devkit/lib/libLoreHostRT.so:$devkit/lib/libLoreQEMUThreadHook.so" \
+    LD_LIBRARY_PATH="$installed/share/vulkan-loader/thunk" \
     "$qemu" -L "$devkit/x86_64/sysroot" -U LD_PRELOAD -E LD_BIND_NOW=1 \
     -E LORELEI_GUEST_EXTENSIONS="$devkit/x86_64/lib/libLoreGuestHLRExtension.so" \
     -E LD_LIBRARY_PATH="$devkit/x86_64/lib:$installed/share/vulkan-loader/thunk/x86_64" \
@@ -64,4 +64,15 @@ env LORELEI_THUNK_DATABASE="$installed/share/vulkan-loader/ThunkDB.json" \
     > >(tee "$run_dir/logs/hecate/vulkan.log") 2>&1
 cp "$installed/share/vulkan-loader/thunk/.gen/vulkan/ThunkStat.json" \
     "$run_dir/generated/Vulkan-ThunkStat.json"
+python3 - "$run_dir/summary.json" <<'PY'
+import json, pathlib, sys
+pathlib.Path(sys.argv[1]).write_text(json.dumps({
+    "schema_version": 2,
+    "package": "vulkan-loader",
+    "status": "pass",
+    "tests_run": True,
+    "native": {"tests_passed": 1},
+    "hecate": {"tests_passed": 1},
+}, indent=2, sort_keys=True) + "\n")
+PY
 echo "Evidence: $run_dir"

@@ -7,6 +7,11 @@
 #include <lorelei/ThunkInterface/PassTags.h>
 #include <lorelei/ThunkInterface/Proc.h>
 
+// The variadic runtime stores enum values in their unsigned integer slot.
+// Convert that storage value back to curl's enum return type explicitly.
+#undef CVargValue
+#define CVargValue(x, V) static_cast<__typeof__(x)>(_CVargValue<__typeof__(x)>(V))
+
 extern "C" {
 #include <curl/curl.h>
 

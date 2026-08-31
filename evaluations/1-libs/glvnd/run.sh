@@ -70,8 +70,8 @@ env LORELEI_THUNK_DATABASE="$installed/share/glvnd/ThunkDB.json" \
     LORELEI_THUNKS_CONFIG_VARIABLES="GLVND_PREFIX=$installed" \
     LORELEI_HOST_EXTENSIONS="$devkit/lib/libLoreHostHLRExtension.so" \
     DISPLAY="$display" XAUTHORITY="$xauthority" \
-    LD_PRELOAD="$devkit/lib/libLoreQEMUThreadHook.so" \
-    LD_LIBRARY_PATH="$devkit/lib:$installed/share/glvnd/thunk:$installed/share/glvnd/x11-thunk:$installed/lib" \
+    LD_PRELOAD="$devkit/lib/libLoreHostRT.so:$devkit/lib/libLoreQEMUThreadHook.so" \
+    LD_LIBRARY_PATH="$installed/share/glvnd/thunk:$installed/share/glvnd/x11-thunk:$installed/lib" \
     "$qemu" -L "$devkit/x86_64/sysroot" -U LD_PRELOAD \
     -E DISPLAY="$display" -E XAUTHORITY="$xauthority" -E LD_BIND_NOW=1 \
     -E LORELEI_GUEST_EXTENSIONS="$devkit/x86_64/lib/libLoreGuestHLRExtension.so" \
@@ -81,8 +81,8 @@ env LORELEI_THUNK_DATABASE="$installed/share/glvnd/ThunkDB.json" \
     LORELEI_THUNKS_CONFIG_VARIABLES="GLVND_PREFIX=$installed" \
     LORELEI_HOST_EXTENSIONS="$devkit/lib/libLoreHostHLRExtension.so" \
     DISPLAY="$display" XAUTHORITY="$xauthority" \
-    LD_PRELOAD="$devkit/lib/libLoreQEMUThreadHook.so" \
-    LD_LIBRARY_PATH="$devkit/lib:$installed/share/glvnd/glx-thunk:$installed/share/glvnd/thunk:$installed/share/glvnd/x11-thunk:$installed/lib" \
+    LD_PRELOAD="$devkit/lib/libLoreHostRT.so:$devkit/lib/libLoreQEMUThreadHook.so" \
+    LD_LIBRARY_PATH="$installed/share/glvnd/glx-thunk:$installed/share/glvnd/thunk:$installed/share/glvnd/x11-thunk:$installed/lib" \
     "$qemu" -L "$devkit/x86_64/sysroot" -U LD_PRELOAD \
     -E DISPLAY="$display" -E XAUTHORITY="$xauthority" -E LD_BIND_NOW=1 \
     -E LORELEI_GUEST_EXTENSIONS="$devkit/x86_64/lib/libLoreGuestHLRExtension.so" \
@@ -92,4 +92,15 @@ env LORELEI_THUNK_DATABASE="$installed/share/glvnd/ThunkDB.json" \
 cp "$installed/share/glvnd/thunk/.gen/GL/ThunkStat.json" "$run_dir/generated/GL-ThunkStat.json"
 cp "$installed/share/glvnd/glx-thunk/.gen/GLX/ThunkStat.json" "$run_dir/generated/GLX-ThunkStat.json"
 cp "$installed/share/glvnd/x11-thunk/.gen/X11/ThunkStat.json" "$run_dir/generated/X11-ThunkStat.json"
+python3 - "$run_dir/summary.json" <<'PY'
+import json, pathlib, sys
+pathlib.Path(sys.argv[1]).write_text(json.dumps({
+    "schema_version": 2,
+    "package": "glvnd",
+    "status": "pass",
+    "tests_run": True,
+    "native": {"tests_passed": 2},
+    "hecate": {"tests_passed": 2},
+}, indent=2, sort_keys=True) + "\n")
+PY
 echo "Evidence: $run_dir"

@@ -4,7 +4,13 @@ vcpkg_download_distfile(ARCHIVE
     SHA512 f287ac86e5d33eec204d1a773272745b96344c50fb1ddac6dce5700fda1128448afbebe24fac01ad974aa14b4abe411e13ff383bd541e9183b55e8960c34ae79
 )
 vcpkg_extract_source_archive(SOURCE_PATH ARCHIVE "${ARCHIVE}")
-vcpkg_configure_make(SOURCE_PATH "${SOURCE_PATH}" AUTOCONFIG OPTIONS --disable-static)
+set(CONFIGURE_TRIPLET)
+if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x64")
+    set(CONFIGURE_TRIPLET BUILD_TRIPLET "--host=x86_64-linux-gnu")
+endif()
+vcpkg_configure_make(SOURCE_PATH "${SOURCE_PATH}" AUTOCONFIG
+    ${CONFIGURE_TRIPLET}
+    OPTIONS --disable-static)
 vcpkg_install_make()
 set(BUILD_DIR "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel")
 vcpkg_execute_required_process(COMMAND make -j${VCPKG_CONCURRENCY} check TESTS=
