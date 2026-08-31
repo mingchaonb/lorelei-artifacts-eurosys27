@@ -158,9 +158,12 @@ git -C vcpkg checkout 2026.07.29
 sudo apt update
 sudo apt install -y \
   mangohud mesa-utils vulkan-tools \
+  libgl-dev libglx-dev libvulkan-dev \
   x11-utils x11-xserver-utils xdotool \
   cmake libdw1 libglib2.0-0
 ```
+
+`libgl-dev`、`libglx-dev` 和 `libvulkan-dev` 提供游戏 runner 编译 GL 与 Vulkan preflight probe 所需的宿主机头文件。
 
 宿主机还必须安装并启用与物理 GPU 匹配的 OpenGL 和 Vulkan 驱动。NVIDIA、AMD 和 Arm GPU 使用各自的发行版或厂商驱动，不能用 `llvmpipe`、`softpipe` 或其他软件渲染器替代。运行游戏前检查：
 
@@ -242,17 +245,16 @@ breakdown 的实验关系、统计口径和各入口说明见 [`evaluations/3-br
 
 ### 3.4 验证游戏
 
-先在容器中完成四个安装脚本，然后退出容器，在第 2.5 节准备好的 GUI 宿主机中运行游戏。runner 只复用 bind-mounted 仓库中的安装结果，不会在宿主机重新执行 vcpkg、HLR 或 thunk 构建。评审者可以从已安装的游戏中任选一个运行。参数是 watchdog 秒数，缺省为 30 秒：
+先在容器中完成四个安装脚本，然后退出容器，在第 2.5 节准备好的 GUI 宿主机中运行游戏。runner 只复用 bind-mounted 仓库中的安装结果，不会在宿主机重新执行 vcpkg、HLR 或 thunk 构建。`--lane` 可选择 `native`、`qemu-hecate`、`box64` 或 `box64-hecate`，位置参数是 watchdog 秒数，缺省为 30 秒：
 
 ```bash
-./evaluations/4-games/assaultcube/run.sh 30
-./evaluations/4-games/openarena/run.sh 30
-./evaluations/4-games/redeclipse/run.sh 30
-./evaluations/4-games/supertux/run.sh 30
-./evaluations/4-games/supertuxkart/run.sh 30
+./evaluations/4-games/supertux/run.sh --lane native 30
+./evaluations/4-games/supertux/run.sh --lane qemu-hecate 30
+./evaluations/4-games/supertux/run.sh --lane box64 30
+./evaluations/4-games/supertux/run.sh --lane box64-hecate 30
 ```
 
-- 游戏 runner 先执行图形、窗口系统和 thunk preflight，再通过 Hecate 启动未修改的 x86-64 游戏程序。
+- 游戏 runner 对所有 lane 执行宿主图形检查，并对两条 Hecate lane 额外执行窗口系统和 thunk preflight。
 - MangoHud 默认在 host 侧采集帧率和帧时间，并将原始样本与汇总写入该游戏的 `results/<run-id>/`。
 - 采集论文口径的 FPS 时，进入要测的实际游戏场景，保持至少 15 秒，然后关闭游戏。导出器只采用整段记录关闭前第 12 秒到第 2 秒之间的 10 秒窗口。
 - 可以传入较长 watchdog，例如 `300`，给人工进入场景留足时间。
@@ -278,7 +280,7 @@ python3 evaluations/export-paper-data.py
 导出器会生成以下数据：
 
 1. `overall.csv`：八个命令行 workload 的九条执行路径及归一化时间。
-2. `game-fps.csv`：每个游戏关闭前 `[12s, 2s)` 窗口的 FPS 平均值、最小值、最大值和总体方差，并保留样本数与原始 MangoHud 路径。
+2. `game-fps.csv`：每个游戏四条 lane 在关闭前 `[12s, 2s)` 窗口的 FPS 平均值、最小值、最大值和总体方差，并保留样本数与原始 MangoHud 路径。
 3. `function-breakdown.csv` 与 `callback-track.csv`：直通调用和 callback breakdown。
 4. `coverage-effort.csv` 与 `modifications.csv`：覆盖率、Hecate 人工及生成代码量和各系统修改量。
 5. `manifest.json`：所有被读取证据的 SHA-256 及导出配置。
@@ -287,6 +289,7 @@ python3 evaluations/export-paper-data.py
 
 ```bash
 python3 evaluations/plots/plot-overall.py
+python3 evaluations/plots/plot-game-fps.py
 python3 evaluations/plots/plot-coverage-effort.py
 python3 evaluations/plots/plot-function-breakdown.py
 python3 evaluations/plots/plot-callback-track.py
@@ -309,7 +312,7 @@ ROUNDS=1 ./evaluations/3-breakdown/breakdown-test/run.sh
 随后退出容器，在已准备图形驱动和 MangoHud 的 GUI 宿主机中任选一个游戏，以足够长的 watchdog 启动。进入目标场景后保持至少 15 秒，再正常关闭游戏：
 
 ```bash
-./evaluations/4-games/openarena/run.sh 300
+./evaluations/4-games/openarena/run.sh --lane qemu-hecate 300
 ```
 
 游戏关闭后重新进入容器，运行 coverage、修改量分析并一次性导出全部现有证据：

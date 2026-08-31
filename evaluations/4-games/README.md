@@ -2,7 +2,7 @@
 
 [中文版](README.zh-CN.md)
 
-This group validates that Hecate can start real x86-64 games through the graphics, window-system, SDL, GL, and Vulkan paths. It collects FPS and frametime with MangoHud. `evaluations/1-libs` validates library-level correctness separately, while this group owns game execution and performance evidence.
+This group compares the native, QEMU-Hecate, Box64, and Box64-Hecate ARM64 game lanes and collects FPS and frametime with MangoHud. `evaluations/1-libs` validates library-level correctness separately, while this group owns game execution and performance evidence.
 
 ## 1. Current games
 
@@ -37,22 +37,24 @@ The container is responsible only for download, compilation, and installation. T
 
 ## 3. Run a game
 
-Leave the evaluation container and run games from a desktop terminal on the Ubuntu 24.04 ARM64 GUI host. Each runner accepts one optional positional watchdog duration in seconds. The default is 30 seconds:
+Leave the evaluation container and run games from a desktop terminal on the Ubuntu 24.04 ARM64 GUI host. Select one lane with `--lane`. Each runner also accepts an optional positional watchdog duration in seconds. The default lane is `qemu-hecate`, and the default watchdog is 30 seconds:
 
 ```bash
-./evaluations/4-games/assaultcube/run.sh
-./evaluations/4-games/openarena/run.sh 30
-./evaluations/4-games/redeclipse/run.sh 30
-./evaluations/4-games/supertux/run.sh 30
-./evaluations/4-games/supertuxkart/run.sh 60
+./evaluations/4-games/supertux/run.sh --lane native 60
+./evaluations/4-games/supertux/run.sh --lane qemu-hecate 60
+./evaluations/4-games/supertux/run.sh --lane box64 60
+./evaluations/4-games/supertux/run.sh --lane box64-hecate 60
 ```
+
+The four lanes use the container-installed ARM64 package, x86-64 package, QEMU, Box64, and Hecate thunks as appropriate. Hollow Knight has no redistributable ARM64 package and therefore has no native lane. `GAME_LANE` may set the default lane.
 
 For a paper FPS measurement:
 
-1. Choose a watchdog long enough to enter the intended gameplay scene.
-2. Start the run and navigate to that scene manually.
-3. After the scene is ready, leave the game running there for at least 15 seconds.
-4. Close the game normally. The paper export uses the ten-second window from 12 seconds before the final sample up to 2 seconds before it. The last two seconds are omitted so shutdown interaction does not affect the result.
+1. Use the same resolution and gameplay scene for every available lane.
+2. Choose a watchdog long enough to enter the intended gameplay scene.
+3. Start the run and navigate to that scene manually.
+4. After the scene is ready, leave the game running there for at least 15 seconds.
+5. Close the game normally. The paper export uses the ten-second window from 12 seconds before the final sample up to 2 seconds before it. The last two seconds are omitted so shutdown interaction does not affect the result.
 
 `GAME_DIR` lets any runner use an evaluator-supplied game directory instead of the guest package already installed under `.work/`:
 
@@ -92,11 +94,11 @@ Rendering backend selection:
 
 ## 5. Preflight validation
 
-Before starting a game, the shared runner builds and executes x86-64 probes with the selected devkit. A game starts only after every preflight check passes.
+The shared runner always performs the host OpenGL preflight. QEMU-Hecate and Box64-Hecate also build and execute x86-64 thunk probes with the selected devkit. When a probe fails, the runner prints an error summary and log path in the terminal.
 
 Every game validates:
 
-- Host `glxinfo -B` identifies a physical GPU rather than a software renderer.
+- Host `glxinfo -B` identifies the renderer. A software renderer produces a warning and permits functional validation to continue, but its FPS is not valid performance evidence.
 - The XRandR display path.
 - GL proc-address dispatch.
 - Vulkan proc-address dispatch.
@@ -111,6 +113,7 @@ Games do not run in the container. The host requires:
 - An Ubuntu 24.04 ARM64 GUI session.
 - Working OpenGL and Vulkan drivers that match the physical GPU.
 - `mangohud`, `mesa-utils`, and `vulkan-tools`.
+- `libgl-dev`, `libglx-dev`, and `libvulkan-dev` for compiling the GL and Vulkan preflight probes.
 - `x11-utils`, `x11-xserver-utils`, and `xdotool`.
 - `cmake`, `libdw1`, and `libglib2.0-0`.
 
@@ -120,6 +123,7 @@ Install the common tools with the following command. Install the GPU driver sepa
 sudo apt update
 sudo apt install -y \
   mangohud mesa-utils vulkan-tools \
+  libgl-dev libglx-dev libvulkan-dev \
   x11-utils x11-xserver-utils xdotool \
   cmake libdw1 libglib2.0-0
 ```
@@ -143,7 +147,7 @@ Each game receives a separate writable home under:
 
 ## 7. MangoHud collection
 
-MangoHud wraps the host-side QEMU process by default because the AArch64 GL and Vulkan drivers execute there. The default configuration:
+MangoHud wraps the selected lane's host-side process because the AArch64 GL and Vulkan drivers execute there. The default configuration:
 
 - Keeps the HUD off screen.
 - Records one sample every 100 ms.
@@ -152,7 +156,7 @@ MangoHud wraps the host-side QEMU process by default because the AArch64 GL and 
 
 The paper-data exporter reads the raw CSV rather than copying MangoHud's whole-run summary. For each game, it uses MangoHud's `elapsed` timestamps to select `[last sample - 12 seconds, last sample - 2 seconds)`, then reports the sample count and FPS mean, minimum, maximum, and population variance. The default 100 ms interval normally yields about 100 samples. Fixed-interval indexing is only a fallback for older logs without `elapsed`. A log shorter than 12 seconds is marked as insufficient instead of silently changing the window.
 
-Export the latest available MangoHud run for every game with:
+Export the latest available MangoHud run for every game and lane with:
 
 ```bash
 python3 evaluations/export-paper-data.py
@@ -178,13 +182,13 @@ MANGOHUD_CONFIG_EXTRA=output_folder=/absolute/path \
 Each run writes:
 
 ```text
-evaluations/4-games/<game>/results/<UTC timestamp>/
+evaluations/4-games/<game>/results/<UTC timestamp>-<lane>/
 ```
 
 Evidence includes:
 
-1. Game, guest executable, and package identity.
-2. Devkit, QEMU, library, and thunk identity.
+1. Game, lane, executable, and package identity.
+2. Devkit, QEMU, Box64, library, and thunk identity.
 3. Preflight build and execution logs.
 4. Complete game command and watchdog status.
 5. Raw MangoHud samples.

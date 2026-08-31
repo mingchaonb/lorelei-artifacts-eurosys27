@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
+
+tlc_wrapper=$(cd "$(dirname "${BASH_SOURCE[0]}")/../../_common" && pwd)/lore-make-thunk.py
 : "${LORELEI_DEVKIT:?}" "${QEMU:?}" "${WORK:?}" "${NATIVE_PREFIX:?}" "${GUEST_PREFIX:?}" "${BENCH:?}"
 cmake -E remove_directory "$WORK"
 mkdir -p "$WORK/results" "$WORK/dump"
@@ -28,7 +30,7 @@ for version in LIBMD_0.0 LIBMD_0.1 LIBMD_0.2; do
   if [[ -z $parent ]]; then printf 'local:\n  *;\n};\n' >> "$version_map"; else echo "} $parent;" >> "$version_map"; fi
   parent=$version
 done
-"$LORELEI_DEVKIT/bin/LoreMakeThunk.py" --name md -o "$WORK/thunk" --lib "$host_lib" \
+"$tlc_wrapper" "$LORELEI_DEVKIT/bin/LoreMakeThunk.py" --name md -o "$WORK/thunk" --lib "$host_lib" \
   --symbols "$WORK/dump/Symbols.conf" --desc "$BENCH/Desc.h" --devkit "$LORELEI_DEVKIT" \
   --keep-intermediates --gtl-arg="-Wl,--undefined-version" \
   --gtl-arg="-Wl,--version-script=$version_map" -- -I"$NATIVE_PREFIX/include" \

@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
+
+tlc_wrapper=$(cd "$(dirname "${BASH_SOURCE[0]}")/../../_common" && pwd)/lore-make-thunk.py
 : "${LORELEI_DEVKIT:?}" "${QEMU:?}" "${WORK:?}" "${NATIVE_PREFIX:?}" "${GUEST_PREFIX:?}" "${BENCH:?}"
 cmake -E remove_directory "$WORK"
 mkdir -p "$WORK/results" "$WORK/dump-correct" "$WORK/dump-fec"
@@ -18,7 +20,7 @@ make_thunk() {
   llvm-nm-20 -D --defined-only --format=posix "$host_lib" | awk '$2 == "T" || $2 == "W" {n=$1; sub(/@.*/, "", n); print n}' | sort -u > "$dump/host-functions.txt"
   comm -12 "$WORK/guest-undefined.txt" "$dump/host-functions.txt" > "$dump/functions.txt"
   sed '1i[Function]' "$dump/functions.txt" > "$dump/Symbols.conf"
-  "$LORELEI_DEVKIT/bin/LoreMakeThunk.py" --name "$name" -o "$WORK/thunk-$name" --lib "$host_lib" \
+  "$tlc_wrapper" "$LORELEI_DEVKIT/bin/LoreMakeThunk.py" --name "$name" -o "$WORK/thunk-$name" --lib "$host_lib" \
     --soname "$soname" --symbols "$dump/Symbols.conf" --desc "$desc" --devkit "$LORELEI_DEVKIT" \
     --keep-intermediates -- -I"$NATIVE_PREFIX/include" > "$WORK/results/thunk-$name.log" 2>&1
 }

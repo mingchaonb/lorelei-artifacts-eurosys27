@@ -73,7 +73,14 @@ if(RUN_HLR)
     set(XCB_BUILD "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel")
     find_program(BEAR bear REQUIRED)
     vcpkg_execute_required_process(
-        COMMAND "${CMAKE_COMMAND}" -E env "PATH=$ENV{PATH}" "${BEAR}" --output "${XCB_BUILD}/compile_commands.json" -- "${Z_VCPKG_MAKE}" -j "${VCPKG_CONCURRENCY}" V=1
+        # Bear uses gRPC between its controller and compiler wrappers. Proxy
+        # variables must not redirect this process-local connection through an
+        # evaluator's HTTP proxy.
+        COMMAND "${CMAKE_COMMAND}" -E env
+            --unset=ALL_PROXY --unset=HTTPS_PROXY --unset=HTTP_PROXY --unset=NO_PROXY
+            --unset=all_proxy --unset=https_proxy --unset=http_proxy --unset=no_proxy
+            "PATH=$ENV{PATH}"
+            "${BEAR}" --output "${XCB_BUILD}/compile_commands.json" -- "${Z_VCPKG_MAKE}" -j "${VCPKG_CONCURRENCY}" V=1
         WORKING_DIRECTORY "${XCB_BUILD}"
         LOGNAME bear-${TARGET_TRIPLET}
     )

@@ -28,6 +28,16 @@ LANES = [
     "fex-hecate",
 ]
 
+GAME_LANES = ["qemu-hecate", "native", "box64", "box64-hecate"]
+GAME_ORDER = [
+    "supertux",
+    "supertuxkart",
+    "assaultcube",
+    "redeclipse",
+    "hollow-knight",
+    "openarena",
+]
+
 
 def newest_directory(root: pathlib.Path, required: str) -> pathlib.Path | None:
     if not root.is_dir():
@@ -242,37 +252,55 @@ def game_raw_csv(result_dir: pathlib.Path) -> pathlib.Path | None:
 
 
 def export_game_fps(repo: pathlib.Path, kind: str, output: pathlib.Path, inputs: Inputs) -> None:
-    """Export the paper's fixed ten-second FPS window for each game."""
+    """Export the paper's fixed ten-second FPS window for every game lane."""
     games_root = repo / "evaluations/4-games"
     rows = []
-    for runner in sorted(games_root.glob("*/run.sh")):
-        game = runner.parent.name
+    runners = {runner.parent.name: runner for runner in games_root.glob("*/run.sh")}
+    ordered_games = [game for game in GAME_ORDER if game in runners]
+    ordered_games.extend(sorted(set(runners) - set(ordered_games)))
+    for game in ordered_games:
+        runner = runners[game]
         result_dirs = sorted(
             (path for path in (runner.parent / kind).glob("*") if path.is_dir()), reverse=True
         )
-        result_dir = next((path for path in result_dirs if game_raw_csv(path)), None)
-        row = {
-            "game": game,
-            "lane": "qemu-hecate",
-            "status": "missing",
-            "sample_interval_ms": "",
-            "total_sample_count": "",
-            "window_sample_count": "",
-            "window_start_seconds_from_end": "-12",
-            "window_end_seconds_from_end": "-2",
-            "fps_mean": "",
-            "fps_minimum": "",
-            "fps_maximum": "",
-            "fps_variance": "",
-            "result_dir": "",
-            "raw_csv": "",
-        }
-        if result_dir:
+        lane_results: dict[str, pathlib.Path] = {}
+        for result_dir in result_dirs:
+            raw_path = game_raw_csv(result_dir)
+            if not raw_path:
+                continue
+            run_env = read_env_file(result_dir / "run.env")
+            lane = run_env.get("lane", "qemu-hecate")
+            if lane in GAME_LANES and lane not in lane_results:
+                lane_results[lane] = result_dir
+
+        for lane in GAME_LANES:
+            result_dir = lane_results.get(lane)
+            row = {
+                "game": game,
+                "lane": lane,
+                "status": "missing",
+                "physical_gpu": "",
+                "sample_interval_ms": "",
+                "total_sample_count": "",
+                "window_sample_count": "",
+                "window_start_seconds_from_end": "-12",
+                "window_end_seconds_from_end": "-2",
+                "fps_mean": "",
+                "fps_minimum": "",
+                "fps_maximum": "",
+                "fps_variance": "",
+                "result_dir": "",
+                "raw_csv": "",
+            }
+            if not result_dir:
+                rows.append(row)
+                continue
+
             raw_path = game_raw_csv(result_dir)
             assert raw_path
             summary_path = result_dir / "fps-summary.json"
             run_env_path = result_dir / "run.env"
-            run_env = read_env_file(run_env_path)
+            preflight_path = result_dir / "preflight-status.tsv"
             interval_ms = 100
             if summary_path.is_file():
                 try:
@@ -281,12 +309,21 @@ def export_game_fps(repo: pathlib.Path, kind: str, output: pathlib.Path, inputs:
                     pass
             row.update(
                 {
-                    "lane": run_env.get("lane", "qemu-hecate"),
                     "sample_interval_ms": interval_ms,
                     "result_dir": str(result_dir.relative_to(repo)),
                     "raw_csv": str(raw_path.relative_to(repo)),
                 }
             )
+            physical_gpu = "unknown"
+            if preflight_path.is_file():
+                with preflight_path.open(newline="") as stream:
+                    statuses = {entry[0]: entry[1] for entry in csv.reader(stream, delimiter="\t") if len(entry) >= 2}
+                marker = statuses.get("physical-gpu-renderer")
+                if marker == "0":
+                    physical_gpu = "yes"
+                elif marker == "1":
+                    physical_gpu = "no"
+            row["physical_gpu"] = physical_gpu
             try:
                 samples = mangohud_samples(raw_path)
                 row["total_sample_count"] = len(samples)
@@ -302,18 +339,21 @@ def export_game_fps(repo: pathlib.Path, kind: str, output: pathlib.Path, inputs:
                         "fps_variance": f"{statistics.pvariance(fps):.9f}",
                     }
                 )
+                if physical_gpu == "no":
+                    row["status"] = "invalid: non-physical OpenGL renderer"
             except (OSError, ValueError, KeyError) as error:
                 row["status"] = f"insufficient: {error}"
-            for evidence in (raw_path, summary_path, run_env_path):
+            for evidence in (raw_path, summary_path, run_env_path, preflight_path):
                 if evidence.is_file():
                     inputs.add(evidence)
-        rows.append(row)
+            rows.append(row)
     write_csv(
         output / "game-fps.csv",
         [
             "game",
             "lane",
             "status",
+            "physical_gpu",
             "sample_interval_ms",
             "total_sample_count",
             "window_sample_count",

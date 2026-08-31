@@ -170,7 +170,9 @@ include_args+=(-I"$port_dir/lorelei")
 if [[ -d $native_suite/include ]]; then include_args+=(-I"$native_suite/include"); fi
 if [[ $package == qrencode ]]; then include_args+=(-DWITH_TESTS); fi
 if [[ $package == sdl2-ttf ]]; then include_args+=(-I"$host_prefix/include/SDL2"); fi
-run_logged "$run_dir/logs/preparation/thunk.log" "$devkit/bin/LoreMakeThunk.py" --name "$thunk_name" --out "$thunk" \
+run_logged "$run_dir/logs/preparation/thunk.log" \
+    "$repo_root/evaluations/1-libs/_common/lore-make-thunk.py" "$devkit/bin/LoreMakeThunk.py" \
+    --name "$thunk_name" --out "$thunk" \
     --lib "$host_library" --symbols "$run_dir/generated/Symbols.conf" --desc "$port_dir/lorelei/Desc.h" \
     "${manifest_args[@]}" --devkit "$devkit" --keep-intermediates -- "${include_args[@]}"
 readelf -h "$host_library" >"$run_dir/generated/host-elf.txt"
@@ -184,7 +186,8 @@ libc_shim=$work/libc-shim
 host_libc=$(cc -print-file-name=libc.so.6)
 if [[ -e $libc_shim ]]; then cmake -E remove_directory "$libc_shim"; fi
 run_logged "$run_dir/logs/preparation/thunk-libc-shim.log" \
-    "$devkit/bin/LoreMakeThunk.py" --name c-shim --out "$libc_shim" \
+    "$repo_root/evaluations/1-libs/_common/lore-make-thunk.py" "$devkit/bin/LoreMakeThunk.py" \
+    --name c-shim --out "$libc_shim" \
     --lib "$host_libc" --soname libc-shim.so \
     --symbols "$common_dir/libc-shim/Symbols.conf" \
     --desc "$common_dir/libc-shim/Desc.h" \
@@ -204,7 +207,9 @@ if [[ $package == sdl2-ttf ]]; then
     sdl_library=$(find "$host_prefix/lib" -maxdepth 1 -type f -name 'libSDL2-2.0.so.*' | head -1)
     sdl_thunk=$work/sdl-thunk
     if [[ -e $sdl_thunk ]]; then cmake -E remove_directory "$sdl_thunk"; fi
-    run_logged "$run_dir/logs/preparation/sdl-thunk.log" "$devkit/bin/LoreMakeThunk.py" --name SDL2 --out "$sdl_thunk" \
+    run_logged "$run_dir/logs/preparation/sdl-thunk.log" \
+        "$repo_root/evaluations/1-libs/_common/lore-make-thunk.py" "$devkit/bin/LoreMakeThunk.py" \
+        --name SDL2 --out "$sdl_thunk" \
         --lib "$sdl_library" --symbols "$sdl_port/lorelei/Symbols.conf" --desc "$sdl_port/lorelei/Desc.h" \
         --manifest-host "$sdl_port/lorelei/Manifest_host.cpp" --manifest-guest "$sdl_port/lorelei/Manifest_guest.cpp" \
         --gtl-alias libSDL2-2.0.so --gtl-alias libSDL2-2.0.so.0 --htl-alias libSDL2-2.0_HTL.so \

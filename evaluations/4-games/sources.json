@@ -42,7 +42,7 @@
     },
     "supertuxkart": {
       "version": "1.4",
-      "url": "https://downloads.sourceforge.net/project/supertuxkart/SuperTuxKart/1.4/SuperTuxKart-1.4-linux-x86_64.tar.xz?download",
+      "url": "https://github.com/supertuxkart/stk-code/releases/download/1.4/SuperTuxKart-1.4-linux-x86_64.tar.xz",
       "archive_sha256": "8d86438fc5c3d89e8ffa3f90a2e47023bc6d6253877fdd94170ccf6de905b7c9",
       "archive_type": "tar.xz",
       "executable": "SuperTuxKart-1.4-linux-x86_64/bin/supertuxkart",

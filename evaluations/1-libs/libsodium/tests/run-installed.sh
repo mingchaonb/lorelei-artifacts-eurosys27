@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
+
+tlc_wrapper=$(cd "$(dirname "${BASH_SOURCE[0]}")/../../_common" && pwd)/lore-make-thunk.py
 : "${LORELEI_DEVKIT:?}" "${QEMU:?}" "${WORK:?}" "${NATIVE_PREFIX:?}" "${GUEST_PREFIX:?}" "${BENCH:?}" "${QEMU_WRAPPER:?}"
 cmake -E remove_directory "$WORK"
 mkdir -p "$WORK/results" "$WORK/dump" "$WORK/native-suite" "$WORK/hecate-suite"
@@ -12,9 +14,9 @@ llvm-nm-20 -D --defined-only --format=posix "$host_lib" | awk '$2 == "T" || $2 =
 comm -12 "$WORK/dump/guest-undefined.txt" "$WORK/dump/host-functions.txt" > "$WORK/dump/functions.txt"
 sed -i '/^sodium_allocarray$/d; /^sodium_free$/d; /^sodium_malloc$/d; /^sodium_memzero$/d; /^sodium_misuse$/d; /^sodium_mprotect_noaccess$/d; /^sodium_mprotect_readonly$/d; /^sodium_mprotect_readwrite$/d; /^sodium_set_misuse_handler$/d' "$WORK/dump/functions.txt"
 sed '1i[Function]' "$WORK/dump/functions.txt" > "$WORK/dump/Symbols.conf"
-"$LORELEI_DEVKIT/bin/LoreMakeThunk.py" --name sodium -o "$WORK/thunk" --lib "$host_lib" --symbols "$WORK/dump/Symbols.conf" --desc "$BENCH/Desc.h" --manifest-host "$BENCH/Manifest_host.cpp" --manifest-guest "$BENCH/Manifest_guest.cpp" --devkit "$LORELEI_DEVKIT" --keep-intermediates -- -I"$NATIVE_PREFIX/include" -I"$NATIVE_PREFIX/include/sodium" > "$WORK/results/thunk.log" 2>&1
+"$tlc_wrapper" "$LORELEI_DEVKIT/bin/LoreMakeThunk.py" --name sodium -o "$WORK/thunk" --lib "$host_lib" --symbols "$WORK/dump/Symbols.conf" --desc "$BENCH/Desc.h" --manifest-host "$BENCH/Manifest_host.cpp" --manifest-guest "$BENCH/Manifest_guest.cpp" --devkit "$LORELEI_DEVKIT" --keep-intermediates -- -I"$NATIVE_PREFIX/include" -I"$NATIVE_PREFIX/include/sodium" > "$WORK/results/thunk.log" 2>&1
 host_libc=$(/usr/bin/cc -print-file-name=libc.so.6)
-"$LORELEI_DEVKIT/bin/LoreMakeThunk.py" --name errno-shim -o "$WORK/thunk-errno" --lib "$host_libc" --soname errno-shim.so --symbols "$BENCH/ErrnoSymbols.conf" --desc "$BENCH/ErrnoDesc.h" --devkit "$LORELEI_DEVKIT" --keep-intermediates -- -D_GNU_SOURCE > "$WORK/results/errno-thunk.log" 2>&1
+"$tlc_wrapper" "$LORELEI_DEVKIT/bin/LoreMakeThunk.py" --name errno-shim -o "$WORK/thunk-errno" --lib "$host_libc" --soname errno-shim.so --symbols "$BENCH/ErrnoSymbols.conf" --desc "$BENCH/ErrnoDesc.h" --devkit "$LORELEI_DEVKIT" --keep-intermediates -- -D_GNU_SOURCE > "$WORK/results/errno-thunk.log" 2>&1
 ln -sf "$host_libc" "$WORK/thunk-errno/liberrno-shim.so"
 prepare_suite() {
   local lane=$1 installed_root=$2 binary=$3 tag cwd data

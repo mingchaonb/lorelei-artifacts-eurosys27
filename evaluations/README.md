@@ -16,7 +16,7 @@
 3. [Mechanism breakdown](3-breakdown/README.md)
    - Measures individual calls, callback address-origin recognition, and Hecate emulator integration.
 4. [Game evaluation](4-games/README.md)
-   - Validates the graphics, window-system, thunk, and game-launch paths.
+   - Compares native, QEMU-Hecate, Box64, and Box64-Hecate game paths.
    - Records FPS and frametime with MangoHud.
 5. [QEMU modification statistics](5-modifications/README.md)
    - Measures QEMU integration changes for Lat, Risotto, and Hecate.

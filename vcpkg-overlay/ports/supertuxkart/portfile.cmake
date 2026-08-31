@@ -4,7 +4,7 @@ set(game_dir "${CURRENT_PACKAGES_DIR}/tools/${PORT}/game")
 if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x64")
     ae_game_download(release_archive
         "SuperTuxKart-1.4-linux-x86_64.tar.xz"
-        "https://downloads.sourceforge.net/project/supertuxkart/SuperTuxKart/1.4/SuperTuxKart-1.4-linux-x86_64.tar.xz"
+        "https://github.com/supertuxkart/stk-code/releases/download/1.4/SuperTuxKart-1.4-linux-x86_64.tar.xz"
         "82fc32c288cc25fd316a54aab47e3e996c5a79c59dd9082fea4b527bc59d8365b1ba02b365dda747254faceb14d89441c58d24b2f4db92fda0b947ae468a38b6"
     )
     set(release_root "${CURRENT_BUILDTREES_DIR}/src/release")

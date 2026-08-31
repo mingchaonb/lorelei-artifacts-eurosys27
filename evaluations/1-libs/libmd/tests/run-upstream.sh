@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
+
+tlc_wrapper=$(cd "$(dirname "${BASH_SOURCE[0]}")/../../_common" && pwd)/lore-make-thunk.py
 : "${LORELEI_DEVKIT:?}"
 : "${QEMU:?}"
 : "${SOURCE:?}"
@@ -95,7 +97,7 @@ done
     -p "$work/host" \
     -o "$work/dump/Desc.dump.h"
 
-"$devkit/bin/LoreMakeThunk.py" \
+"$tlc_wrapper" "$devkit/bin/LoreMakeThunk.py" \
     --name md \
     -o "$work/thunk" \
     --lib "$host_lib" \

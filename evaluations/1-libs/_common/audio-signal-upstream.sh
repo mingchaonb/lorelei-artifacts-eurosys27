@@ -81,7 +81,7 @@ extra_thunk() {
     IFS=',' read -r -a alias_list <<< "$aliases"
     for alias in "${alias_list[@]}"; do alias_args+=(--gtl-alias "$alias"); done
     run_logged "$run_dir/logs/upstream/preparation/thunk-$name.log" \
-        "$devkit/bin/LoreMakeThunk.py" --name "$name" --out "$out" --lib "$host_library" \
+        "$repo_root/evaluations/1-libs/_common/lore-make-thunk.py" "$devkit/bin/LoreMakeThunk.py" --name "$name" --out "$out" --lib "$host_library" \
         --symbols "$symbols" --desc "$desc" "${alias_args[@]}" \
         --devkit "$devkit" --keep-intermediates -- -I"$host_prefix/include"
     HECATE_HOST_LIBRARY_PATH="$HECATE_HOST_LIBRARY_PATH:$out"

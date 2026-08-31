@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
+
+tlc_wrapper=$(cd "$(dirname "${BASH_SOURCE[0]}")/../../_common" && pwd)/lore-make-thunk.py
 : "${LORELEI_DEVKIT:?}"
 : "${QEMU:?}"
 : "${SOURCE:?}"
@@ -115,13 +117,13 @@ for name in correct fec; do
     > "$work/dump-$name/data-used.txt"
 done
 
-"$devkit/bin/LoreMakeThunk.py" --name correct -o "$work/thunk-correct" \
+"$tlc_wrapper" "$devkit/bin/LoreMakeThunk.py" --name correct -o "$work/thunk-correct" \
   --lib "$work/native/lib/libcorrect.so" \
   --symbols "$work/dump-correct/Symbols.conf" \
   --desc "$BENCH/DescCorrect.h" --devkit "$devkit" \
   --keep-intermediates -- -I"$work/source/include" \
   > "$work/results/thunk-correct.log" 2>&1
-"$devkit/bin/LoreMakeThunk.py" --name fec -o "$work/thunk-fec" \
+"$tlc_wrapper" "$devkit/bin/LoreMakeThunk.py" --name fec -o "$work/thunk-fec" \
   --lib "$work/native/lib/libfec.so" \
   --symbols "$work/dump-fec/Symbols.conf" --desc "$BENCH/DescFEC.h" \
   --devkit "$devkit" --keep-intermediates -- -I"$work/source/include" \

@@ -6,6 +6,7 @@
 
 ```bash
 python3 evaluations/export-paper-data.py
+python3 evaluations/plots/plot-game-fps.py
 python3 evaluations/plots/plot-overall.py
 python3 evaluations/plots/plot-coverage-effort.py
 python3 evaluations/plots/plot-function-breakdown.py

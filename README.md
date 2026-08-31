@@ -158,9 +158,12 @@ Game runners must execute directly on the Ubuntu 24.04 ARM64 GUI host. Install t
 sudo apt update
 sudo apt install -y \
   mangohud mesa-utils vulkan-tools \
+  libgl-dev libglx-dev libvulkan-dev \
   x11-utils x11-xserver-utils xdotool \
   cmake libdw1 libglib2.0-0
 ```
+
+`libgl-dev`, `libglx-dev`, and `libvulkan-dev` provide the host headers used to compile the GL and Vulkan preflight probes in the game runners.
 
 The host must also have working OpenGL and Vulkan drivers for its physical GPU. NVIDIA, AMD, and Arm GPUs use the corresponding distribution or vendor driver. `llvmpipe`, `softpipe`, and other software renderers are not valid substitutes. Check the host before running a game:
 
@@ -244,17 +247,16 @@ See [`evaluations/3-breakdown/README.md`](evaluations/3-breakdown/README.md) for
 
 ### 3.4 Validate games
 
-Complete all four installation scripts inside the container, exit it, and run games on the GUI host prepared in Section 2.5. The runners only reuse installation results in the bind-mounted repository. They do not rerun vcpkg, HLR, or thunk builds on the host. An evaluator may select any installed game. The argument is a watchdog duration in seconds and defaults to 30:
+Complete all four installation scripts inside the container, exit it, and run games on the GUI host prepared in Section 2.5. The runners only reuse installation results in the bind-mounted repository. They do not rerun vcpkg, HLR, or thunk builds on the host. Select `native`, `qemu-hecate`, `box64`, or `box64-hecate` with `--lane`. The positional argument is a watchdog duration in seconds and defaults to 30:
 
 ```bash
-./evaluations/4-games/assaultcube/run.sh 30
-./evaluations/4-games/openarena/run.sh 30
-./evaluations/4-games/redeclipse/run.sh 30
-./evaluations/4-games/supertux/run.sh 30
-./evaluations/4-games/supertuxkart/run.sh 30
+./evaluations/4-games/supertux/run.sh --lane native 30
+./evaluations/4-games/supertux/run.sh --lane qemu-hecate 30
+./evaluations/4-games/supertux/run.sh --lane box64 30
+./evaluations/4-games/supertux/run.sh --lane box64-hecate 30
 ```
 
-- The game runner performs graphics, window-system, and thunk preflight checks before starting an unmodified x86-64 game through Hecate.
+- The game runner performs host graphics checks for every lane and additional window-system and thunk preflight checks for the two Hecate lanes.
 - MangoHud collects frame-rate and frame-time samples on the host and stores raw samples and a summary under the game's `results/<run-id>/`.
 - For paper-compatible FPS evidence, enter the selected gameplay scene, remain there for at least 15 seconds, and then close the game. The exporter uses only the ten-second window from 12 seconds before close up to 2 seconds before close.
 - A longer watchdog such as `300` leaves enough time for manual scene entry.
@@ -280,7 +282,7 @@ python3 evaluations/export-paper-data.py
 The exporter produces:
 
 1. `overall.csv`, containing nine execution paths and normalized time for the eight command-line workloads.
-2. `game-fps.csv`, containing FPS mean, minimum, maximum, and population variance over each game's `[12s, 2s)` pre-close window, together with sample counts and raw MangoHud paths.
+2. `game-fps.csv`, containing FPS mean, minimum, maximum, and population variance for four lanes over each game's `[12s, 2s)` pre-close window, together with sample counts and raw MangoHud paths.
 3. `function-breakdown.csv` and `callback-track.csv`, containing direct-call and callback breakdowns.
 4. `coverage-effort.csv` and `modifications.csv`, containing coverage, handwritten and generated Hecate code size, and system modification counts.
 5. `manifest.json`, containing SHA-256 hashes of every consumed evidence file and the export configuration.
@@ -289,6 +291,7 @@ The plotting scripts read only generated files under `evaluations/paper-data/`:
 
 ```bash
 python3 evaluations/plots/plot-overall.py
+python3 evaluations/plots/plot-game-fps.py
 python3 evaluations/plots/plot-coverage-effort.py
 python3 evaluations/plots/plot-function-breakdown.py
 python3 evaluations/plots/plot-callback-track.py
@@ -311,7 +314,7 @@ ROUNDS=1 ./evaluations/3-breakdown/breakdown-test/run.sh
 Next, leave the container. On the GUI host with its graphics driver and MangoHud installed, select one game and allow a long enough watchdog. Enter the target scene, remain there for at least 15 seconds, then close the game normally:
 
 ```bash
-./evaluations/4-games/openarena/run.sh 300
+./evaluations/4-games/openarena/run.sh --lane qemu-hecate 300
 ```
 
 After closing the game, enter the container again. Analyze coverage and modifications and export all available evidence in one step:

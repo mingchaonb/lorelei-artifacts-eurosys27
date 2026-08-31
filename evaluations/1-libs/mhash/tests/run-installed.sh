@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
+
+tlc_wrapper=$(cd "$(dirname "${BASH_SOURCE[0]}")/../../_common" && pwd)/lore-make-thunk.py
 : "${LORELEI_DEVKIT:?}" "${QEMU:?}" "${WORK:?}" "${NATIVE_PREFIX:?}" "${GUEST_PREFIX:?}" "${BENCH:?}"
 cmake -E remove_directory "$WORK"
 mkdir -p "$WORK/results" "$WORK/dump"
@@ -13,7 +15,7 @@ sort -u -o "$WORK/dump/guest-undefined.txt" "$WORK/dump/guest-undefined.txt"
 llvm-nm-20 -D --defined-only --just-symbol-name "$host_lib" | sed 's/@.*//' | sort -u > "$WORK/dump/host-functions.txt"
 comm -12 "$WORK/dump/guest-undefined.txt" "$WORK/dump/host-functions.txt" > "$WORK/dump/functions.txt"
 sed '1i[Function]' "$WORK/dump/functions.txt" > "$WORK/dump/Symbols.conf"
-"$LORELEI_DEVKIT/bin/LoreMakeThunk.py" --name mhash -o "$WORK/thunk" --lib "$host_lib" \
+"$tlc_wrapper" "$LORELEI_DEVKIT/bin/LoreMakeThunk.py" --name mhash -o "$WORK/thunk" --lib "$host_lib" \
   --symbols "$WORK/dump/Symbols.conf" --desc "$BENCH/Desc.h" \
   --manifest-host "$BENCH/Manifest_host.cpp" --devkit "$LORELEI_DEVKIT" --keep-intermediates \
   -- -DPROTOTYPES -I"$NATIVE_PREFIX/include" -I"$NATIVE_PREFIX/include/mutils" \

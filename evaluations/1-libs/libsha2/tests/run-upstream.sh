@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
+
+tlc_wrapper=$(cd "$(dirname "${BASH_SOURCE[0]}")/../../_common" && pwd)/lore-make-thunk.py
 : "${LORELEI_DEVKIT:?}"
 : "${QEMU:?}"
 : "${WORK:?}"
@@ -52,7 +54,7 @@ EOF
 "$devkit/bin/LoreTLC" dump -c "$work/dump/Symbols.conf" \
   -p "$work/dump" "$work/dump/Api.c" -o "$work/dump/Desc.dump.h" \
   > "$work/results/tlc-dump.log" 2>&1
-"$devkit/bin/LoreMakeThunk.py" --name sha2 -o "$work/thunk" \
+"$tlc_wrapper" "$devkit/bin/LoreMakeThunk.py" --name sha2 -o "$work/thunk" \
   --lib "$host_lib" --symbols "$work/dump/Symbols.conf" \
   --desc "$work/dump/Desc.dump.h" --devkit "$devkit" \
   --keep-intermediates -- -I"$NATIVE_PREFIX/include" \

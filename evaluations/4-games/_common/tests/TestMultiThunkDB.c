@@ -12,8 +12,10 @@ int main(void) {
     PFN_vkEnumerateInstanceVersion vk_proc =
         (PFN_vkEnumerateInstanceVersion) vkGetInstanceProcAddr(
             VK_NULL_HANDLE, "vkEnumerateInstanceVersion");
-    if (!gl_proc || !vk_proc || (void *) gl_proc != (void *) glGetString ||
-        (void *) vk_proc != (void *) vkEnumerateInstanceVersion) {
+    /* DBTs may bridge a dynamically returned function pointer through a
+     * wrapper whose address differs from the ELF symbol.  Non-null GL lookup
+     * plus the Vulkan call below validates the portable contract. */
+    if (!gl_proc || !vk_proc) {
         fprintf(stderr, "multi-db-fail:proc-address\n");
         return 1;
     }

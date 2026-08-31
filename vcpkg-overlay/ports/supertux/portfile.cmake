@@ -44,6 +44,16 @@ else()
         "https://ports.ubuntu.com/ubuntu-ports/pool/universe/g/glew/libglew2.2_2.2.0-4build1_arm64.deb"
         "35addf6cc61d9b2428cd74d64467caa01acf410bb04feb9eeb326bda3355e18c465d432a4176d5a1e3f109c980a6538bee2417027779d3cb1958071960ede705"
     )
+    ae_game_download(roboto_archive
+        "fonts-roboto-unhinted_0~20170802-3_all.deb"
+        "https://ports.ubuntu.com/ubuntu-ports/pool/universe/f/fonts-roboto/fonts-roboto-unhinted_0~20170802-3_all.deb"
+        "f65308a121b04a14a2e363abc344421284473cd1cb66e639584963d0409f9bab0aee5f999d84e13d28bdfa3c2327230f3f8df88f0047b2476351816b8ff2af01"
+    )
+    ae_game_download(nanum_archive
+        "fonts-nanum_20200506-1_all.deb"
+        "https://ports.ubuntu.com/ubuntu-ports/pool/universe/f/fonts-nanum/fonts-nanum_20200506-1_all.deb"
+        "3626a9da47ba2df3f4ce807eb234aa426b92aedc5cd9b59b4ed9b95a737f9925736ba73d21c770ceb9f76edc0423fa887a3c8b964df2609dd8246bc76ae14dbb"
+    )
     set(native_root "${CURRENT_BUILDTREES_DIR}/src/native")
     set(data_root "${CURRENT_BUILDTREES_DIR}/src/data-native")
     ae_game_extract_deb("${native_archive}" "${native_root}")
@@ -53,13 +63,33 @@ else()
     ae_game_install_deb_libraries("${sdl_image_archive}" "sdl-image-native" "${game_dir}/lib")
     ae_game_install_deb_libraries("${physfs_archive}" "physfs-native" "${game_dir}/lib")
     ae_game_install_deb_libraries("${glew_archive}" "glew-native" "${game_dir}/lib")
+    # supertux-data declares these two fonts as Debian dependencies instead of
+    # carrying them in its own archive.  Install them beside the other game
+    # data so the native package remains self-contained.
+    set(roboto_root "${CURRENT_BUILDTREES_DIR}/src/roboto-native")
+    set(nanum_root "${CURRENT_BUILDTREES_DIR}/src/nanum-native")
+    ae_game_extract_deb("${roboto_archive}" "${roboto_root}")
+    ae_game_extract_deb("${nanum_archive}" "${nanum_root}")
+    file(INSTALL
+        "${roboto_root}/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/Roboto-Regular.ttf"
+        "${nanum_root}/usr/share/fonts/truetype/nanum/NanumBarunGothic.ttf"
+        DESTINATION "${game_dir}/usr/share/games/supertux2/fonts")
+    # Ubuntu installs games under usr/games, while the upstream x64 AppImage
+    # uses usr/bin.  Expose the same package layout to the evaluator on both
+    # architectures without moving the Debian package's real executable.
+    file(CHMOD "${game_dir}/usr/games/supertux2"
+        PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+    file(MAKE_DIRECTORY "${game_dir}/usr/bin")
+    file(CREATE_LINK "../games/supertux2" "${game_dir}/usr/bin/supertux2" SYMBOLIC)
     set(copyright_file "${native_root}/usr/share/doc/supertux/copyright")
 endif()
 
 # vcpkg's file installation copies contents but not the executable mode from
 # the AppImage or Debian package extraction tree.
-file(CHMOD "${game_dir}/usr/bin/supertux2"
-    PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x64")
+    file(CHMOD "${game_dir}/usr/bin/supertux2"
+        PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+endif()
 
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug")
 vcpkg_install_copyright(FILE_LIST "${copyright_file}")

@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
+
+tlc_wrapper=$(cd "$(dirname "${BASH_SOURCE[0]}")/../../_common" && pwd)/lore-make-thunk.py
 : "${LORELEI_DEVKIT:?}"
 : "${QEMU:?}"
 : "${SOURCE:?}"
@@ -68,7 +70,7 @@ sed '1i[Function]' "$work/dump/functions.txt" > "$work/dump/Symbols.conf"
 "$devkit/bin/LoreTLC" dump -c "$work/dump/Symbols.conf" \
     -p "$work/native" -o "$work/dump/Desc.dump.h" \
     > "$work/results/tlc-dump.log" 2>&1
-"$devkit/bin/LoreMakeThunk.py" --name mhash -o "$work/thunk" \
+"$tlc_wrapper" "$devkit/bin/LoreMakeThunk.py" --name mhash -o "$work/thunk" \
     --lib "$host_lib" --symbols "$work/dump/Symbols.conf" \
     --desc "$BENCH/Desc.h" --manifest-host "$BENCH/Manifest_host.cpp" \
     --devkit "$devkit" --keep-intermediates -- \

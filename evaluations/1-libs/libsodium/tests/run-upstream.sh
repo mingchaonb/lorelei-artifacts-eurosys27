@@ -2,6 +2,8 @@
 
 set -euo pipefail
 
+tlc_wrapper=$(cd "$(dirname "${BASH_SOURCE[0]}")/../../_common" && pwd)/lore-make-thunk.py
+
 : "${LORELEI_DEVKIT:?LORELEI_DEVKIT is required}"
 : "${QEMU:?QEMU is required}"
 : "${LIBSODIUM_SOURCE:?LIBSODIUM_SOURCE is required}"
@@ -82,7 +84,7 @@ cat "$work/dump/functions.txt" >> "$work/dump/Symbols.conf"
 
 "$devkit/bin/LoreTLC" dump -c "$work/dump/Symbols.conf" \
     -p "$work/native" -o "$work/dump/Desc.dump.h"
-"$devkit/bin/LoreMakeThunk.py" \
+"$tlc_wrapper" "$devkit/bin/LoreMakeThunk.py" \
     --name sodium -o "$work/thunk" --lib "$host_lib" \
     --symbols "$work/dump/Symbols.conf" --desc "$bench/Desc.h" \
     --manifest-host "$bench/Manifest_host.cpp" \
@@ -94,7 +96,7 @@ cat "$work/dump/functions.txt" >> "$work/dump/Symbols.conf"
     -I"$work/native/src/libsodium/include/sodium"
 
 host_libc=$(/usr/bin/cc -print-file-name=libc.so.6)
-"$devkit/bin/LoreMakeThunk.py" \
+"$tlc_wrapper" "$devkit/bin/LoreMakeThunk.py" \
     --name errno-shim -o "$work/thunk-errno-shim" \
     --lib "$host_libc" --soname errno-shim.so \
     --symbols "$bench/ErrnoSymbols.conf" --desc "$bench/ErrnoDesc.h" \
