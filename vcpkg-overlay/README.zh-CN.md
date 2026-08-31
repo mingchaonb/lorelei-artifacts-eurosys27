@@ -2,7 +2,7 @@
 
 [English](README.md)
 
-本目录是 v2 library 验证共用的包管理层。所有被测库使用 `ports/` 下的 port，所有 AE 目标配置使用 `triplets/` 下的 triplet。
+本目录是 library 验证共用的包管理层。所有被测库使用 `ports/` 下的 port，所有 AE 目标配置使用 `triplets/` 下的 triplet。
 
 只支持仓库根目录内的 `vcpkg/` checkout，固定版本为 `2026.07.29`。
 

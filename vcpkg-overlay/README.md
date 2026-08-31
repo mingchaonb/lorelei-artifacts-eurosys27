@@ -2,7 +2,7 @@
 
 [中文版](README.zh-CN.md)
 
-This directory is the shared package layer for version 2 library validation. All tested libraries use ports below `ports/`, and all AE target definitions use triplets below `triplets/`.
+This directory is the shared package layer for library validation. All tested libraries use ports below `ports/`, and all AE target definitions use triplets below `triplets/`.
 
 The repository-local `vcpkg/` checkout is the only supported vcpkg instance. The pinned release is `2026.07.29`.
 
