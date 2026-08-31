@@ -3,15 +3,14 @@
 set(VCPKG_BUILD_TYPE release)
 set(VCPKG_POLICY_EMPTY_INCLUDE_FOLDER enabled)
 
-# Start from the same reviewed Hecate-enabled QEMU revision as qemu-ae. The
-# versioned patch adds only the phase markers consumed by breakdown-test.
+# Fetch the dedicated breakdown branch of the Hecate-enabled QEMU fork. This
+# revision contains the phase markers consumed by breakdown-test directly.
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO mingchaonb/qemu
-    REF 712379f27e692fd912b6773e32a996091b4dc413
-    SHA512 3719a8e897d80519df4f81463bdc5e113a429d197a96f1d3bbd1738efbe09fb5e503145b6b5bb729aa533a22e7b39920f1c0804bcee0ca85f8ae361ad93419d5
-    HEAD_REF ae
-    PATCHES patches/lorelei-breakdown-timing.patch
+    REF 759f9bd2cf8d8d8e7a36ff64599693cffaf2c354
+    SHA512 1b916ec41eac35ec1300ff12b40f737ba50786d4e55423a702ca4fc80f39fabddcf6d9390eda7a13557ef6db19587b204d9ae75470d4e0370300728769c56e28
+    HEAD_REF breakdown-timing
 )
 
 # Only x86-64 linux-user is needed. Documentation, system emulation, and

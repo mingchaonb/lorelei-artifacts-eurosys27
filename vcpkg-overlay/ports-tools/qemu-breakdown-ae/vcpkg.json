@@ -1,6 +1,7 @@
 {
   "name": "qemu-breakdown-ae",
   "version-date": "2026-08-30",
+  "port-version": 1,
   "description": "Pinned Hecate-enabled QEMU with pass-through phase timing probes",
   "homepage": "https://github.com/mingchaonb/qemu",
   "license": "GPL-2.0-only",
