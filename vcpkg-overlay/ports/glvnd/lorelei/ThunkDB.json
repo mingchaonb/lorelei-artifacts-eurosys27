@@ -33,6 +33,11 @@
             "name": "libGLX_nvidia",
             "fileName": "libGLX_nvidia.so.0",
             "thunks": ["libGLX", "libGL", "libvulkan"]
+        },
+        {
+            "name": "libMangoHud",
+            "fileName": "libMangoHud.so",
+            "thunks": ["libGLX", "libGL", "libvulkan"]
         }
     ]
 }

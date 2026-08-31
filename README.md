@@ -42,7 +42,7 @@ The five numbered directories below `evaluations/` correspond to five groups of 
 
 ### 2.1 Build the Ubuntu 24.04 ARM64 image
 
-Build the image from the repository root. The Dockerfile installs every system dependency required by the library, DBT, plotting, game, and MangoHud evaluations. It also creates an unprivileged `user` whose UID and GID match the host account:
+Build the image from the repository root. The Dockerfile installs the system dependencies needed for libraries, DBTs, plotting, and game-package builds. It also creates an unprivileged `user` whose UID and GID match the host account. Section 2.5 separately prepares the GPU driver and sampling tools used when games run on the host:
 
 ```bash
 docker build \
@@ -85,23 +85,15 @@ If network access requires an HTTP proxy:
 
 ### 2.2 Start the evaluation container
 
-Start the container from the repository root. The complete command below also exposes the GPU, X11 socket, and Xauthority required by game evaluations:
+Start the build and non-graphical evaluation container from the repository root. The artifact repository is mounted read-write, so `.work/`, vcpkg installations, and experiment results produced in the container remain available to the host. Game packages, HLR output, and thunks are also installed in the container, but game processes later run directly on the GUI host. The container therefore does not receive the GPU, X11 socket, or Xauthority:
 
 ```bash
 export AE_REPO=$PWD
-export AE_XAUTHORITY=${XAUTHORITY:-$HOME/.Xauthority}
-test -f "$AE_XAUTHORITY"
 
 docker run --detach \
   --name lorelei-eurosys27-ae-ubuntu2404 \
   --network host \
-  --device /dev/dri \
-  --group-add "$(stat -c '%g' /dev/dri/renderD128)" \
-  --env DISPLAY="${DISPLAY:-:0}" \
-  --env XAUTHORITY=/home/user/.Xauthority \
   --mount type=bind,src="$AE_REPO",dst=/home/user/eurosys-lorelei-artifacts \
-  --mount type=bind,src=/tmp/.X11-unix,dst=/tmp/.X11-unix \
-  --mount type=bind,src="$AE_XAUTHORITY",dst=/home/user/.Xauthority,readonly \
   lorelei-eurosys27-ae:ubuntu24.04 sleep infinity
 ```
 
@@ -121,9 +113,7 @@ Proxy variables are fixed when the container is created. After changing the prox
 - The four `install-*.sh` scripts fill the empty case variant when only one of the uppercase or lowercase forms is non-empty. When both forms are configured, each original value is preserved.
 - `install-tools.sh`, `install-libs.sh`, and `install-games.sh` automatically retry recognized transient network failures, with at most five attempts per item by default. Set `INSTALL_NETWORK_ATTEMPTS` to change this limit. Build failures, test failures, and user interrupts are not retried.
 
-The `/dev/dri` device, supplementary group, X11 socket, and Xauthority are required by game evaluations. They may be omitted when reproducing only library, command-line, and breakdown data. Hosts using the proprietary NVIDIA driver must expose the GPU through their configured container runtime.
-
-Run all subsequent build, evaluation, and export commands as the image's preconfigured unprivileged `user`:
+Use the image's preconfigured unprivileged `user` for builds, libraries, command-line workloads, breakdowns, and data export. Running games is the only host-side evaluation stage, as described in Section 2.5:
 
 ```bash
 docker exec -it \
@@ -159,6 +149,27 @@ Run these four installation scripts from the repository root:
 - The remaining scripts reuse installed vcpkg packages, downloads, and build state. They do not clear caches before each invocation.
 
 Installation keeps complete vcpkg output visible and displays progress at the bottom of the terminal. Add `--plain` when redirecting output or when terminal control sequences are undesirable. Every public script resolves paths relative to its own location and can be started from any current directory.
+
+### 2.5 Prepare the GUI host
+
+Game runners must execute directly on the Ubuntu 24.04 ARM64 GUI host. Install the sampling, graphics-inspection, and window-control tools on that host:
+
+```bash
+sudo apt update
+sudo apt install -y \
+  mangohud mesa-utils vulkan-tools \
+  x11-utils x11-xserver-utils xdotool \
+  cmake libdw1 libglib2.0-0
+```
+
+The host must also have working OpenGL and Vulkan drivers for its physical GPU. NVIDIA, AMD, and Arm GPUs use the corresponding distribution or vendor driver. `llvmpipe`, `softpipe`, and other software renderers are not valid substitutes. Check the host before running a game:
+
+```bash
+glxinfo -B
+vulkaninfo --summary
+```
+
+Confirm that the `glxinfo -B` renderer names the intended physical GPU and that `vulkaninfo --summary` lists the same device. Game runners inherit `DISPLAY` and `XAUTHORITY` from the current GUI session. No manual override is normally needed when launching them from a desktop terminal.
 
 ## 3. Validate the artifact
 
@@ -210,7 +221,7 @@ Run the eight command-line workloads:
 ./evaluations/2-cli-benchmarks/run-all.sh
 ```
 
-The runner prepares deterministic compression inputs and public media input, then measures FFTW, zlib, zstd, OpenSSL, and four FFmpeg encoding workloads. Formal runs use five repetitions per lane; set `REPETITIONS=1` for a quick single-run check. Every workload has a native median of at least 1.5 seconds. A non-native lane above 20 times native is excluded from Figure 17, and an individual execution is terminated at 100 seconds. Results retain complete commands, input hashes, tool versions, and every raw timing. The batch runner supports recovery and skips successful workloads when invoked again. See [`evaluations/2-cli-benchmarks/README.md`](evaluations/2-cli-benchmarks/README.md) for the complete lane, input, and result definitions.
+The runner prepares deterministic compression inputs and public media input, then measures FFTW, zlib, zstd, OpenSSL, and four FFmpeg encoding workloads. Formal runs use five repetitions per lane. Set `REPETITIONS=1` for a quick single-run check. A non-native lane above 20 times native is excluded from Figure 17, and an individual execution is terminated at 100 seconds. Results retain complete commands, input hashes, tool versions, and every raw timing. The batch runner supports recovery and skips successful workloads when invoked again. See [`evaluations/2-cli-benchmarks/README.md`](evaluations/2-cli-benchmarks/README.md) for the complete lane, input, and result definitions.
 
 ### 3.3 Validate breakdowns
 
@@ -227,7 +238,7 @@ The call breakdown and Box64 callback breakdown use the `breakdown-test` package
 
 ### 3.4 Validate games
 
-An evaluator may select any installed game. The argument is a watchdog duration in seconds and defaults to 30:
+Complete all four installation scripts inside the container, exit it, and run games on the GUI host prepared in Section 2.5. The runners only reuse installation results in the bind-mounted repository. They do not rerun vcpkg, HLR, or thunk builds on the host. An evaluator may select any installed game. The argument is a watchdog duration in seconds and defaults to 30:
 
 ```bash
 ./evaluations/4-games/assaultcube/run.sh 30
@@ -287,13 +298,13 @@ ROUNDS=1 ./evaluations/3-breakdown/hecate-callback-track/run.sh
 ROUNDS=1 ./evaluations/3-breakdown/breakdown-test/run.sh
 ```
 
-Next, select one game and allow a long enough watchdog. Enter the target scene, remain there for at least 15 seconds, then close the game normally:
+Next, leave the container. On the GUI host with its graphics driver and MangoHud installed, select one game and allow a long enough watchdog. Enter the target scene, remain there for at least 15 seconds, then close the game normally:
 
 ```bash
 ./evaluations/4-games/openarena/run.sh 300
 ```
 
-Finally, analyze coverage and modifications and export all available evidence in one step:
+After closing the game, enter the container again. Analyze coverage and modifications and export all available evidence in one step:
 
 ```bash
 python3 evaluations/3-breakdown/coverage-effort/run.py

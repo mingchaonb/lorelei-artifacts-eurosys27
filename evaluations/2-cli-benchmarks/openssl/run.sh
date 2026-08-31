@@ -121,7 +121,7 @@ done
 cli_measure native env LD_LIBRARY_PATH="$native_ld" "$native_cli" "${args[@]}"
 cli_measure qemu "$qemu" -L "$devkit/x86_64/sysroot" -E "LD_LIBRARY_PATH=$guest_ld" "$guest_cli" "${args[@]}"
 cli_measure blink env LD_LIBRARY_PATH="$guest_ld" BLINK_OVERLAYS="$devkit/x86_64/sysroot:" "$blink" "$guest_cli" "${args[@]}"
-cli_measure_excludable box64 "box64_cannot_execute_the_openssl_3.0.22_guest_binary" \
+cli_measure box64 \
     env LD_LIBRARY_PATH="$devkit/lib" BOX64_LD_LIBRARY_PATH="$guest_ld" \
     BOX64_EMULATED_LIBS=libcrypto.so.3:libssl.so.3 \
     BOX64_LOG=0 BOX64_NOBANNER=1 BOX64_NORCFILES=1 "$box64" "$guest_cli" "${args[@]}"
@@ -129,7 +129,7 @@ cli_measure fex env LD_LIBRARY_PATH="$devkit/lib" FEX_ROOTFS="$devkit/x86_64/sys
 
 cli_measure qemu-hecate env LD_LIBRARY_PATH="$host_hecate_ld" "$qemu" -L "$devkit/x86_64/sysroot" -E LD_BIND_NOW=1 -E "LD_PRELOAD=$hecate_preload" -E "LD_LIBRARY_PATH=$guest_hecate_ld" "$guest_cli" "${args[@]}"
 cli_measure blink-hecate env LD_LIBRARY_PATH="$host_hecate_ld:$guest_hecate_ld" LD_PRELOAD="$hecate_preload" BLINK_OVERLAYS="$devkit/x86_64/sysroot:" "$blink" "$guest_cli" "${args[@]}"
-cli_measure_excludable box64-hecate "box64_cannot_execute_the_openssl_3.0.22_tlc_guest_binary" \
+cli_measure box64-hecate \
     env LD_LIBRARY_PATH="$host_hecate_ld" BOX64_LD_LIBRARY_PATH="$guest_hecate_ld" \
     BOX64_LD_PRELOAD="$hecate_preload" BOX64_EMULATED_LIBS=libcrypto.so.3:libssl.so.3 \
     BOX64_LOG=0 BOX64_NOBANNER=1 BOX64_NORCFILES=1 "$box64" "$guest_cli" "${args[@]}"

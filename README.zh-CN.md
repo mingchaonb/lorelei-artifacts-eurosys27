@@ -42,7 +42,7 @@ eurosys-lorelei-artifacts/
 
 ### 2.1 构建 Ubuntu 24.04 ARM64 镜像
 
-从仓库根目录构建镜像。Dockerfile 会安装 library、DBT、绘图、游戏和 MangoHud 评测需要的全部系统依赖，并创建与 host UID、GID 一致的普通用户 `user`：
+从仓库根目录构建镜像。Dockerfile 会安装 library、DBT、绘图和游戏 package 构建所需的系统依赖，并创建与 host UID、GID 一致的普通用户 `user`。宿主机运行游戏所需的 GPU 驱动和采样工具在第 2.5 节单独准备：
 
 ```bash
 docker build \
@@ -85,23 +85,15 @@ docker build \
 
 ### 2.2 启动评测容器
 
-从仓库根目录启动容器。下面的完整命令同时传入游戏评测需要的 GPU、X11 socket 和 Xauthority：
+从仓库根目录启动构建与非图形评测容器。artifact 仓库以读写方式挂载，因此容器内生成的 `.work/`、vcpkg 安装树和实验结果在退出容器后仍可由宿主机使用。游戏也在容器内完成 package、HLR 和 thunk 安装，但游戏进程稍后直接在 GUI 宿主机运行，因此这里不传 GPU、X11 socket 或 Xauthority：
 
 ```bash
 export AE_REPO=$PWD
-export AE_XAUTHORITY=${XAUTHORITY:-$HOME/.Xauthority}
-test -f "$AE_XAUTHORITY"
 
 docker run --detach \
   --name lorelei-eurosys27-ae-ubuntu2404 \
   --network host \
-  --device /dev/dri \
-  --group-add "$(stat -c '%g' /dev/dri/renderD128)" \
-  --env DISPLAY="${DISPLAY:-:0}" \
-  --env XAUTHORITY=/home/user/.Xauthority \
   --mount type=bind,src="$AE_REPO",dst=/home/user/eurosys-lorelei-artifacts \
-  --mount type=bind,src=/tmp/.X11-unix,dst=/tmp/.X11-unix \
-  --mount type=bind,src="$AE_XAUTHORITY",dst=/home/user/.Xauthority,readonly \
   lorelei-eurosys27-ae:ubuntu24.04 sleep infinity
 ```
 
@@ -121,9 +113,7 @@ docker run --detach \
 - 四个 `install-*.sh` 会在大写或小写形式只有一侧非空时自动补齐另一侧。如果两侧都已设置，则保留各自的原值。
 - `install-tools.sh`、`install-libs.sh` 和 `install-games.sh` 对可识别的临时网络错误自动重试，默认每项最多尝试 5 次。可通过 `INSTALL_NETWORK_ATTEMPTS` 调整次数。编译失败、测试失败和用户中断不会触发重试。
 
-`/dev/dri`、supplementary group、X11 socket 和 Xauthority 用于游戏评测。只复现 library、命令行和 breakdown 数据时可以省略这些参数。若 host 使用 NVIDIA 专有驱动，需要按 host 的容器运行时配置额外传入 GPU。
-
-随后所有构建、评测和导出命令都在镜像预设的普通用户 `user` 下执行：
+随后在镜像预设的普通用户 `user` 下完成构建、library、命令行、breakdown 和数据导出。游戏运行是第 2.5 节说明的唯一宿主机执行阶段：
 
 ```bash
 docker exec -it \
@@ -159,6 +149,27 @@ git -C vcpkg checkout 2026.07.29
 - 其余脚本复用已经安装的 vcpkg package、下载和构建状态，不会在每次执行前清空缓存。
 
 安装过程保留完整的 vcpkg 输出，并在终端底部显示进度。重定向输出或不希望出现终端控制序列时可添加 `--plain`。所有公开脚本都根据自身位置解析路径，可以从任意当前目录启动。
+
+### 2.5 准备 GUI 宿主机
+
+游戏 runner 必须直接在 Ubuntu 24.04 ARM64 GUI 宿主机运行。先在宿主机安装采样、图形探测和窗口控制工具：
+
+```bash
+sudo apt update
+sudo apt install -y \
+  mangohud mesa-utils vulkan-tools \
+  x11-utils x11-xserver-utils xdotool \
+  cmake libdw1 libglib2.0-0
+```
+
+宿主机还必须安装并启用与物理 GPU 匹配的 OpenGL 和 Vulkan 驱动。NVIDIA、AMD 和 Arm GPU 使用各自的发行版或厂商驱动，不能用 `llvmpipe`、`softpipe` 或其他软件渲染器替代。运行游戏前检查：
+
+```bash
+glxinfo -B
+vulkaninfo --summary
+```
+
+确认 `glxinfo -B` 的 renderer 是预期物理 GPU，并确认 `vulkaninfo --summary` 能列出同一设备。游戏 runner 继承当前 GUI 会话的 `DISPLAY` 和 `XAUTHORITY`。正常从桌面终端启动时通常不需要手动设置。
 
 ## 3. 验证 Artifact
 
@@ -208,7 +219,7 @@ git -C vcpkg checkout 2026.07.29
 ./evaluations/2-cli-benchmarks/run-all.sh
 ```
 
-runner 会准备确定性压缩输入和公开媒体输入，并依次测量 FFTW、zlib、zstd、OpenSSL，以及四个 FFmpeg 编码 workload。正式运行默认对每条 lane 重复五次；可用 `REPETITIONS=1` 做单次快速检查。每个 workload 的 native 中位时间不少于 1.5 秒。任一非 native lane 超过 native 的 20 倍会从 Figure 17 排除，单次执行达到 100 秒时会立即终止。结果保留完整命令、输入哈希、工具版本和每次原始时间。批处理支持断点恢复，再次执行会跳过已经成功的 workload。完整 lane、输入和结果说明见 [`evaluations/2-cli-benchmarks/README.md`](evaluations/2-cli-benchmarks/README.md)。
+runner 会准备确定性压缩输入和公开媒体输入，并依次测量 FFTW、zlib、zstd、OpenSSL，以及四个 FFmpeg 编码 workload。正式运行默认对每条 lane 重复五次。可用 `REPETITIONS=1` 做单次快速检查。任一非 native lane 超过 native 的 20 倍会从 Figure 17 排除，单次执行达到 100 秒时会立即终止。结果保留完整命令、输入哈希、工具版本和每次原始时间。批处理支持断点恢复，再次执行会跳过已经成功的 workload。完整 lane、输入和结果说明见 [`evaluations/2-cli-benchmarks/README.md`](evaluations/2-cli-benchmarks/README.md)。
 
 ### 3.3 验证 breakdown
 
@@ -225,7 +236,7 @@ python3 evaluations/3-breakdown/coverage-effort/run.py
 
 ### 3.4 验证游戏
 
-评审者可以从已安装的游戏中任选一个运行。参数是 watchdog 秒数，缺省为 30 秒：
+先在容器中完成四个安装脚本，然后退出容器，在第 2.5 节准备好的 GUI 宿主机中运行游戏。runner 只复用 bind-mounted 仓库中的安装结果，不会在宿主机重新执行 vcpkg、HLR 或 thunk 构建。评审者可以从已安装的游戏中任选一个运行。参数是 watchdog 秒数，缺省为 30 秒：
 
 ```bash
 ./evaluations/4-games/assaultcube/run.sh 30
@@ -285,13 +296,13 @@ ROUNDS=1 ./evaluations/3-breakdown/hecate-callback-track/run.sh
 ROUNDS=1 ./evaluations/3-breakdown/breakdown-test/run.sh
 ```
 
-然后任选一个游戏，以足够长的 watchdog 启动。进入目标场景后保持至少 15 秒，再正常关闭游戏：
+随后退出容器，在已准备图形驱动和 MangoHud 的 GUI 宿主机中任选一个游戏，以足够长的 watchdog 启动。进入目标场景后保持至少 15 秒，再正常关闭游戏：
 
 ```bash
 ./evaluations/4-games/openarena/run.sh 300
 ```
 
-最后运行 coverage、修改量分析并一次性导出全部现有证据：
+游戏关闭后重新进入容器，运行 coverage、修改量分析并一次性导出全部现有证据：
 
 ```bash
 python3 evaluations/3-breakdown/coverage-effort/run.py

@@ -56,5 +56,10 @@ else()
     set(copyright_file "${native_root}/usr/share/doc/supertux/copyright")
 endif()
 
+# vcpkg's file installation copies contents but not the executable mode from
+# the AppImage or Debian package extraction tree.
+file(CHMOD "${game_dir}/usr/bin/supertux2"
+    PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug")
 vcpkg_install_copyright(FILE_LIST "${copyright_file}")

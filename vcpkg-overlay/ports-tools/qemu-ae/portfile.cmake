@@ -26,6 +26,7 @@ vcpkg_execute_required_process(
         --disable-system
         --disable-tools
         --disable-guest-agent
+        --disable-capstone
         --disable-werror
     WORKING_DIRECTORY "${BUILD_DIR}"
     LOGNAME "configure-${TARGET_TRIPLET}"

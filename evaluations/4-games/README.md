@@ -19,7 +19,7 @@ This group validates that Hecate can start real x86-64 games through the graphic
 
 ## 2. Install redistributable games
 
-Run from the repository root:
+Run from the repository root inside the evaluation container:
 
 ```bash
 ./evaluations/install-games.sh
@@ -33,9 +33,11 @@ For the first five games, this installs:
 
 There is no separate Hecate game package. Hecate runs the unmodified x86-64 executable from the guest package and uses the AArch64 libraries, GTLs, HTLs, and HLR output installed by `1-libs`. Repeated installation reuses existing vcpkg download, build, and package state.
 
+The container is responsible only for download, compilation, and installation. The repository is mounted read-write, so every installation tree under `.work/` remains visible to the host. Game runners never invoke vcpkg or regenerate HLR output and thunks on the host.
+
 ## 3. Run a game
 
-Each runner accepts one optional positional watchdog duration in seconds. The default is 30 seconds:
+Leave the evaluation container and run games from a desktop terminal on the Ubuntu 24.04 ARM64 GUI host. Each runner accepts one optional positional watchdog duration in seconds. The default is 30 seconds:
 
 ```bash
 ./evaluations/4-games/assaultcube/run.sh
@@ -52,7 +54,7 @@ For a paper FPS measurement:
 3. After the scene is ready, leave the game running there for at least 15 seconds.
 4. Close the game normally. The paper export uses the ten-second window from 12 seconds before the final sample up to 2 seconds before it. The last two seconds are omitted so shutdown interaction does not affect the result.
 
-`GAME_DIR` lets any runner use an evaluator-supplied game directory and skips installation of that game's vcpkg package:
+`GAME_DIR` lets any runner use an evaluator-supplied game directory instead of the guest package already installed under `.work/`:
 
 ```bash
 GAME_DIR=/absolute/path/to/game \
@@ -83,12 +85,18 @@ HOLLOW_USE_VULKAN=1 \
   ./evaluations/4-games/hollow-knight/run.sh 45
 ```
 
+Rendering backend selection:
+
+- The runner uses OpenGL by default.
+- Set `HOLLOW_USE_VULKAN=1` to request Vulkan instead.
+
 ## 5. Preflight validation
 
 Before starting a game, the shared runner builds and executes x86-64 probes with the selected devkit. A game starts only after every preflight check passes.
 
 Every game validates:
 
+- Host `glxinfo -B` identifies a physical GPU rather than a software renderer.
 - The XRandR display path.
 - GL proc-address dispatch.
 - Vulkan proc-address dispatch.
@@ -96,9 +104,29 @@ Every game validates:
 
 OpenArena additionally runs an SDL 1.2 video probe. Other games run an SDL2 display probe. Build output, probe stdout, stderr, and exit status are all saved with the run.
 
-## 6. Graphics environment
+## 6. GUI host
 
-The runner inherits `DISPLAY` and `XAUTHORITY` from its current environment. The Docker launch command already passes both variables, so no additional environment file is needed. To select another graphical session, set `GUI_ENV` to a file containing both variables:
+Games do not run in the container. The host requires:
+
+- An Ubuntu 24.04 ARM64 GUI session.
+- Working OpenGL and Vulkan drivers that match the physical GPU.
+- `mangohud`, `mesa-utils`, and `vulkan-tools`.
+- `x11-utils`, `x11-xserver-utils`, and `xdotool`.
+- `cmake`, `libdw1`, and `libglib2.0-0`.
+
+Install the common tools with the following command. Install the GPU driver separately according to the host hardware:
+
+```bash
+sudo apt update
+sudo apt install -y \
+  mangohud mesa-utils vulkan-tools \
+  x11-utils x11-xserver-utils xdotool \
+  cmake libdw1 libglib2.0-0
+```
+
+Before a run, use `glxinfo -B` and `vulkaninfo --summary` to verify the physical GPU. `llvmpipe`, `softpipe`, and other software renderers are not valid game-performance results.
+
+The runner inherits `DISPLAY` and `XAUTHORITY` from the current GUI session. No override is normally needed when launched from a desktop terminal. To select another graphical session, set `GUI_ENV` to a file containing both variables:
 
 ```bash
 GUI_ENV=/absolute/path/to/gui-env.txt \

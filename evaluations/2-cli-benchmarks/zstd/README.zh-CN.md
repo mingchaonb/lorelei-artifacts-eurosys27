@@ -2,7 +2,7 @@
 
 [English](README.md)
 
-该 workload 使用一个 worker 和 level 3 连续压缩同一份确定性 64 MiB 输入 100 次。使用单 worker 可避免把对比变成 guest 线程调度 benchmark。校准后的 native 单次运行约为 1.53 秒。解压和 SHA-256 校验位于计时之后。
+该 workload 使用一个 worker 和 level 3 连续压缩同一份确定性 64 MiB 输入 100 次。使用单 worker 可避免把对比变成 guest 线程调度 benchmark。解压和 SHA-256 校验位于计时之后。
 
 ```bash
 ./evaluations/2-cli-benchmarks/zstd/run.sh

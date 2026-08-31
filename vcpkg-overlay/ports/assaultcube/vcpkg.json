@@ -1,8 +1,13 @@
 {
   "name": "assaultcube",
   "version": "1.3.0.2",
+  "port-version": 2,
   "description": "Pinned AssaultCube game package for native and guest game evaluation",
   "homepage": "https://assault.cubers.net/",
   "license": "Zlib",
-  "supports": "linux & (x64 | arm64)"
+  "supports": "linux & (x64 | arm64)",
+  "dependencies": [
+    "libvorbisfile",
+    "openal-soft"
+  ]
 }

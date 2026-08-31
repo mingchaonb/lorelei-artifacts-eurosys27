@@ -44,6 +44,7 @@ recipe_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 repo_root=$(cd "$recipe_dir/../../.." && pwd)
 rover_root=$(cd "$repo_root/.." && pwd)
 devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/.work/devkit}")
+export LORELEI_DEVKIT=$devkit
 qemu=$(realpath -m "${QEMU:-$repo_root/vcpkg/installed/arm64-linux/tools/qemu-ae/qemu-x86_64}")
 games_root=${GAMES_ROOT:-$rover_root/ae-games}
 runtime_home_root=${RUNTIME_HOME_ROOT:-$repo_root/.work/evaluations/games/runtime-home}
@@ -52,6 +53,10 @@ mangohud=
 if [[ $mangohud_enabled == 1 ]]; then
     mangohud=$(command -v mangohud || true)
     [[ -x $mangohud ]] || { echo "MangoHud is enabled but mangohud was not found" >&2; exit 2; }
+    mangohud_library=$(find /usr/lib -type f -path '*/mangohud/libMangoHud.so' 2>/dev/null | head -1)
+    mangohud_dlsym_library=$(find /usr/lib -type f -path '*/mangohud/libMangoHud_dlsym.so' 2>/dev/null | head -1)
+    [[ -f $mangohud_library ]] || { echo "MangoHud is enabled but libMangoHud.so was not found" >&2; exit 2; }
+    [[ -f $mangohud_dlsym_library ]] || { echo "MangoHud is enabled but libMangoHud_dlsym.so was not found" >&2; exit 2; }
 elif [[ $mangohud_enabled != 0 ]]; then
     echo "MANGOHUD_ENABLED must be 0 or 1: $mangohud_enabled" >&2
     exit 2
@@ -71,6 +76,9 @@ fi
 
 sdl_prefix=$repo_root/.work/evaluations/sdl2/installed/hecate/arm64-linux-ae
 sdl_thunk=$repo_root/.work/evaluations/sdl2/thunks/hecate
+sdl_image_prefix=$repo_root/.work/evaluations/sdl2-image/installed/hecate/arm64-linux-ae
+sdl_image_thunk=$repo_root/.work/evaluations/sdl2-image/thunks/SDL2_image
+sdl_mixer_guest_prefix=$repo_root/.work/evaluations/sdl2-mixer/installed/guest/x64-linux-ae
 sdl1_prefix=$repo_root/.work/evaluations/sdl1/installed/hecate/arm64-linux-ae
 sdl1_thunk=$repo_root/.work/evaluations/sdl1/thunks/hecate
 gl_prefix=$repo_root/.work/evaluations/glvnd/installed/arm64-linux-ae
@@ -83,23 +91,21 @@ guest_game_prefix=
 if [[ $game != hollow-knight && -z ${GAMES_ROOT:-} && -z ${GAME_DIR:-} ]]; then
     game_work_dir=$repo_root/.work/evaluations/games/$game
     game_installed=$game_work_dir/installed
-    game_buildtrees=$game_work_dir/buildtrees
-    game_packages=$game_work_dir/packages
-    vcpkg=$repo_root/vcpkg/vcpkg
-    overlay=$repo_root/vcpkg-overlay
-    "$vcpkg" install "$game:arm64-linux-ae" "$game:x64-linux-ae" \
-        --overlay-ports="$overlay/ports" --overlay-triplets="$overlay/triplets" \
-        --downloads-root="$repo_root/vcpkg/downloads" \
-        --x-install-root="$game_installed" --x-buildtrees-root="$game_buildtrees" \
-        --x-packages-root="$game_packages"
     native_game_prefix=$game_installed/arm64-linux-ae
     guest_game_prefix=$game_installed/x64-linux-ae
+    [[ -d $native_game_prefix && -d $guest_game_prefix ]] || {
+        echo "Game package is not installed: $game" >&2
+        echo "Run evaluations/install-games.sh inside the evaluation container first." >&2
+        exit 2
+    }
 fi
 
 for required in "$qemu" "$devkit/bin/x86_64-linux-gnu-clang" \
     "$devkit/x86_64/sysroot" "$devkit/lib/libLoreHostHLRExtension.so" \
     "$devkit/x86_64/lib/libLoreGuestHLRExtension.so" \
     "$sdl_thunk/x86_64/libSDL2.so" \
+    "$sdl_image_thunk/x86_64/libSDL2_image-2.0.so.0" \
+    "$sdl_mixer_guest_prefix/lib/libSDL2_mixer-2.0.so.0" \
     "$x11_thunk/x86_64/libX11.so.6" \
     "$sdl_prefix/share/libxrandr/thunk/x86_64/libXrandr.so.2" \
     "$gl_prefix/share/glvnd/thunk/x86_64/libGL.so" \
@@ -121,7 +127,7 @@ case "$game" in
         fi
         game_dir=$(resolve_game_dir "$default_game_dir")
         executable=$game_dir/bin_unix/linux_64_client
-        game_library_path=""
+        game_library_path=${guest_game_prefix:+$guest_game_prefix/lib}
         game_args=("--home=$runtime_home_root/assaultcube" --init)
         ;;
     hollow-knight)
@@ -132,7 +138,7 @@ case "$game" in
             game_args=(-force-vulkan -force-gfx-direct -screen-width 1280 -screen-height 720
                 -screen-fullscreen 0)
         else
-            game_args=(-force-opengl -screen-width 1280 -screen-height 720 -screen-fullscreen 0)
+            game_args=(-force-glcore -screen-width 1280 -screen-height 720 -screen-fullscreen 0)
         fi
         ;;
     redeclipse)
@@ -154,7 +160,7 @@ case "$game" in
         fi
         game_dir=$(resolve_game_dir "$default_game_dir")
         executable=$game_dir/openarena.x86_64
-        game_library_path=""
+        game_library_path=${guest_game_prefix:+$guest_game_prefix/lib}
         game_args=(+set r_fullscreen 0 +set r_mode -1 +set r_customwidth 1280
             +set r_customheight 720 +set com_introplayed 1)
         for required in "$sdl1_thunk/x86_64/libSDL.so" \
@@ -237,8 +243,8 @@ join_colon() {
 
 host_xorg_path=$(join_colon "${host_xorg[@]}")
 guest_xorg_path=$(join_colon "${guest_xorg[@]}")
-host_library_path="$devkit/lib:$host_xorg_path:$sdl1_thunk:$sdl1_prefix/lib:$sdl_prefix/lib:$sdl_thunk:$gl_prefix/share/glvnd/glx-thunk:$gl_prefix/share/glvnd/thunk:$gl_prefix/share/glvnd/x11-thunk:$gl_prefix/lib:$vk_prefix/share/vulkan-loader/thunk:$vk_prefix/lib"
-guest_library_path="$guest_xorg_path:$gl_prefix/share/glvnd/x11-thunk/x86_64:$sdl1_thunk/x86_64:$sdl_thunk/x86_64:$gl_prefix/share/glvnd/glx-thunk/x86_64:$gl_prefix/share/glvnd/thunk/x86_64:$vk_prefix/share/vulkan-loader/thunk/x86_64"
+host_library_path="$host_xorg_path:$sdl1_thunk:$sdl1_prefix/lib:$sdl_prefix/lib:$sdl_thunk:$sdl_image_prefix/lib:$sdl_image_thunk:$gl_prefix/share/glvnd/glx-thunk:$gl_prefix/share/glvnd/thunk:$gl_prefix/share/glvnd/x11-thunk:$gl_prefix/lib:$vk_prefix/share/vulkan-loader/thunk:$vk_prefix/lib"
+guest_library_path="$guest_xorg_path:$gl_prefix/share/glvnd/x11-thunk/x86_64:$sdl1_thunk/x86_64:$sdl_thunk/x86_64:$sdl_image_thunk/x86_64:$sdl_mixer_guest_prefix/lib:$gl_prefix/share/glvnd/glx-thunk/x86_64:$gl_prefix/share/glvnd/thunk/x86_64:$vk_prefix/share/vulkan-loader/thunk/x86_64"
 if [[ -n $game_library_path ]]; then
     guest_library_path="$guest_library_path:$game_library_path"
 fi
@@ -261,7 +267,8 @@ if [[ -n ${GUEST_PRELOAD:-} ]]; then
     guest_preload_args=(-E "LD_PRELOAD=$GUEST_PRELOAD")
 fi
 qemu_command=("$qemu")
-host_preload=${HOST_PRELOAD-$devkit/lib/libLoreQEMUThreadHook.so}
+host_preload=${HOST_PRELOAD-$devkit/lib/libLoreHostRT.so:$devkit/lib/libLoreQEMUThreadHook.so}
+preflight_host_preload=$host_preload
 thunk_databases="$repo_root/vcpkg-overlay/ports/glvnd/lorelei/ThunkDB.json:$repo_root/vcpkg-overlay/ports/vulkan-loader/lorelei/ThunkDB.json"
 if [[ $game == openarena ]]; then
     thunk_databases="$sdl1_prefix/share/sdl1/ThunkDB.json:$thunk_databases"
@@ -271,18 +278,29 @@ mangohud_env=()
 if [[ $mangohud_enabled == 1 ]]; then
     mangohud_dir=$run_dir/mangohud
     mkdir -p "$mangohud_dir"
-    mangohud_duration=$((run_seconds > 2 ? run_seconds - 2 : 1))
+    # Leave enough time for MangoHud to flush both raw and summary CSV files
+    # before the watchdog terminates games that do not expose a scripted quit.
+    mangohud_duration=$((run_seconds > 10 ? run_seconds - 10 : 1))
     mangohud_config="no_display,autostart_log=1,log_duration=$mangohud_duration,log_interval=100,output_folder=$mangohud_dir"
     if [[ -n ${MANGOHUD_CONFIG_EXTRA:-} ]]; then
         mangohud_config="$mangohud_config,$MANGOHUD_CONFIG_EXTRA"
     fi
-    mangohud_env=(MANGOHUD_CONFIG="$mangohud_config")
-    qemu_command=("$mangohud" --dlsym "$qemu")
+    mangohud_env=(MANGOHUD=1 MANGOHUD_CONFIG="$mangohud_config")
+    # Preload MangoHud directly into QEMU.  Invoking its shell wrapper while
+    # HostRT is already preloaded would initialize HostRT in /bin/sh before
+    # the QEMU bridge symbol exists in the process.
+    if [[ $game == hollow-knight ]]; then
+        # Unity resolves GLX entry points dynamically. The dlsym interposer
+        # makes its core-profile selection fail before the Hecate GL thunk can
+        # map those addresses, so keep only the main MangoHud library here.
+        host_preload="$host_preload:$mangohud_library"
+    else
+        host_preload="$host_preload:$mangohud_dlsym_library:$mangohud_library"
+    fi
 fi
-
 # Some older SDL 1.2 games change the physical XRandR mode and may be killed
 # before restoring it. Preserve the active output and mode around every game so
-# a failed experiment cannot leave the shared Spark desktop at 640 by 480.
+# a failed experiment cannot leave the shared desktop at 640 by 480.
 display_state=$(env DISPLAY="$display" XAUTHORITY="$xauthority" xrandr --current 2>/dev/null |
     awk '/ connected/{output=$1} /\*/{print output, $1; exit}')
 restore_display_mode() {
@@ -324,7 +342,7 @@ run_preflight() {
         LORELEI_THUNK_DATABASE="$thunk_databases" \
         LORELEI_THUNKS_CONFIG_VARIABLES="$thunk_variables" \
         LORELEI_HOST_EXTENSIONS="$devkit/lib/libLoreHostHLRExtension.so" \
-        LD_PRELOAD="$host_preload" LD_LIBRARY_PATH="$host_library_path" \
+        LD_PRELOAD="$preflight_host_preload" LD_LIBRARY_PATH="$host_library_path" \
         "$qemu" -L "$devkit/x86_64/sysroot" -U LD_PRELOAD \
         -E DISPLAY="$display" -E XAUTHORITY="$xauthority" \
         -E SDL_VIDEODRIVER=x11 -E SDL_AUDIODRIVER=dummy -E HOME="$game_home" \
@@ -342,6 +360,26 @@ run_preflight() {
 }
 
 printf 'test\texit_status\n' >"$run_dir/preflight-status.tsv"
+set +e
+env DISPLAY="$display" XAUTHORITY="$xauthority" glxinfo -B \
+    >"$run_dir/logs/preflight/host-glxinfo.log" 2>&1
+host_glx_status=$?
+set -e
+printf 'host-glxinfo\t%s\n' "$host_glx_status" >>"$run_dir/preflight-status.tsv"
+if ((host_glx_status != 0)); then
+    echo "Host OpenGL preflight failed, see $run_dir/logs/preflight/host-glxinfo.log" >&2
+    exit "$host_glx_status"
+fi
+host_renderer=$(sed -n 's/^[[:space:]]*OpenGL renderer string:[[:space:]]*//p' \
+    "$run_dir/logs/preflight/host-glxinfo.log" | head -1)
+if [[ -z $host_renderer || $host_renderer =~ [Ll][Ll][Vv][Mm][Pp][Ii][Pp][Ee] ||
+      $host_renderer =~ [Ss][Oo][Ff][Tt][Pp][Ii][Pp][Ee] ||
+      $host_renderer =~ [Ss][Ww][Rr][Aa][Ss][Tt] ]]; then
+    printf 'physical-gpu-renderer\t1\n' >>"$run_dir/preflight-status.tsv"
+    echo "Host OpenGL is not using a physical GPU: ${host_renderer:-unknown}" >&2
+    exit 1
+fi
+printf 'physical-gpu-renderer\t0\n' >>"$run_dir/preflight-status.tsv"
 run_preflight xrandr "$preflight_build/test-xrandr"
 run_preflight multi-thunk-db "$preflight_build/test-multi-thunk-db"
 if [[ $game == openarena ]]; then
@@ -358,11 +396,14 @@ fi
     echo "watchdog_seconds=$run_seconds"
     echo "lane=qemu-hecate"
     echo "mangohud_enabled=$mangohud_enabled"
+    echo "host_renderer=$host_renderer"
     echo "native_game_prefix=$native_game_prefix"
     echo "guest_game_prefix=$guest_game_prefix"
 } > "$run_dir/run.env"
 
 set +e
+preexisting_windows=$(env DISPLAY="$display" XAUTHORITY="$xauthority" \
+    xprop -root _NET_CLIENT_LIST 2>/dev/null || true)
 (
     cd "$game_dir" || exit 2
     env \
@@ -400,6 +441,12 @@ if (( window_probe_seconds > 0 )); then
         for window_id in $(sed 's/.*# //; s/,//g' <<< "$client_list"); do
             env DISPLAY="$display" XAUTHORITY="$xauthority" \
                 xprop -id "$window_id" WM_CLASS _NET_WM_NAME WM_NAME 2>/dev/null || true
+            if ! grep -qw "$window_id" <<< "$preexisting_windows"; then
+                echo "ACTIVATED_WINDOW=$window_id"
+                env DISPLAY="$display" XAUTHORITY="$xauthority" \
+                    xdotool windowactivate --sync "$window_id" 2>/dev/null || true
+                break
+            fi
         done
     ) > "$run_dir/x11-windows.txt" &
     window_probe_pid=$!

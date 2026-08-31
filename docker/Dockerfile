@@ -24,7 +24,7 @@ RUN case "${USE_USTC_MIRROR}" in \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
         sudo ca-certificates git curl wget file patch patchelf ripgrep \
-        build-essential autoconf automake bear bison cmake flex libtool m4 \
+        build-essential autoconf autoconf-archive automake bear bison cmake flex libtool m4 \
         meson ninja-build nasm yasm pkg-config \
         xz-utils zip unzip tar squashfs-tools time xxd \
         python3 python3-pip python3-venv python3-numpy python3-matplotlib python3-tomli \

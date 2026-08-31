@@ -109,7 +109,6 @@ YT_DLP=/absolute/path/to/yt-dlp \
 默认参数为：
 
 - 每条路径重复 5 次。
-- 每个 workload 的 native 中位数至少为 1.5 秒。
 - 每条非 native 路径的截止时间是 native 中位数的 20 倍，且绝不超过 100 秒。
 - 到达截止时间的路径立即终止，并在 Figure 17 数据中标记为排除，不计为失败或性能比值。
 - runner 保存每次原始 wall-clock 时间，不只保存汇总。

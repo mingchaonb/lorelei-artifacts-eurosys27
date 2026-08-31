@@ -19,7 +19,7 @@
 
 ## 2. 安装可再分发游戏
 
-从仓库根目录运行：
+在评测容器内从仓库根目录运行：
 
 ```bash
 ./evaluations/install-games.sh
@@ -33,9 +33,11 @@
 
 没有单独的 Hecate 游戏 package。Hecate 运行 guest package 中未经修改的 x86-64 游戏程序，并使用 `1-libs` 安装的 AArch64 library、GTL、HTL 和 HLR 结果。重复安装会复用现有 vcpkg download、build 与 package 状态。
 
+容器只负责下载、编译和安装。仓库以读写方式挂载，所有安装树都保存在 `.work/` 中并在宿主机可见。游戏 runner 不会在宿主机执行 vcpkg，也不会重新生成 HLR 或 thunk。
+
 ## 3. 运行游戏
 
-每个 runner 接受一个可选的位置参数，表示 watchdog 秒数。默认值为 30 秒：
+退出评测容器，在 Ubuntu 24.04 ARM64 GUI 宿主机的桌面终端中运行游戏。每个 runner 接受一个可选的位置参数，表示 watchdog 秒数。默认值为 30 秒：
 
 ```bash
 ./evaluations/4-games/assaultcube/run.sh
@@ -52,7 +54,7 @@
 3. 场景就绪后，保持游戏继续运行至少 15 秒。
 4. 正常关闭游戏。论文导出取最后一个 sample 前第 12 秒到第 2 秒之间的 10 秒窗口。最后 2 秒不计入，避免关闭游戏的操作影响结果。
 
-设置 `GAME_DIR` 可让任何 runner 使用用户指定的游戏目录，并跳过该游戏的 vcpkg package 安装：
+设置 `GAME_DIR` 可让任何 runner 使用用户指定的游戏目录，而不是 `.work/` 中已安装的 guest package：
 
 ```bash
 GAME_DIR=/absolute/path/to/game \
@@ -83,12 +85,18 @@ HOLLOW_USE_VULKAN=1 \
   ./evaluations/4-games/hollow-knight/run.sh 45
 ```
 
+渲染后端选择：
+
+- runner 默认使用 OpenGL。
+- 设置 `HOLLOW_USE_VULKAN=1` 时改用 Vulkan。
+
 ## 5. 启动前验证
 
 共享 runner 会先使用选定 devkit 构建并执行 x86-64 probe。只有全部 preflight 通过后才启动游戏。
 
 所有游戏验证：
 
+- 宿主 `glxinfo -B` 能识别物理 GPU，且 renderer 不是软件实现。
 - XRandR display path。
 - GL proc-address dispatch。
 - Vulkan proc-address dispatch。
@@ -96,9 +104,29 @@ HOLLOW_USE_VULKAN=1 \
 
 OpenArena 额外运行 SDL 1.2 video probe。其他游戏运行 SDL2 display probe。build 输出、probe stdout、stderr 与退出状态全部写入本次结果。
 
-## 6. 图形环境
+## 6. GUI 宿主机
 
-runner 默认继承当前环境的 `DISPLAY` 与 `XAUTHORITY`。Docker 启动命令已经传入这两个变量，无需再创建环境文件。需要覆盖当前图形会话时，可通过 `GUI_ENV` 指定一个同时包含这两个变量的文件：
+游戏不在容器中运行。宿主机需要：
+
+- Ubuntu 24.04 ARM64 GUI 会话。
+- 与物理 GPU 匹配并已启用的 OpenGL 和 Vulkan 驱动。
+- `mangohud`、`mesa-utils` 和 `vulkan-tools`。
+- `x11-utils`、`x11-xserver-utils` 和 `xdotool`。
+- `cmake`、`libdw1` 和 `libglib2.0-0`。
+
+可使用以下命令安装通用工具。GPU 驱动仍按宿主机硬件单独安装：
+
+```bash
+sudo apt update
+sudo apt install -y \
+  mangohud mesa-utils vulkan-tools \
+  x11-utils x11-xserver-utils xdotool \
+  cmake libdw1 libglib2.0-0
+```
+
+运行前用 `glxinfo -B` 和 `vulkaninfo --summary` 确认物理 GPU 可用。`llvmpipe`、`softpipe` 或其他软件 renderer 不能作为游戏性能结果。
+
+runner 默认继承当前 GUI 会话的 `DISPLAY` 与 `XAUTHORITY`。从桌面终端启动时通常无需设置。需要覆盖当前图形会话时，可通过 `GUI_ENV` 指定一个同时包含这两个变量的文件：
 
 ```bash
 GUI_ENV=/absolute/path/to/gui-env.txt \

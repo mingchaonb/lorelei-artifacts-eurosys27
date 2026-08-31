@@ -2,7 +2,7 @@
 
 [中文版](README.zh-CN.md)
 
-This workload consecutively compresses 100 copies of the same deterministic 64 MiB input at level 3 with one worker. A single worker avoids turning the comparison into a guest thread-scheduling benchmark. The calibrated native run takes about 1.53 seconds. Decompression and SHA-256 verification occur after timing.
+This workload consecutively compresses 100 copies of the same deterministic 64 MiB input at level 3 with one worker. A single worker avoids turning the comparison into a guest thread-scheduling benchmark. Decompression and SHA-256 verification occur after timing.
 
 ```bash
 ./evaluations/2-cli-benchmarks/zstd/run.sh

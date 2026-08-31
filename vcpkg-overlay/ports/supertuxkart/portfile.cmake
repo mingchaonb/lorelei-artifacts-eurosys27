@@ -50,5 +50,13 @@ else()
     set(copyright_file "${native_root}/usr/share/doc/supertuxkart/copyright")
 endif()
 
+# Restore executable modes after installing files from the release archives.
+file(CHMOD "${game_dir}/bin/supertuxkart"
+    PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+if(EXISTS "${game_dir}/bin/supertuxkart-editor")
+    file(CHMOD "${game_dir}/bin/supertuxkart-editor"
+        PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+endif()
+
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug")
 vcpkg_install_copyright(FILE_LIST "${copyright_file}")

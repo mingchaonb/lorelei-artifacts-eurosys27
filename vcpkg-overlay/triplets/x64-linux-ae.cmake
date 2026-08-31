@@ -8,6 +8,13 @@ set(VCPKG_LIBRARY_LINKAGE dynamic)
 set(VCPKG_CMAKE_SYSTEM_NAME Linux)
 set(VCPKG_BUILD_TYPE release)
 
+# The released cross devkit does not ship clang-scan-deps.  Disable C++ module
+# dependency scanning for ordinary library builds that do not use modules.
+list(APPEND VCPKG_CMAKE_CONFIGURE_OPTIONS
+    -DCMAKE_CXX_SCAN_FOR_MODULES=OFF
+    -DALSOFT_ENABLE_MODULES=OFF
+)
+
 # Build X.Org support libraries inside vcpkg instead of accepting the empty
 # Linux system-package placeholders. The guest cannot consume host headers,
 # and the matching native package keeps the evaluation lanes comparable.

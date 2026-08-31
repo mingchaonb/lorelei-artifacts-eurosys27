@@ -39,5 +39,18 @@ if(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64")
     file(COPY "${native_root}/usr/lib/openarena/missionpack/" DESTINATION "${game_dir}/missionpack")
 endif()
 
+# The upstream ZIP stores the Linux launchers without executable permission.
+# Normalize their modes so the installed package can be launched directly.
+foreach(launcher IN ITEMS openarena.x86_64 oa_ded.x86_64)
+    if(EXISTS "${game_dir}/${launcher}")
+        file(CHMOD "${game_dir}/${launcher}"
+            PERMISSIONS
+                OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                GROUP_READ GROUP_EXECUTE
+                WORLD_READ WORLD_EXECUTE
+        )
+    endif()
+endforeach()
+
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug")
 vcpkg_install_copyright(FILE_LIST "${release_root}/openarena-0.8.8/COPYING")

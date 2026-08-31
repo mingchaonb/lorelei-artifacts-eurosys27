@@ -1,6 +1,7 @@
 #define LORE_THUNK_AUTO_LINK
 
 #include "Desc.h"
+#include <dlfcn.h>
 #include <lorelei/ThunkInterface/ManifestHost.cpp.inc>
 
 extern "C" {
@@ -81,6 +82,24 @@ void glTexturePageCommitmentMemNV(GLuint texture, GLint layer, GLint level, GLin
 }
 
 namespace lore::thunk {
+
+template <>
+struct ProcFn<::glXCreateContextAttribsARB, GuestToHost, Adapt> {
+    static GLXContext invoke(Display *display, GLXFBConfig config, GLXContext share_context,
+                             Bool direct, const int *attributes) {
+        // GLX proc addresses are vendor-dispatched. Calling this entry through
+        // GetProcAddress metadata loses the vendor-neutral GLVND dispatch for
+        // the extended context attributes used by Unity. Resolve the public
+        // libGL entry directly while keeping the pointer arguments on the
+        // normal Hecate shared-address path.
+        static void *library =
+            dlopen("/usr/lib/aarch64-linux-gnu/libGL.so.1", RTLD_NOW | RTLD_LOCAL);
+        static auto function = library ? reinterpret_cast<decltype(&glXCreateContextAttribsARB)>(
+                                             dlsym(library, "glXCreateContextAttribsARB"))
+                                       : nullptr;
+        return function ? function(display, config, share_context, direct, attributes) : nullptr;
+    }
+};
 
 template <>
 struct ProcFn<::glDebugMessageCallback, GuestToHost, Adapt> {

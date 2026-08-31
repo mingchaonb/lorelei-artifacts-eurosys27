@@ -32,5 +32,16 @@ if(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64")
     ae_game_install_deb_libraries("${sdl_image_archive}" "sdl-image-native" "${game_dir}/lib")
 endif()
 
+foreach(launcher IN ITEMS linux_64_client linux_64_server)
+    if(EXISTS "${game_dir}/bin_unix/${launcher}")
+        file(CHMOD "${game_dir}/bin_unix/${launcher}"
+            PERMISSIONS
+                OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                GROUP_READ GROUP_EXECUTE
+                WORLD_READ WORLD_EXECUTE
+        )
+    endif()
+endforeach()
+
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug")
 vcpkg_install_copyright(FILE_LIST "${release_root}/docs/package_copyrights.txt")

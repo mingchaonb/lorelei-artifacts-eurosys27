@@ -17,21 +17,21 @@ if("hlr" IN_LIST FEATURES)
     endif()
 endif()
 
-# Keep only built-in image formats. External AVIF, JPEG, JXL, PNG, TIFF, WebP,
-# and platform image backends would add unrelated package and DSO dependencies.
+# Keep formats that SDL2_image implements internally. JPEG and PNG use the
+# bundled stb backend so game recipes do not acquire extra DSO dependencies.
 set(IMAGE_OPTIONS
     -DBUILD_SHARED_LIBS=ON
     -DSDL2IMAGE_INSTALL=ON
     -DSDL2IMAGE_TESTS=OFF
     -DSDL2IMAGE_SAMPLES=OFF
     -DSDL2IMAGE_BACKEND_IMAGEIO=OFF
-    -DSDL2IMAGE_BACKEND_STB=OFF
+    -DSDL2IMAGE_BACKEND_STB=ON
     -DSDL2IMAGE_DEPS_SHARED=OFF
     -DSDL2IMAGE_VENDORED=OFF
     -DSDL2IMAGE_AVIF=OFF
-    -DSDL2IMAGE_JPG=OFF
+    -DSDL2IMAGE_JPG=ON
     -DSDL2IMAGE_JXL=OFF
-    -DSDL2IMAGE_PNG=OFF
+    -DSDL2IMAGE_PNG=ON
     -DSDL2IMAGE_TIF=OFF
     -DSDL2IMAGE_WEBP=OFF
     -DSDL2IMAGE_PNM=ON

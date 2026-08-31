@@ -17,6 +17,16 @@ file(REMOVE_RECURSE
 file(GLOB foreign_files "${game_dir}/bin/amd64/*.dll")
 file(REMOVE ${foreign_files})
 
+# The release archive does not preserve executable mode bits after vcpkg's
+# extraction. Restore them for both the packaged guest and rebuilt native lane.
+file(CHMOD
+    "${game_dir}/bin/amd64/redeclipse_linux"
+    "${game_dir}/bin/amd64/redeclipse_server_linux"
+    "${game_dir}/bin/amd64/cube2font_linux"
+    "${game_dir}/bin/amd64/genkey_linux"
+    PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+)
+
 if(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64")
     ae_game_download(source_archive
         "redeclipse-base-v2.0.0.tar.gz"
@@ -43,6 +53,8 @@ if(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64")
         "${source_root}/base-2.0.0/src/redeclipse_linux"
         "${game_dir}/bin/amd64/redeclipse_linux"
     )
+    file(CHMOD "${game_dir}/bin/amd64/redeclipse_linux"
+        PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 endif()
 
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug")

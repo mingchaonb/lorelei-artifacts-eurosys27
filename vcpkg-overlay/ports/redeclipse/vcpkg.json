@@ -1,6 +1,7 @@
 {
   "name": "redeclipse",
   "version": "2.0.0",
+  "port-version": 1,
   "description": "Pinned Red Eclipse game package for native and guest game evaluation",
   "homepage": "https://www.redeclipse.net/",
   "license": "Zlib",

@@ -1,6 +1,7 @@
 {
   "name": "libvorbis",
   "version": "1.3.7",
+  "port-version": 1,
   "description": "libvorbis and libvorbisenc shared libraries for the Lorelei AE",
   "homepage": "https://xiph.org/vorbis/",
   "license": "BSD-3-Clause",

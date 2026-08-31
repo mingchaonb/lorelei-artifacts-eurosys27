@@ -102,7 +102,6 @@ Run all 8 workloads:
 Defaults are:
 
 - 5 repetitions per path.
-- A native median of at least 1.5 seconds for every workload.
 - A cutoff of 20 times the native median for every non-native path, capped at 100 seconds.
 - A path reaching its cutoff is terminated and marked as excluded from Figure 17. It is not counted as a failure or a performance ratio.
 - Raw wall-clock time for every repetition, not only a summary.
