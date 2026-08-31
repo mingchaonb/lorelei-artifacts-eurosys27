@@ -1,6 +1,7 @@
 {
   "name": "fex-ae",
   "version-date": "2026-08-30",
+  "port-version": 1,
   "description": "Pinned Hecate-enabled FEX executable for the Lorelei AE",
   "homepage": "https://github.com/mingchaonb/FEX",
   "license": "MIT",

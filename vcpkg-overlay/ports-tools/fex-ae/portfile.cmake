@@ -72,12 +72,15 @@ fex_populate_submodule(
 # FEX requires Clang. The AE runtime configuration disables FEX's own thunk,
 # test, and configuration-UI builds while preserving its allocator setup and
 # the Hecate-specific emulator changes.
+find_program(FEX_C_COMPILER NAMES clang-20 clang REQUIRED)
+find_program(FEX_CXX_COMPILER NAMES clang++-20 clang++ REQUIRED)
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
     GENERATOR Ninja
     OPTIONS
-        -DCMAKE_C_COMPILER=clang
-        -DCMAKE_CXX_COMPILER=clang++
+        -DCMAKE_C_COMPILER=${FEX_C_COMPILER}
+        -DCMAKE_CXX_COMPILER=${FEX_CXX_COMPILER}
+        -DCMAKE_ASM_COMPILER=${FEX_C_COMPILER}
         -DCMAKE_CXX_SCAN_FOR_MODULES=OFF
         -DCMAKE_DISABLE_FIND_PACKAGE_fmt=ON
         -DCMAKE_DISABLE_FIND_PACKAGE_range-v3=ON
@@ -85,7 +88,7 @@ vcpkg_cmake_configure(
         -DBUILD_TESTING=OFF
         -DBUILD_THUNKS=OFF
         -DENABLE_LTO=ON
-        -DENABLE_GDB_SYMBOLS=ON
+        -DENABLE_GDB_SYMBOLS=OFF
         -DENABLE_JEMALLOC=ON
         -DENABLE_JEMALLOC_GLIBC_ALLOC=ON
 )
