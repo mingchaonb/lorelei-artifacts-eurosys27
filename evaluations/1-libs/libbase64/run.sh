@@ -68,14 +68,18 @@ install_lane() {
   local lane=$1 triplet=$2
   run_logged "$run_dir/logs/preparation/vcpkg-$lane.log" "$vcpkg" install "libbase64:$triplet" --overlay-ports="$overlay_dir/ports" --overlay-triplets="$overlay_dir/triplets" --x-install-root="$state/installed/$lane" --x-buildtrees-root="$state/vcpkg/$lane/buildtrees" --x-packages-root="$state/vcpkg/$lane/packages" --downloads-root="$repo_root/vcpkg/downloads" --triplet="$triplet"
 }
-if ! $install_only; then install_lane native arm64-linux-ae; install_lane guest x64-linux-ae; fi
+install_lane native arm64-linux-ae
+install_lane guest x64-linux-ae
 install_lane hecate arm64-linux-ae
 hecate_prefix=$state/installed/hecate/arm64-linux-ae
 mkdir -p "$work/thunks" "$run_dir/generated/elf"
-if $install_only; then
-  printf '{"schema_version":2,"package":"libbase64","status":"installed","mode":"install-only","tests_run":false}\n' >"$run_dir/summary.json"
-  exit 0
-fi
+finish_install_only() {
+  if $install_only; then
+    printf '{"schema_version":2,"package":"libbase64","status":"installed","mode":"install-only","tests_run":false}\n' >"$run_dir/summary.json"
+    echo "Installed packages and generated TLC artifacts"
+    exit 0
+  fi
+}
 native_prefix=$state/installed/native/arm64-linux-ae
 guest_prefix=$state/installed/guest/x64-linux-ae
 native_tests=$native_prefix/tools/libbase64/upstream-tests
@@ -115,6 +119,7 @@ for pattern in "${patterns[@]}"; do
 done
 host_path=$(IFS=:; echo "${thunk_host[*]}")
 guest_path=$(IFS=:; echo "${thunk_guest[*]}")
+finish_install_only
 set +e
 LD_LIBRARY_PATH="$native_prefix/lib" "$native_test" 2>&1 | tee "$run_dir/logs/native/test_base64.log"
 native_status=${PIPESTATUS[0]}

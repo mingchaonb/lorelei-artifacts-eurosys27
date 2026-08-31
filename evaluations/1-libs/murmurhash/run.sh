@@ -45,9 +45,6 @@ pathlib.Path(sys.argv[1]).write_text(json.dumps(meta, indent=2, sort_keys=True) 
 summary = {"schema_version": 2, "package": "murmurhash", "status": "installed", "tests_run": False}
 pathlib.Path(sys.argv[2]).write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n")
 PY
-if $install_only; then echo "Evidence: $run_dir"; exit 0; fi
-qemu=$(realpath -m "${QEMU:-$repo_root/vcpkg/installed/arm64-linux/tools/qemu-ae/qemu-x86_64}")
-[[ -x $qemu ]] || { echo "Patched QEMU not found: $qemu" >&2; exit 2; }
 native=$work/installed/native/arm64-linux-ae
 guest=$work/installed/guest/x64-linux-ae
 mkdir -p "$work/thunks"
@@ -58,11 +55,18 @@ host_library=$(find "$native/lib" -maxdepth 1 -type f -name 'libmurmurhash.so*' 
 "$devkit/bin/LoreMakeThunk.py" --name murmurhash --out "$work/thunks/murmurhash" --lib "$host_library" --symbols "$recipe_dir/lorelei/Symbols.conf" --desc "$recipe_dir/lorelei/Desc.h" --devkit "$devkit" --keep-intermediates -- -I"$native/include" >"$run_dir/logs/preparation/thunk.log" 2>&1
 readelf -d "$guest_test" >"$run_dir/generated/guest-test-dynamic.txt"
 grep -q 'libmurmurhash.so' "$run_dir/generated/guest-test-dynamic.txt"
+cp "$work/thunks/murmurhash/.gen/murmurhash/ThunkStat.json" "$run_dir/generated/TLC-ThunkStat.json"
+if $install_only; then
+    echo "Installed packages and generated TLC artifacts"
+    echo "Evidence: $run_dir"
+    exit 0
+fi
+qemu=$(realpath -m "${QEMU:-$repo_root/vcpkg/installed/arm64-linux/tools/qemu-ae/qemu-x86_64}")
+[[ -x $qemu ]] || { echo "Patched QEMU not found: $qemu" >&2; exit 2; }
 LD_LIBRARY_PATH="$native/lib" "$native_test" >"$run_dir/logs/native/known-answer.log" 2>&1
 env LD_LIBRARY_PATH="$devkit/lib:$native/lib:$work/thunks/murmurhash" "$qemu" -L "$devkit/x86_64/sysroot" -E LD_BIND_NOW=1 -E "LD_LIBRARY_PATH=$devkit/x86_64/lib:$work/thunks/murmurhash/x86_64" "$guest_test" >"$run_dir/logs/hecate/known-answer.log" 2>&1
 cmp "$run_dir/logs/native/known-answer.log" "$run_dir/logs/hecate/known-answer.log"
 [[ $(grep -c ' ...ok$' "$run_dir/logs/hecate/known-answer.log") == 19 ]]
-cp "$work/thunks/murmurhash/.gen/murmurhash/ThunkStat.json" "$run_dir/generated/TLC-ThunkStat.json"
 python3 - "$run_dir/summary.json" <<'PY'
 import json, pathlib, sys
 pathlib.Path(sys.argv[1]).write_text(json.dumps({"schema_version": 2, "package": "murmurhash", "status": "pass", "tests_run": True, "known_answer_cases": 19, "execution_lanes": ["native", "Hecate"], "mechanism": "TLC Only"}, indent=2, sort_keys=True) + "\n")

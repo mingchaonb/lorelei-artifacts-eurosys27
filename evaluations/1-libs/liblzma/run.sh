@@ -68,14 +68,18 @@ install_lane() {
   local lane=$1 triplet=$2
   run_logged "$run_dir/logs/preparation/vcpkg-$lane.log" "$vcpkg" install "liblzma:$triplet" --no-binarycaching --overlay-ports="$overlay_dir/ports" --overlay-triplets="$overlay_dir/triplets" --x-install-root="$state/installed/$lane" --x-buildtrees-root="$state/vcpkg/$lane/buildtrees" --x-packages-root="$state/vcpkg/$lane/packages" --downloads-root="$repo_root/vcpkg/downloads" --triplet="$triplet"
 }
-if ! $install_only; then install_lane native arm64-linux-ae; install_lane guest x64-linux-ae; fi
+install_lane native arm64-linux-ae
+install_lane guest x64-linux-ae
 install_lane hecate arm64-linux-ae
 hecate_prefix=$state/installed/hecate/arm64-linux-ae
 mkdir -p "$work/thunks" "$run_dir/generated/elf"
-if $install_only; then
-  printf '{"schema_version":2,"package":"liblzma","status":"installed","mode":"install-only","tests_run":false}\n' >"$run_dir/summary.json"
-  exit 0
-fi
+finish_install_only() {
+  if $install_only; then
+    printf '{"schema_version":2,"package":"liblzma","status":"installed","mode":"install-only","tests_run":false}\n' >"$run_dir/summary.json"
+    echo "Installed packages and generated TLC artifacts"
+    exit 0
+  fi
+}
 native_prefix=$state/installed/native/arm64-linux-ae
 guest_prefix=$state/installed/guest/x64-linux-ae
 native_suite=$work/upstream-native
@@ -137,6 +141,7 @@ run_logged "$run_dir/logs/preparation/thunk-libc-shim.log" "$devkit/bin/LoreMake
   --devkit "$devkit" --keep-intermediates -- \
   -D_GNU_SOURCE -I"$repo_root/evaluations/common/include"
 cmake -E create_symlink "$host_libc" "$libc_shim/libc-shim.so"
+finish_install_only
 run_upstream_suite() {
   local lane=$1 suite=$2 prefix=$3 passed=0 failed=0 name status
   local -a unit_tests=(test_bcj_exact_size test_block_header test_check test_filter_flags test_filter_str test_hardware test_index_hash test_lzip_decoder test_memlimit test_stream_flags test_vli test_microlzma)

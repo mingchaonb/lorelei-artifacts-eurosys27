@@ -60,14 +60,18 @@ install_lane() {
   local lane=$1 triplet=$2
   run_logged "$run_dir/logs/preparation/vcpkg-$lane.log" "$vcpkg" install "libidn2:$triplet" --overlay-ports="$overlay_dir/ports" --overlay-triplets="$overlay_dir/triplets" --x-install-root="$work/installed/$lane" --x-buildtrees-root="$work/vcpkg/$lane/buildtrees" --x-packages-root="$work/vcpkg/$lane/packages" --downloads-root="$repo_root/vcpkg/downloads" --triplet="$triplet"
 }
-if ! $install_only; then install_lane native arm64-linux-ae; install_lane guest x64-linux-ae; fi
+install_lane native arm64-linux-ae
+install_lane guest x64-linux-ae
 install_lane hecate arm64-linux-ae
 hecate_prefix=$work/installed/hecate/arm64-linux-ae
 mkdir -p "$work/thunks" "$run_dir/generated/elf"
-if $install_only; then
-  printf '{"schema_version":2,"package":"libidn2","status":"installed","mode":"install-only","tests_run":false}\n' >"$run_dir/summary.json"
-  exit 0
-fi
+finish_install_only() {
+  if $install_only; then
+    printf '{"schema_version":2,"package":"libidn2","status":"installed","mode":"install-only","tests_run":false}\n' >"$run_dir/summary.json"
+    echo "Installed packages and generated TLC artifacts"
+    exit 0
+  fi
+}
 native_prefix=$work/installed/native/arm64-linux-ae
 guest_prefix=$work/installed/guest/x64-linux-ae
 : >"$run_dir/generated/guest-undefined.txt"
@@ -115,6 +119,7 @@ run_logged "$run_dir/logs/preparation/thunk-libc-shim.log" "$devkit/bin/LoreMake
   --devkit "$devkit" --keep-intermediates -- \
   -D_GNU_SOURCE -I"$repo_root/evaluations/common/include"
 cmake -E create_symlink "$host_libc" "$libc_shim/libc-shim.so"
+finish_install_only
 native_status=0
 hecate_status=0
 python3 - "$run_dir/summary.json" "$native_status" "$hecate_status" "$index" <<'PY'
