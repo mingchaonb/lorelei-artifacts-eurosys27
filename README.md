@@ -8,6 +8,8 @@ This repository is the evaluator-facing build, test, and evidence workspace for 
 
 ```text
 eurosys-lorelei-artifacts/
+├── docker/
+│   └── Dockerfile              Ubuntu 24.04 ARM64 evaluation image
 ├── evaluations/
 │   ├── 1-libs/                 upstream library tests and native versus Hecate comparisons
 │   ├── 2-cli-benchmarks/       the eight command-line workloads in the paper
@@ -38,15 +40,48 @@ The five numbered directories below `evaluations/` correspond to five groups of 
 
 ## 2. Prepare the environment
 
-### 2.1 Start a clean Ubuntu 24.04 ARM64 container
+### 2.1 Build the Ubuntu 24.04 ARM64 image
 
-The formal evaluation requires a physical ARM64 host running Ubuntu 24.04 with a working Docker Engine. Both the host and container operating systems must be Ubuntu 24.04. `--platform linux/arm64` prevents Docker from selecting the wrong image. It must not be used to substitute transparent QEMU emulation on an x86-64 host. Confirm the host architecture and operating system, then create the container from the repository root:
+The formal evaluation requires a physical ARM64 host running Ubuntu 24.04 with a working Docker Engine. Both the host and container operating systems must be Ubuntu 24.04. Transparent QEMU emulation on an x86-64 host is not a substitute for an ARM64 host. Confirm the host architecture and operating system first:
 
 ```bash
 test "$(uname -m)" = aarch64
 grep -qx 'ID=ubuntu' /etc/os-release
 grep -qx 'VERSION_ID="24.04"' /etc/os-release
+```
 
+Build the image from the repository root. The Dockerfile installs every system dependency required by the library, DBT, plotting, game, and MangoHud evaluations. It also creates an unprivileged `user` whose UID and GID match the host account:
+
+```bash
+docker build \
+  --platform linux/arm64 \
+  --file docker/Dockerfile \
+  --build-arg USER_UID="$(id -u)" \
+  --build-arg USER_GID="$(id -g)" \
+  --tag lorelei-eurosys27-ae:ubuntu24.04 \
+  docker
+```
+
+When building in mainland China, add `--build-arg USE_USTC_MIRROR=1` to switch the Ubuntu apt sources to the USTC mirror. Its default value is `0`, and evaluators elsewhere do not need to set it:
+
+```bash
+docker build \
+  --platform linux/arm64 \
+  --file docker/Dockerfile \
+  --build-arg USE_USTC_MIRROR=1 \
+  --build-arg USER_UID="$(id -u)" \
+  --build-arg USER_GID="$(id -g)" \
+  --tag lorelei-eurosys27-ae:ubuntu24.04 \
+  docker
+```
+
+[`docker/Dockerfile`](docker/Dockerfile) is the source of truth for the dependency list. The command-line workloads use the image's `yt-dlp` to obtain public media input. If the Ubuntu package cannot read current YouTube metadata, install a newer version and select it with `YT_DLP=/absolute/path/to/yt-dlp`.
+
+### 2.2 Start the evaluation container
+
+Start the container from the repository root. The complete command below also exposes the GPU, X11 socket, and Xauthority required by game evaluations:
+
+```bash
 export AE_REPO=$PWD
 export AE_XAUTHORITY=${XAUTHORITY:-$HOME/.Xauthority}
 test -f "$AE_XAUTHORITY"
@@ -56,76 +91,24 @@ docker run --detach \
   --platform linux/arm64 \
   --network host \
   --device /dev/dri \
-  --env HOST_UID="$(id -u)" \
-  --env HOST_GID="$(id -g)" \
+  --group-add "$(stat -c '%g' /dev/dri/renderD128)" \
   --env DISPLAY="${DISPLAY:-:0}" \
   --env XAUTHORITY=/home/user/.Xauthority \
-  --mount type=bind,src="$AE_REPO",dst=/home/user \
+  --mount type=bind,src="$AE_REPO",dst=/home/user/eurosys-lorelei-artifacts \
   --mount type=bind,src=/tmp/.X11-unix,dst=/tmp/.X11-unix \
   --mount type=bind,src="$AE_XAUTHORITY",dst=/home/user/.Xauthority,readonly \
-  ubuntu:24.04 sleep infinity
+  lorelei-eurosys27-ae:ubuntu24.04 sleep infinity
 ```
 
-The `/dev/dri` device, X11 socket, and Xauthority mounts are needed by game evaluations. They may be omitted when reproducing only library, command-line, and breakdown data. Hosts using the proprietary NVIDIA driver must also expose the GPU through their configured container runtime.
+The `/dev/dri` device, supplementary group, X11 socket, and Xauthority are required by game evaluations. They may be omitted when reproducing only library, command-line, and breakdown data. Hosts using the proprietary NVIDIA driver must expose the GPU through their configured container runtime.
 
-Open a root shell in the container. The default Ubuntu Ports source is suitable for most evaluators:
-
-```bash
-docker exec -it lorelei-eurosys27-ae-ubuntu2404 bash
-```
-
-When running in mainland China, switching to the USTC mirror can improve package-download reliability. This step is optional and should be skipped elsewhere:
-
-```bash
-sed -Ei \
-  's#https?://ports\.ubuntu\.com/ubuntu-ports/?#http://mirrors.ustc.edu.cn/ubuntu-ports/#g' \
-  /etc/apt/sources.list.d/ubuntu.sources
-```
-
-Create an unprivileged `user` whose UID and GID match the host account:
-
-```bash
-apt update
-apt install -y sudo
-groupadd --gid "$HOST_GID" user
-useradd --uid "$HOST_UID" --gid "$HOST_GID" \
-  --home-dir /home/user --no-create-home --shell /bin/bash user
-printf 'user ALL=(ALL) NOPASSWD:ALL\n' >/etc/sudoers.d/user
-chmod 0440 /etc/sudoers.d/user
-exit
-```
-
-Run all subsequent build, evaluation, and export commands in an unprivileged shell:
+Run all subsequent build, evaluation, and export commands as the image's preconfigured unprivileged `user`:
 
 ```bash
 docker exec -it \
-  --user user \
-  --workdir /home/user \
-  --env HOME=/home/user \
+  --workdir /home/user/eurosys-lorelei-artifacts \
   lorelei-eurosys27-ae-ubuntu2404 bash
 ```
-
-### 2.2 Install system dependencies
-
-Library and command-line evaluations do not require a graphical desktop. Game evaluations additionally require a working host X11 session, OpenGL or Vulkan drivers, and MangoHud in the container. The following is the complete dependency set used to build every port, run all five evaluation groups, and export CSV files from a clean `ubuntu:24.04` image:
-
-```bash
-sudo apt update
-sudo apt install -y \
-  build-essential autoconf automake bear bison cmake flex libtool m4 \
-  meson ninja-build nasm yasm pkg-config \
-  git curl wget ca-certificates file patch patchelf \
-  xz-utils zip unzip tar squashfs-tools \
-  python3 python3-venv python3-numpy python3-matplotlib python3-tomli \
-  gcc-x86-64-linux-gnu g++-x86-64-linux-gnu \
-  clang-20 llvm-20-dev libclang-20-dev \
-  libglib2.0-dev libdw-dev libelf-dev libcapstone-dev libfdt-dev \
-  libpixman-1-dev libslirp-dev libffi-dev libffcall-dev libssl-dev \
-  libvulkan1 libvulkan-dev libgl1 libglx0 libgl-dev libglx-dev libx11-dev \
-  yt-dlp mangohud x11-xserver-utils x11-utils xdotool
-```
-
-The command-line workloads use `yt-dlp` to obtain public media input. If the Ubuntu package cannot read current YouTube metadata, install a newer version and select it with `YT_DLP=/absolute/path/to/yt-dlp`.
 
 ### 2.3 Install vcpkg
 
@@ -273,7 +256,7 @@ python3 evaluations/plots/plot-function-breakdown.py
 python3 evaluations/plots/plot-callback-track.py
 ```
 
-### 3.6 Quick walkthrough from a clean container
+### 3.6 Quick walkthrough from the clean Docker image
 
 After completing the installation in Section 2, the following sequence covers library correctness, every command-line execution path, all three breakdowns, one manual game scene, source modifications, and final export. The quick check reduces only the repetition count; it does not change workloads, lanes, or validation logic:
 

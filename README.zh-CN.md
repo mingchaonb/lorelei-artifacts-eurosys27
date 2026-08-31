@@ -8,6 +8,8 @@
 
 ```text
 eurosys-lorelei-artifacts/
+├── docker/
+│   └── Dockerfile              Ubuntu 24.04 ARM64 评测镜像
 ├── evaluations/
 │   ├── 1-libs/                 library 上游测试与 native、Hecate 对照
 │   ├── 2-cli-benchmarks/       论文中的八个命令行 workload
@@ -38,15 +40,48 @@ eurosys-lorelei-artifacts/
 
 ## 2. 准备环境
 
-### 2.1 启动空 Ubuntu 24.04 ARM64 容器
+### 2.1 构建 Ubuntu 24.04 ARM64 镜像
 
-正式评测要求运行 Ubuntu 24.04 的物理 ARM64 主机和已经可用的 Docker Engine。host 与容器都必须使用 Ubuntu 24.04。`--platform linux/arm64` 只用于防止 Docker 选错镜像，不能用 x86-64 主机上的透明 QEMU 模拟代替 ARM64 主机。先在 host 上确认架构和操作系统，再从仓库根目录创建容器：
+正式评测要求运行 Ubuntu 24.04 的物理 ARM64 主机和已经可用的 Docker Engine。host 与容器都必须使用 Ubuntu 24.04，不能用 x86-64 主机上的透明 QEMU 模拟代替 ARM64 主机。先在 host 上确认架构和操作系统：
 
 ```bash
 test "$(uname -m)" = aarch64
 grep -qx 'ID=ubuntu' /etc/os-release
 grep -qx 'VERSION_ID="24.04"' /etc/os-release
+```
 
+从仓库根目录构建镜像。Dockerfile 会安装 library、DBT、绘图、游戏和 MangoHud 评测需要的全部系统依赖，并创建与 host UID、GID 一致的普通用户 `user`：
+
+```bash
+docker build \
+  --platform linux/arm64 \
+  --file docker/Dockerfile \
+  --build-arg USER_UID="$(id -u)" \
+  --build-arg USER_GID="$(id -g)" \
+  --tag lorelei-eurosys27-ae:ubuntu24.04 \
+  docker
+```
+
+在中国大陆构建时，可以额外传入 `--build-arg USE_USTC_MIRROR=1`，把 Ubuntu apt 源切换到中科大镜像。默认值为 `0`，其他地区不需要设置：
+
+```bash
+docker build \
+  --platform linux/arm64 \
+  --file docker/Dockerfile \
+  --build-arg USE_USTC_MIRROR=1 \
+  --build-arg USER_UID="$(id -u)" \
+  --build-arg USER_GID="$(id -g)" \
+  --tag lorelei-eurosys27-ae:ubuntu24.04 \
+  docker
+```
+
+完整依赖清单以 [`docker/Dockerfile`](docker/Dockerfile) 为准。命令行 workload 使用镜像内的 `yt-dlp` 获取公开媒体输入。如果 Ubuntu 提供的版本无法读取当前 YouTube 元数据，可安装更新版本并通过 `YT_DLP=/absolute/path/to/yt-dlp` 指定。
+
+### 2.2 启动评测容器
+
+从仓库根目录启动容器。下面的完整命令同时传入游戏评测需要的 GPU、X11 socket 和 Xauthority：
+
+```bash
 export AE_REPO=$PWD
 export AE_XAUTHORITY=${XAUTHORITY:-$HOME/.Xauthority}
 test -f "$AE_XAUTHORITY"
@@ -56,76 +91,24 @@ docker run --detach \
   --platform linux/arm64 \
   --network host \
   --device /dev/dri \
-  --env HOST_UID="$(id -u)" \
-  --env HOST_GID="$(id -g)" \
+  --group-add "$(stat -c '%g' /dev/dri/renderD128)" \
   --env DISPLAY="${DISPLAY:-:0}" \
   --env XAUTHORITY=/home/user/.Xauthority \
-  --mount type=bind,src="$AE_REPO",dst=/home/user \
+  --mount type=bind,src="$AE_REPO",dst=/home/user/eurosys-lorelei-artifacts \
   --mount type=bind,src=/tmp/.X11-unix,dst=/tmp/.X11-unix \
   --mount type=bind,src="$AE_XAUTHORITY",dst=/home/user/.Xauthority,readonly \
-  ubuntu:24.04 sleep infinity
+  lorelei-eurosys27-ae:ubuntu24.04 sleep infinity
 ```
 
-`/dev/dri`、X11 socket 和 Xauthority 三项用于游戏评测。只复现 library、命令行和 breakdown 数据时可以省略这三个 mount 或 device 参数。若 host 使用 NVIDIA 专有驱动，需要按 host 的容器运行时配置额外传入 GPU。
+`/dev/dri`、supplementary group、X11 socket 和 Xauthority 用于游戏评测。只复现 library、命令行和 breakdown 数据时可以省略这些参数。若 host 使用 NVIDIA 专有驱动，需要按 host 的容器运行时配置额外传入 GPU。
 
-进入容器的 root shell。大多数评审环境直接使用 Ubuntu Ports 官方源即可：
-
-```bash
-docker exec -it lorelei-eurosys27-ae-ubuntu2404 bash
-```
-
-如果容器位于中国大陆，可以选择切换到中科大镜像，提高软件包下载的稳定性。其他地区应跳过这一步：
-
-```bash
-sed -Ei \
-  's#https?://ports\.ubuntu\.com/ubuntu-ports/?#http://mirrors.ustc.edu.cn/ubuntu-ports/#g' \
-  /etc/apt/sources.list.d/ubuntu.sources
-```
-
-创建与 host UID、GID 一致的普通用户 `user`：
-
-```bash
-apt update
-apt install -y sudo
-groupadd --gid "$HOST_GID" user
-useradd --uid "$HOST_UID" --gid "$HOST_GID" \
-  --home-dir /home/user --no-create-home --shell /bin/bash user
-printf 'user ALL=(ALL) NOPASSWD:ALL\n' >/etc/sudoers.d/user
-chmod 0440 /etc/sudoers.d/user
-exit
-```
-
-随后所有构建、评测和导出命令都在普通用户 shell 中执行：
+随后所有构建、评测和导出命令都在镜像预设的普通用户 `user` 下执行：
 
 ```bash
 docker exec -it \
-  --user user \
-  --workdir /home/user \
-  --env HOME=/home/user \
+  --workdir /home/user/eurosys-lorelei-artifacts \
   lorelei-eurosys27-ae-ubuntu2404 bash
 ```
-
-### 2.2 安装系统依赖
-
-library 和命令行评测不要求图形桌面。游戏评测还需要 host 上可用的 X11 会话、OpenGL 或 Vulkan 驱动，以及容器内的 MangoHud。以下是在空 `ubuntu:24.04` 镜像中构建全部 ports、运行五类评测和导出 CSV 所需的完整依赖：
-
-```bash
-sudo apt update
-sudo apt install -y \
-  build-essential autoconf automake bear bison cmake flex libtool m4 \
-  meson ninja-build nasm yasm pkg-config \
-  git curl wget ca-certificates file patch patchelf \
-  xz-utils zip unzip tar squashfs-tools \
-  python3 python3-venv python3-numpy python3-matplotlib python3-tomli \
-  gcc-x86-64-linux-gnu g++-x86-64-linux-gnu \
-  clang-20 llvm-20-dev libclang-20-dev \
-  libglib2.0-dev libdw-dev libelf-dev libcapstone-dev libfdt-dev \
-  libpixman-1-dev libslirp-dev libffi-dev libffcall-dev libssl-dev \
-  libvulkan1 libvulkan-dev libgl1 libglx0 libgl-dev libglx-dev libx11-dev \
-  yt-dlp mangohud x11-xserver-utils x11-utils xdotool
-```
-
-命令行 workload 使用 `yt-dlp` 获取公开媒体输入。如果 Ubuntu 提供的版本无法读取当前 YouTube 元数据，可安装更新版本并通过 `YT_DLP=/absolute/path/to/yt-dlp` 指定。
 
 ### 2.3 安装 vcpkg
 
@@ -271,7 +254,7 @@ python3 evaluations/plots/plot-function-breakdown.py
 python3 evaluations/plots/plot-callback-track.py
 ```
 
-### 3.6 从空容器快速 walkthrough
+### 3.6 从干净 Docker 镜像快速 walkthrough
 
 完成第 2 节安装后，下面的顺序覆盖 library 正确性、全部命令行执行路径、三个 breakdown、一个人工游戏场景、修改量和最终导出。快速检查只把重复测量缩为一次，不改变 workload、执行路径或验证逻辑：
 
