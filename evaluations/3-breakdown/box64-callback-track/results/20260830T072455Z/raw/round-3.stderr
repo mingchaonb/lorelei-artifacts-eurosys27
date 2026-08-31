@@ -1,3 +1,0 @@
-BOX64_CALLBACK_TRACK counter_hz=1000000000 samples=1000000 counter_overhead_ticks=16 wrapper_checks=1000
-BOX64_CALLBACK_TRACK_TICKS guest_libs=18636464 host_libs=25123840 protection=367994176 got=18640608 wrapper=1208271216
-BOX64_CALLBACK_TRACK_NS guest_libs=2.636464 host_libs=9.123840 protection=351.994176 got=2.640608 wrapper=1.192271 total=367.587359
