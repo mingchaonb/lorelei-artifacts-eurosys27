@@ -134,8 +134,12 @@ for lane in native hecate; do
   suite=$suite_native
   [[ $lane == hecate ]] && suite=$suite_guest
   runtime=$work/upstream/$lane
-  mkdir -p "$work/upstream"
-  cp -a "$suite" "$runtime"
+  # The installed vcpkg suite is immutable input. Recreate only this disposable
+  # staging copy so an interrupted or repeated run cannot reuse renamed guest
+  # programs, generated wrappers, or symlinks from an earlier invocation.
+  rm -rf "$runtime"
+  mkdir -p "$runtime"
+  cp -a "$suite/." "$runtime/"
   touch "$runtime/tests"/{table-from,table-to,is-native,test-shiftseq,test-to-wchar,test-bom-state,test-discard} "$runtime/src/iconv_no_i18n"
   if [[ $lane == hecate ]]; then
     mkdir -p "$runtime/tests/.libs" "$runtime/src/.libs"
