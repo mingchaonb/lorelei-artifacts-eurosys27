@@ -157,9 +157,15 @@ ui_refresh_counts() {
 
 ui_draw() {
     $ui_active || return 0
-    local filled empty bar empty_bar width=32
+    local columns prefix='Workloads [' suffix width filled empty bar empty_bar
     local recent_row=$((ui_rows - 4))
     local current_row=$((ui_rows - 1))
+    columns=$(tput cols 2>/dev/null || printf '80')
+    printf -v suffix '] %d/%d  PASS %d  FAIL %d  pending %d' \
+        "$ui_completed" "$total" "$ui_passed" "$ui_failed" "$ui_pending"
+    width=$((columns - ${#prefix} - ${#suffix}))
+    if ((width < 12)); then width=12; fi
+    if ((width > 100)); then width=100; fi
     filled=$((ui_completed * width / total))
     empty=$((width - filled))
     printf -v bar '%*s' "$filled" ''

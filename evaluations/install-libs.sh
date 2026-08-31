@@ -6,6 +6,8 @@ evaluations_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 repo_root=$(cd "$evaluations_dir/.." && pwd)
 libs_dir=$evaluations_dir/1-libs
 source "$evaluations_dir/common/install-progress.sh"
+source "$evaluations_dir/common/proxy-environment.sh"
+normalize_proxy_environment
 
 plain=false
 while (($#)); do

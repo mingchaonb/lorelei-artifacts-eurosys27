@@ -65,6 +65,22 @@ docker build \
   docker
 ```
 
+If network access requires an HTTP proxy:
+
+- Pulling the `ubuntu:24.04` base image uses the Docker daemon's proxy configuration.
+- Downloads performed by apt, Git, and other tools inside the Dockerfile use proxy variables passed to `docker build`. Add the explicit options below to the build command. Both cases are passed for compatibility with different tools:
+
+```bash
+  --build-arg HTTP_PROXY="$HTTP_PROXY" \
+  --build-arg HTTPS_PROXY="$HTTPS_PROXY" \
+  --build-arg NO_PROXY="$NO_PROXY" \
+  --build-arg http_proxy="$http_proxy" \
+  --build-arg https_proxy="$https_proxy" \
+  --build-arg no_proxy="$no_proxy" \
+```
+
+- If the proxy listens only on the host loopback address, also add `--network host` to the build command or use a host address reachable from the build container.
+
 [`docker/Dockerfile`](docker/Dockerfile) is the source of truth for the dependency list. The command-line workloads use the image's `yt-dlp` to obtain public media input. If the Ubuntu package cannot read current YouTube metadata, install a newer version and select it with `YT_DLP=/absolute/path/to/yt-dlp`.
 
 ### 2.2 Start the evaluation container
@@ -88,6 +104,19 @@ docker run --detach \
   --mount type=bind,src="$AE_XAUTHORITY",dst=/home/user/.Xauthority,readonly \
   lorelei-eurosys27-ae:ubuntu24.04 sleep infinity
 ```
+
+If vcpkg, Git, `yt-dlp`, or other tools inside the container also require the proxy, add the following explicit options to `docker run`. Keep the values after the equals signs so Docker cannot reuse an incorrect or stale proxy setting. Shells started later with `docker exec` inherit these variables:
+
+```bash
+  --env HTTP_PROXY="$HTTP_PROXY" \
+  --env HTTPS_PROXY="$HTTPS_PROXY" \
+  --env NO_PROXY="$NO_PROXY" \
+  --env http_proxy="$http_proxy" \
+  --env https_proxy="$https_proxy" \
+  --env no_proxy="$no_proxy" \
+```
+
+Proxy variables are fixed when the container is created. After changing the proxy address on the host, remove and recreate the evaluation container or export the corrected variables again in the current interactive shell. The four `install-*.sh` scripts fill the empty case variant when only one of the uppercase or lowercase forms is non-empty. When both forms are configured, each original value is preserved.
 
 The `/dev/dri` device, supplementary group, X11 socket, and Xauthority are required by game evaluations. They may be omitted when reproducing only library, command-line, and breakdown data. Hosts using the proprietary NVIDIA driver must expose the GPU through their configured container runtime.
 
@@ -123,7 +152,7 @@ Run these four installation scripts from the repository root:
 ```
 
 - `install-devkit.sh` downloads the architecture-matched EuroSys 2027 AE release, verifies its SHA-256, and installs it under `.work/devkit/`.
-- `install-tools.sh` verifies and reuses this devkit, then installs separate QEMU and Box64 packages for ordinary performance evaluation and instrumented breakdowns.
+- `install-tools.sh` independently installs the QEMU, Box64, and other tool packages used by ordinary performance evaluation and instrumented breakdowns. It does not download or extract the devkit again.
 - The remaining scripts reuse installed vcpkg packages, downloads, and build state. They do not clear caches before each invocation.
 
 Installation keeps complete vcpkg output visible and displays progress at the bottom of the terminal. Add `--plain` when redirecting output or when terminal control sequences are undesirable. Every public script resolves paths relative to its own location and can be started from any current directory.

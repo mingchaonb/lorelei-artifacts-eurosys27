@@ -65,6 +65,22 @@ docker build \
   docker
 ```
 
+如果网络访问需要 HTTP 代理：
+
+- 拉取 `ubuntu:24.04` 基础镜像使用 Docker daemon 的代理配置。
+- Dockerfile 内的 apt、Git 和其他下载使用传给 `docker build` 的代理变量。向上面的构建命令添加以下显式参数。大小写形式同时传入，以兼容不同工具：
+
+```bash
+  --build-arg HTTP_PROXY="$HTTP_PROXY" \
+  --build-arg HTTPS_PROXY="$HTTPS_PROXY" \
+  --build-arg NO_PROXY="$NO_PROXY" \
+  --build-arg http_proxy="$http_proxy" \
+  --build-arg https_proxy="$https_proxy" \
+  --build-arg no_proxy="$no_proxy" \
+```
+
+- 如果代理只监听 host 的 loopback 地址，构建命令还需添加 `--network host`，或者把代理地址改为 build container 可以访问的 host 地址。
+
 完整依赖清单以 [`docker/Dockerfile`](docker/Dockerfile) 为准。命令行 workload 使用镜像内的 `yt-dlp` 获取公开媒体输入。如果 Ubuntu 提供的版本无法读取当前 YouTube 元数据，可安装更新版本并通过 `YT_DLP=/absolute/path/to/yt-dlp` 指定。
 
 ### 2.2 启动评测容器
@@ -88,6 +104,19 @@ docker run --detach \
   --mount type=bind,src="$AE_XAUTHORITY",dst=/home/user/.Xauthority,readonly \
   lorelei-eurosys27-ae:ubuntu24.04 sleep infinity
 ```
+
+如果容器内的 vcpkg、Git、`yt-dlp` 等工具也需要代理，向 `docker run` 命令添加以下显式选项。不要省略等号右侧的值，否则 Docker 可能沿用错误或过期的代理配置。`docker exec` 启动的后续 shell 会继承这些变量：
+
+```bash
+  --env HTTP_PROXY="$HTTP_PROXY" \
+  --env HTTPS_PROXY="$HTTPS_PROXY" \
+  --env NO_PROXY="$NO_PROXY" \
+  --env http_proxy="$http_proxy" \
+  --env https_proxy="$https_proxy" \
+  --env no_proxy="$no_proxy" \
+```
+
+代理变量在创建容器时确定。修改 host 上的代理地址后，需要删除并重新创建评测容器，或者在当前交互 shell 中重新导出这些变量。四个 `install-*.sh` 会在大写或小写形式只有一侧非空时自动补齐另一侧。如果两侧都已设置，则保留各自的原值。
 
 `/dev/dri`、supplementary group、X11 socket 和 Xauthority 用于游戏评测。只复现 library、命令行和 breakdown 数据时可以省略这些参数。若 host 使用 NVIDIA 专有驱动，需要按 host 的容器运行时配置额外传入 GPU。
 
@@ -123,7 +152,7 @@ git -C vcpkg checkout 2026.07.29
 ```
 
 - `install-devkit.sh` 根据主机架构下载 EuroSys 2027 AE release，校验 SHA-256，并安装到 `.work/devkit/`。
-- `install-tools.sh` 检查并复用该 devkit，分别安装普通性能评测与 breakdown 使用的 QEMU、Box64 package。
+- `install-tools.sh` 独立安装普通性能评测与 breakdown 使用的 QEMU、Box64 等工具 package，不会再次下载或解压 devkit。
 - 其余脚本复用已经安装的 vcpkg package、下载和构建状态，不会在每次执行前清空缓存。
 
 安装过程保留完整的 vcpkg 输出，并在终端底部显示进度。重定向输出或不希望出现终端控制序列时可添加 `--plain`。所有公开脚本都根据自身位置解析路径，可以从任意当前目录启动。

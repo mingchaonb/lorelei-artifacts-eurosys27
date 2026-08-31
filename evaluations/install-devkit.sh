@@ -4,6 +4,8 @@ set -euo pipefail
 
 evaluations_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 repo_root=$(cd "$evaluations_dir/.." && pwd)
+source "$evaluations_dir/common/proxy-environment.sh"
+normalize_proxy_environment
 release_tag=eurosys27-ae-1
 release_base=https://github.com/mingchaonb/lorelei/releases/download/$release_tag
 install_dir=$repo_root/.work/devkit

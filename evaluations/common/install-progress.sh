@@ -24,7 +24,15 @@ install_progress_restore() {
 
 install_progress_draw() {
     $install_progress_active || return 0
-    local width=32 filled empty bar empty_bar
+    local columns prefix suffix width filled empty bar empty_bar
+    columns=$(tput cols 2>/dev/null || printf '80')
+    prefix="$install_progress_label ["
+    printf -v suffix '] %d/%d  PASS %d  FAIL %d' \
+        "$install_progress_done" "$install_progress_total" \
+        "$install_progress_passed" "$install_progress_failed"
+    width=$((columns - ${#prefix} - ${#suffix}))
+    if ((width < 12)); then width=12; fi
+    if ((width > 100)); then width=100; fi
     filled=$((install_progress_done * width / install_progress_total))
     empty=$((width - filled))
     printf -v bar '%*s' "$filled" ''

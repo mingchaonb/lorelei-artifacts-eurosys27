@@ -29,12 +29,13 @@ vcpkg-overlay/
 │   ├── fex-ae/
 │   └── qemu-ae/
 └── triplets/
+    ├── arm64-linux.cmake
     ├── arm64-linux-ae.cmake
     ├── x64-linux-ae.cmake
     └── x64-linux-ae-toolchain.cmake
 ```
 
-runner 显式传入 `--overlay-ports` 和 `--overlay-triplets`。独立安装根允许 TLC 与 HLR 打包不同的 host build，而不会互相覆盖。
+runner 显式传入 `--overlay-ports` 和 `--overlay-triplets`。`arm64-linux.cmake` 覆盖 vcpkg 默认的双配置 native triplet，使 AE 工具与 host-side build dependency 只构建 Release。AE target triplet 同样只构建 Release。独立安装根允许 TLC 与 HLR 打包不同的 host build，而不会互相覆盖。
 
 ## 直接安装包
 

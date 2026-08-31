@@ -6,16 +6,19 @@ evaluations_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 repo_root=$(cd "$evaluations_dir/.." && pwd)
 vcpkg=$repo_root/vcpkg/vcpkg
 tool_ports=$repo_root/vcpkg-overlay/ports-tools
+triplets=$repo_root/vcpkg-overlay/triplets
 triplet=${VCPKG_DEFAULT_TRIPLET:-arm64-linux}
 source "$evaluations_dir/common/install-progress.sh"
+source "$evaluations_dir/common/proxy-environment.sh"
+normalize_proxy_environment
 
 usage() {
     cat <<'EOF'
 Usage: ./evaluations/install-tools.sh [--plain]
 
-Install the released Lorelei devkit, native FFmpeg utility, four pinned AE
-emulators, plus the instrumented QEMU and Box64 breakdown tools. Existing
-downloads and binary packages are reused.
+Install the native FFmpeg utility, four pinned AE emulators, plus the
+instrumented QEMU and Box64 breakdown tools. Existing downloads and binary
+packages are reused. This script does not install the Lorelei devkit.
 
 Environment:
   VCPKG_DEFAULT_TRIPLET  Target triplet, default: arm64-linux
@@ -39,10 +42,6 @@ done
 }
 [[ -d $tool_ports ]] || { echo "Missing tool overlay: $tool_ports" >&2; exit 2; }
 
-# Install the released devkit before tools so the three top-level artifact
-# installers remain sufficient for a fresh evaluator checkout.
-"$evaluations_dir/install-devkit.sh"
-
 # This feature set provides the native FFmpeg executable used to prepare and
 # validate every codec workload. It intentionally comes from vcpkg's built-in
 # port because the library-test overlay contains a different Hecate recipe.
@@ -62,7 +61,8 @@ echo "Install AE tools with triplet: $triplet"
 install_progress_init Tools "${#packages[@]}" "$plain"
 install_progress_setup
 for index in "${!packages[@]}"; do
-    args=(install "${packages[$index]}" "--overlay-ports=$tool_ports")
+    args=(install "${packages[$index]}" "--overlay-ports=$tool_ports"
+        "--overlay-triplets=$triplets")
     install_progress_run "${package_names[$index]}" "$((index + 1))" \
         "$vcpkg" "${args[@]}" || true
 done

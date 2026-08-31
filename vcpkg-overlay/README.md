@@ -29,12 +29,13 @@ vcpkg-overlay/
 │   ├── fex-ae/
 │   └── qemu-ae/
 └── triplets/
+    ├── arm64-linux.cmake
     ├── arm64-linux-ae.cmake
     ├── x64-linux-ae.cmake
     └── x64-linux-ae-toolchain.cmake
 ```
 
-The runner passes these directories explicitly with `--overlay-ports` and `--overlay-triplets`. Separate install roots allow TLC and HLR to package different host builds without collisions.
+The runner passes these directories explicitly with `--overlay-ports` and `--overlay-triplets`. `arm64-linux.cmake` shadows vcpkg's dual-configuration native triplet so AE tools and host-side build dependencies are Release-only. The AE target triplets are also Release-only. Separate install roots allow TLC and HLR to package different host builds without collisions.
 
 ## Direct package commands
 
