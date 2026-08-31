@@ -6,7 +6,6 @@
 
 ```bash
 ./evaluations/1-libs/libidn2/run.sh
-./evaluations/1-libs/libidn2/run.sh --reference --verbose
 ./evaluations/1-libs/libidn2/run.sh --install-only
 ```
 

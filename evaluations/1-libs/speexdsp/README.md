@@ -10,7 +10,6 @@ This recipe installs the official SpeexDSP 1.2.1 shared library and all five tes
 
 ```bash
 ./evaluations/1-libs/speexdsp/run.sh
-./evaluations/1-libs/speexdsp/run.sh --reference --verbose
 ./evaluations/1-libs/speexdsp/run.sh --install-only
 ```
 

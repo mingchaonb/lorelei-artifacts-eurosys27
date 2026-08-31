@@ -6,7 +6,6 @@
 
 ```bash
 ./evaluations/1-libs/libcerf/run.sh
-./evaluations/1-libs/libcerf/run.sh --reference --verbose
 ./evaluations/1-libs/libcerf/run.sh --install-only
 ```
 

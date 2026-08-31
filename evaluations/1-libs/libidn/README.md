@@ -10,7 +10,6 @@ This recipe fetches the official GNU Libidn 1.43 release through the pinned vcpk
 
 ```bash
 ./evaluations/1-libs/libidn/run.sh
-./evaluations/1-libs/libidn/run.sh --reference --verbose
 ./evaluations/1-libs/libidn/run.sh --install-only
 ```
 

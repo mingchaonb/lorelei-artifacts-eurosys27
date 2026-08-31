@@ -10,7 +10,6 @@ This recipe installs zstd 1.5.7 and its upstream tests through the pinned vcpkg 
 
 ```bash
 ./evaluations/1-libs/zstd/run.sh
-./evaluations/1-libs/zstd/run.sh --reference --verbose
 ./evaluations/1-libs/zstd/run.sh --install-only
 ```
 

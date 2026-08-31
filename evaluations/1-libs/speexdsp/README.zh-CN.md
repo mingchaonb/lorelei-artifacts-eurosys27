@@ -6,7 +6,6 @@
 
 ```bash
 ./evaluations/1-libs/speexdsp/run.sh
-./evaluations/1-libs/speexdsp/run.sh --reference --verbose
 ./evaluations/1-libs/speexdsp/run.sh --install-only
 ```
 

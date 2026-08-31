@@ -8,7 +8,6 @@ This recipe fetches the official libpcap release through the repository vcpkg ov
 
 ```bash
 ./evaluations/1-libs/libpcap/run.sh
-./evaluations/1-libs/libpcap/run.sh --reference --verbose
 ./evaluations/1-libs/libpcap/run.sh --install-only
 ```
 

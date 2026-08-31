@@ -10,7 +10,6 @@ This recipe fetches the official json-c 0.19-20260627 release through the pinned
 
 ```bash
 ./evaluations/1-libs/json-c/run.sh
-./evaluations/1-libs/json-c/run.sh --reference --verbose
 ./evaluations/1-libs/json-c/run.sh --install-only
 ```
 

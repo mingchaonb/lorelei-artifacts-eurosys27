@@ -10,7 +10,6 @@ This recipe builds the pinned official release as shared libraries for the AArch
 
 ```bash
 ./evaluations/1-libs/libaec/run.sh
-./evaluations/1-libs/libaec/run.sh --reference --verbose
 ./evaluations/1-libs/libaec/run.sh --install-only
 ```
 

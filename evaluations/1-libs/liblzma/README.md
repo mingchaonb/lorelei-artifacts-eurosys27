@@ -10,7 +10,6 @@ This recipe installs liblzma 5.8.3 and its upstream tests through the pinned vcp
 
 ```bash
 ./evaluations/1-libs/liblzma/run.sh
-./evaluations/1-libs/liblzma/run.sh --reference --verbose
 ./evaluations/1-libs/liblzma/run.sh --install-only
 ```
 

@@ -10,7 +10,6 @@
 
 ```bash
 ./evaluations/1-libs/brotli/run.sh
-./evaluations/1-libs/brotli/run.sh --reference --verbose
 ./evaluations/1-libs/brotli/run.sh --install-only
 ```
 

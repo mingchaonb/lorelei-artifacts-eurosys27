@@ -6,7 +6,6 @@
 
 ```bash
 ./evaluations/1-libs/libpsl/run.sh
-./evaluations/1-libs/libpsl/run.sh --reference --verbose
 ./evaluations/1-libs/libpsl/run.sh --install-only
 ```
 

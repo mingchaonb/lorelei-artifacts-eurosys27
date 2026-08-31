@@ -10,4 +10,4 @@ Run it with `./evaluations/1-libs/libxcb/run.sh`. The recipe keeps packages, vcp
 
 The workload also transfers socket ownership with `xcb_take_socket`. Its next request forces libxcb to return the socket through a guest callback. Success requires both the callback closure counter and the guest-global callback counter to equal one.
 
-The first Spark development smoke run used `DISPLAY=:1` and `/run/user/1004/gdm/Xauthority`. Native and Hecate lanes both printed `xcb:11:0:1:1:3` and exited with status zero. Formal recipe runs record their own environment and summary below `results` or `reference-results`.
+The first Spark development smoke run used `DISPLAY=:1` and `/run/user/1004/gdm/Xauthority`. Native and Hecate lanes both printed `xcb:11:0:1:1:3` and exited with status zero. Formal recipe runs record their own environment and summary below `results`.

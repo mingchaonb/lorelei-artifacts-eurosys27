@@ -10,7 +10,6 @@ This recipe fetches the official Jansson 2.15.1 release through the pinned vcpkg
 
 ```bash
 ./evaluations/1-libs/jansson/run.sh
-./evaluations/1-libs/jansson/run.sh --reference --verbose
 ./evaluations/1-libs/jansson/run.sh --install-only
 ```
 

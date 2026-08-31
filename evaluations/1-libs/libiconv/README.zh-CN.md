@@ -6,7 +6,6 @@
 
 ```bash
 ./evaluations/1-libs/libiconv/run.sh
-./evaluations/1-libs/libiconv/run.sh --reference --verbose
 ./evaluations/1-libs/libiconv/run.sh --install-only
 ```
 

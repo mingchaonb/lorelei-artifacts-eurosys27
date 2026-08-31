@@ -6,7 +6,6 @@
 
 ```bash
 ./evaluations/1-libs/liblzma/run.sh
-./evaluations/1-libs/liblzma/run.sh --reference --verbose
 ./evaluations/1-libs/liblzma/run.sh --install-only
 ```
 

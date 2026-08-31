@@ -36,7 +36,7 @@ eurosys-lorelei-artifacts/
 
 `vcpkg-overlay/ports/` contains recipes that obtain source from each project's official repository and build, install, and deploy its tests. Every recipe pins an upstream release or commit and verifies the downloaded content. When an upstream build system does not install its tests, the recipe uses a patch under `patches/` or logic in `portfile.cmake` to install the built tests under `tools/<port>/upstream-tests/`. These patches support reproducible builds, test installation, and necessary Hecate adaptation. They do not replace the evaluated library algorithms.
 
-The five numbered directories below `evaluations/` correspond to five groups of paper evidence. Each evaluation keeps its entry point, scope, and results in its own directory. Evaluator-generated evidence goes to `results/<run-id>/`, while author-generated reference evidence goes to `reference-results/<run-id>/`. `.work/`, vcpkg build trees, and download caches are reusable intermediate state rather than experimental results.
+The five numbered directories below `evaluations/` correspond to five groups of paper evidence. Each evaluation keeps its entry point, scope, and results in its own directory. Generated evidence goes to `results/<run-id>/`. `.work/`, vcpkg build trees, and download caches are reusable intermediate state rather than experimental results.
 
 ## 2. Prepare the environment
 
@@ -320,7 +320,7 @@ REPETITIONS=5 ./evaluations/2-cli-benchmarks/run-all.sh --restart
 
 ## 4. Results and claims
 
-1. Evaluator-generated evidence is stored under the corresponding recipe's `results/<run-id>/`. Author-provided reference evidence is stored under `reference-results/<run-id>/`. New runs create new timestamped directories and do not overwrite prior results.
+1. Evaluator-generated evidence is stored under the corresponding recipe's `results/<run-id>/`. New runs create new timestamped directories and do not overwrite prior results.
 2. A library README title contains `[ALL TESTS PASSED]` only when every non-excluded upstream test passes in both the native and Hecate paths under the current configuration.
 3. Tests that do not represent the Lorelei mechanism claim are explicitly excluded rather than counted as Hecate failures. These include atomics and locks, signals, real-device integration, fuzzing, sanitizers, private ABI tests, and stress tests that do not fit the AE time budget.
 4. Library evidence retains native and Hecate raw output, exit status, test classification, source and patch identity, and TLC and HLR configuration line counts. A successful build or thunk generation alone is not correctness evidence.
@@ -335,5 +335,5 @@ REPETITIONS=5 ./evaluations/2-cli-benchmarks/run-all.sh --restart
 4. Native AArch64 and Hecate x86-64 use the same upstream version and corresponding build configuration. Library correctness evaluation never runs a pure-QEMU full-emulation lane.
 5. Every port shares `vcpkg/downloads/`, while each evaluation keeps isolated build, package, install, and generated mechanism state under `.work/evaluations/`.
 6. Installation and batch scripts reuse successful state. Failures and interruptions remain visible. Repeating a command skips successful entries and retries incomplete entries unless the evaluator explicitly requests a restart.
-7. `results/` contains removable evidence generated locally by evaluators. `reference-results/` contains reference evidence provided by the authors. Cleanup scripts remove only the result directories they explicitly own and never clear shared vcpkg downloads or package caches.
+7. `results/` contains removable evidence generated locally by evaluators. Cleanup scripts remove only the result directories they explicitly own and never clear shared vcpkg downloads or package caches.
 8. Build trees, installation prefixes, download caches, credentials, proprietary inputs, and other temporary files are not committed to the artifact repository.

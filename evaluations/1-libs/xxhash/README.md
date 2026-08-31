@@ -10,7 +10,6 @@ This recipe installs xxhash 0.8.3 and its upstream test through the pinned vcpkg
 
 ```bash
 ./evaluations/1-libs/xxhash/run.sh
-./evaluations/1-libs/xxhash/run.sh --reference --verbose
 ./evaluations/1-libs/xxhash/run.sh --install-only
 ```
 

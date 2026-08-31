@@ -10,7 +10,6 @@
 
 ```bash
 ./evaluations/1-libs/expat/run.sh
-./evaluations/1-libs/expat/run.sh --reference --verbose
 ./evaluations/1-libs/expat/run.sh --install-only
 ```
 

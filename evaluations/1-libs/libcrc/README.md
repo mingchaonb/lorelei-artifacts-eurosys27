@@ -10,7 +10,6 @@ This recipe installs libcrc 2.0 and its upstream test through the pinned vcpkg o
 
 ```bash
 ./evaluations/1-libs/libcrc/run.sh
-./evaluations/1-libs/libcrc/run.sh --reference --verbose
 ./evaluations/1-libs/libcrc/run.sh --install-only
 ```
 

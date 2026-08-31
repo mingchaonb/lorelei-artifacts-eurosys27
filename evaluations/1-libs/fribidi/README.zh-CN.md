@@ -10,7 +10,6 @@
 
 ```bash
 ./evaluations/1-libs/fribidi/run.sh
-./evaluations/1-libs/fribidi/run.sh --reference --verbose
 ./evaluations/1-libs/fribidi/run.sh --install-only
 ```
 

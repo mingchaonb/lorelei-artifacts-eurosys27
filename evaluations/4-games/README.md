@@ -158,7 +158,7 @@ Export the latest available MangoHud run for every game with:
 python3 evaluations/export-paper-data.py
 ```
 
-The readable table is written to `evaluations/paper-data/game-fps.csv`. Use `--reference` to read `reference-results/` instead of `results/`.
+The readable table is written to `evaluations/paper-data/game-fps.csv`.
 
 Disable collection with:
 
@@ -196,13 +196,6 @@ Preview and remove evaluator results with:
 ```bash
 ./evaluations/4-games/delete-all-results.sh --dry-run
 ./evaluations/4-games/delete-all-results.sh
-```
-
-Reference results use a separate script:
-
-```bash
-./evaluations/4-games/delete-all-reference-results.sh --dry-run
-./evaluations/4-games/delete-all-reference-results.sh
 ```
 
 Cleanup never deletes game packages, shared vcpkg caches, or an evaluator-supplied `GAME_DIR`.

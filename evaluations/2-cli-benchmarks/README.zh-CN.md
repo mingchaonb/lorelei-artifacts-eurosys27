@@ -163,21 +163,12 @@ REPETITIONS=7 TIMEOUT_SECONDS=80 \
 - `--plain` 关闭固定在终端底部的进度显示。
 - 交互终端显示最近完成的 3 项、当前 workload 和总进度。
 
-生成作者参考结果：
-
-```bash
-./evaluations/2-cli-benchmarks/run-all.sh --reference
-```
-
-`--reference` 与 `--install-only` 不能同时使用。
-
 ## 8. 单项 workload
 
 每个 `<workload>/run.sh` 是该项的公开入口。例如：
 
 ```bash
 ./evaluations/2-cli-benchmarks/fftw/run.sh
-./evaluations/2-cli-benchmarks/zlib/run.sh --reference
 REPETITIONS=1 ./evaluations/2-cli-benchmarks/zstd/run.sh \
   --lanes native,qemu,blink,qemu-hecate
 ```
@@ -198,12 +189,6 @@ REPETITIONS=1 ./evaluations/2-cli-benchmarks/zstd/run.sh \
 evaluations/2-cli-benchmarks/<workload>/results/<run-id>/
 ```
 
-作者参考结果写入：
-
-```text
-evaluations/2-cli-benchmarks/<workload>/reference-results/<run-id>/
-```
-
 每个 workload 至少保存：
 
 1. 每条 lane 的完整命令。
@@ -219,13 +204,6 @@ evaluations/2-cli-benchmarks/<workload>/reference-results/<run-id>/
 ```bash
 ./evaluations/2-cli-benchmarks/delete-all-results.sh --dry-run
 ./evaluations/2-cli-benchmarks/delete-all-results.sh
-```
-
-参考结果使用独立清理脚本：
-
-```bash
-./evaluations/2-cli-benchmarks/delete-all-reference-results.sh --dry-run
-./evaluations/2-cli-benchmarks/delete-all-reference-results.sh
 ```
 
 清理脚本不会删除 `_inputs/`、共享 vcpkg download 或 package cache。

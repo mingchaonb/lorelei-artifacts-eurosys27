@@ -6,7 +6,6 @@
 
 ```bash
 ./evaluations/1-libs/lz4/run.sh
-./evaluations/1-libs/lz4/run.sh --reference --verbose
 ./evaluations/1-libs/lz4/run.sh --install-only
 ```
 

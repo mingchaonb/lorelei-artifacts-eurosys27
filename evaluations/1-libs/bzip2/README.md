@@ -10,7 +10,6 @@ This recipe installs bzip2 1.0.8 and its upstream tests through the pinned vcpkg
 
 ```bash
 ./evaluations/1-libs/bzip2/run.sh
-./evaluations/1-libs/bzip2/run.sh --reference --verbose
 ./evaluations/1-libs/bzip2/run.sh --install-only
 ```
 

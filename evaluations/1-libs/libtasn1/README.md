@@ -10,8 +10,8 @@ The vcpkg port installs the complete configured suite under `tools/libtasn1/upst
 
 The pre-cleanup validation passed all 40 installed tests in both native and Hecate with identical classifications and no exclusions. The Hecate lane uses TLC plus the package-local libc shim for guest-owned `FILE` streams. It does not use HLR or run a pure QEMU lane.
 
-The runner reads the devkit from `LORELEI_DEVKIT`, defaulting to `.work/devkit` relative to the artifact repository. `--install-only` stops after both packages are installed and audited. `--reference` writes append-only reference evidence. `--verbose` streams vcpkg preparation while preserving raw logs.
+The runner reads the devkit from `LORELEI_DEVKIT`, defaulting to `.work/devkit` relative to the artifact repository. `--install-only` stops after both packages are installed and audited. `--verbose` streams vcpkg preparation while preserving raw logs.
 
 ```bash
-./run.sh --reference
+./run.sh
 ```

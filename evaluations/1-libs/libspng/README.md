@@ -10,7 +10,6 @@ This recipe installs libspng 0.7.4 and its upstream tests through the pinned vcp
 
 ```bash
 ./evaluations/1-libs/libspng/run.sh
-./evaluations/1-libs/libspng/run.sh --reference --verbose
 ./evaluations/1-libs/libspng/run.sh --install-only
 ```
 

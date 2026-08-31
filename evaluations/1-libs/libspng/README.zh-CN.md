@@ -6,7 +6,6 @@
 
 ```bash
 ./evaluations/1-libs/libspng/run.sh
-./evaluations/1-libs/libspng/run.sh --reference --verbose
 ./evaluations/1-libs/libspng/run.sh --install-only
 ```
 

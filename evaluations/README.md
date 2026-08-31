@@ -121,7 +121,6 @@ vcpkg-overlay/
 ```
 
 - `results/<run-id>/` stores evidence generated locally by an evaluator.
-- `reference-results/<run-id>/` stores author-provided reference evidence.
 - Every run creates a new UTC timestamp directory and never overwrites prior evidence.
 - `.work/`, vcpkg buildtrees, installation prefixes, download caches, and temporary inputs are not evidence.
 - Result cleanup does not remove shared vcpkg downloads or package caches.

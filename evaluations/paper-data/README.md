@@ -8,7 +8,7 @@ Convert existing evaluation evidence into CSV files consumed directly by the plo
 python3 evaluations/export-paper-data.py
 ```
 
-The default reads the newest recognizable run under each item's `results/` and writes this directory. Use `--reference` to read `reference-results/` or `--output DIR` to select another destination. The exporter does not run benchmarks or modify raw evidence.
+The default reads the newest recognizable run under each item's `results/` and writes this directory. Use `--output DIR` to select another destination. The exporter does not run benchmarks or modify raw evidence.
 
 Outputs are `overall.csv`, `game-fps.csv`, `function-breakdown.csv`, `callback-track.csv`, `coverage-effort.csv`, and `modifications.csv`. `manifest.json` records every input path and SHA-256.
 

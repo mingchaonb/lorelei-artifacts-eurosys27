@@ -8,6 +8,5 @@ x86-64 包使用 GNU cross compiler，因为 Blink AArch64 JIT 无法完成由 d
 
 ```bash
 ./evaluations/2-cli-benchmarks/zlib/run.sh
-./evaluations/2-cli-benchmarks/zlib/run.sh --reference
 REPETITIONS=1 ./evaluations/2-cli-benchmarks/zlib/run.sh --lanes native,qemu,blink,qemu-hecate
 ```

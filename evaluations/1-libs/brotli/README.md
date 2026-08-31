@@ -10,7 +10,6 @@ This recipe installs brotli 1.2.0 and its upstream tests through the pinned vcpk
 
 ```bash
 ./evaluations/1-libs/brotli/run.sh
-./evaluations/1-libs/brotli/run.sh --reference --verbose
 ./evaluations/1-libs/brotli/run.sh --install-only
 ```
 

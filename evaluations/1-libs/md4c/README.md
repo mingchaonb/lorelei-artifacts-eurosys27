@@ -10,7 +10,6 @@ This recipe fetches the official MD4C 0.5.3 release through the pinned vcpkg ove
 
 ```bash
 ./evaluations/1-libs/md4c/run.sh
-./evaluations/1-libs/md4c/run.sh --reference --verbose
 ./evaluations/1-libs/md4c/run.sh --install-only
 ```
 

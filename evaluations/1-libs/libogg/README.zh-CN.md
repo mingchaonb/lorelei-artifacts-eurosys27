@@ -6,7 +6,6 @@
 
 ```bash
 ./evaluations/1-libs/libogg/run.sh
-./evaluations/1-libs/libogg/run.sh --reference --verbose
 ./evaluations/1-libs/libogg/run.sh --install-only
 ```
 

@@ -10,7 +10,6 @@ This recipe fetches the official PCRE2 POSIX 10.46 release through the pinned vc
 
 ```bash
 ./evaluations/1-libs/pcre2-posix/run.sh
-./evaluations/1-libs/pcre2-posix/run.sh --reference --verbose
 ./evaluations/1-libs/pcre2-posix/run.sh --install-only
 ```
 

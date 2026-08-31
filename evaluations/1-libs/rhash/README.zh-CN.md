@@ -7,5 +7,5 @@
 port 构建 `test_shared` 并安装到 `tools/rhash/upstream-tests`。`run.sh` 直接在 native 与 Hecate 运行该程序，不重建测试。清理前验证中两条 lane 都通过并输出 `All sums are working properly!`，没有配置 failure 或 skip。共享配置还关闭 CLI 与静态库，不提供纯 QEMU lane。
 
 ```bash
-./run.sh --reference
+./run.sh
 ```

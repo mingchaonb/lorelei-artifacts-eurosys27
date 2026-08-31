@@ -10,7 +10,6 @@
 
 ```bash
 ./evaluations/1-libs/cjson/run.sh
-./evaluations/1-libs/cjson/run.sh --reference --verbose
 ./evaluations/1-libs/cjson/run.sh --install-only
 ```
 

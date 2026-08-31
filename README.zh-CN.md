@@ -36,7 +36,7 @@ eurosys-lorelei-artifacts/
 
 `vcpkg-overlay/ports/` 保存从各项目官方原版仓库获取源码并完成编译、安装和测试部署的配方。配方固定上游 release 或 commit，并校验下载内容。若上游构建系统不安装测试，配方会通过 `patches/` 或 `portfile.cmake` 将已构建测试统一安装到 `tools/<port>/upstream-tests/`。这些 patch 用于复现构建、测试安装和必要的 Hecate 适配，不替换被测 library 的算法实现。
 
-`evaluations/` 下五个编号目录分别对应五类论文证据。每项评测的入口、范围和结果都放在自己的目录中。评审者运行产生的证据写入 `results/<run-id>/`，作者参考结果写入 `reference-results/<run-id>/`。`.work/`、vcpkg build tree 和下载缓存只是可复用的中间状态，不属于实验结果。
+`evaluations/` 下五个编号目录分别对应五类论文证据。每项评测的入口、范围和结果都放在自己的目录中。评审者运行产生的证据写入 `results/<run-id>/`。`.work/`、vcpkg build tree 和下载缓存只是可复用的中间状态，不属于实验结果。
 
 ## 2. 准备环境
 
@@ -318,7 +318,7 @@ REPETITIONS=5 ./evaluations/2-cli-benchmarks/run-all.sh --restart
 
 ## 4. 结果与声明（Results and claims）
 
-1. 评审者生成的证据保存在对应配方的 `results/<run-id>/`，作者提供的参考证据保存在 `reference-results/<run-id>/`。新运行使用新的时间戳目录，不覆盖已有结果。
+1. 评审者生成的证据保存在对应配方的 `results/<run-id>/`。新运行使用新的时间戳目录，不覆盖已有结果。
 2. library README 只有在当前配置中所有未排除的上游测试都通过 native 与 Hecate 两条路径时，标题才标记 `[ALL TESTS PASSED]`。
 3. 无法代表 Lorelei 所声明机制的测试会明确排除，而不会计为 Hecate 失败。这些测试包括原子操作与锁、signal、真实设备集成、fuzz、sanitizer、private ABI 测试和不适合 AE 时间预算的压力测试。
 4. library 结果至少保留 native 与 Hecate 的原始测试输出、退出状态、测试分类、源码和 patch 身份，以及 TLC、HLR 配置代码行数。仅构建成功或成功生成 thunk 不作为正确性证据。
@@ -333,5 +333,5 @@ REPETITIONS=5 ./evaluations/2-cli-benchmarks/run-all.sh --restart
 4. native AArch64 与 Hecate x86-64 使用同一份上游版本和对应构建配置。library 正确性验证不运行纯 QEMU full-emulation lane。
 5. 所有 port 共享 `vcpkg/downloads/`，但每项评测的 build、package、install 和生成机制状态隔离在 `.work/evaluations/` 下。
 6. 安装和批处理脚本复用已经成功的状态。失败或中断保持可见，再次执行会跳过成功项目并重试未完成项目，除非评审者显式要求重新开始。
-7. `results/` 是评审者本地生成的可删除证据，`reference-results/` 是作者提供的参考证据。清理脚本只删除各自明确负责的结果目录，不清理共享 vcpkg 下载或 package 缓存。
+7. `results/` 是评审者本地生成的可删除证据。清理脚本只删除各自明确负责的结果目录，不清理共享 vcpkg 下载或 package 缓存。
 8. build tree、install prefix、下载缓存、凭据、专有输入和其他临时文件不提交到 artifact 仓库。

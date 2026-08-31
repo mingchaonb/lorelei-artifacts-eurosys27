@@ -6,7 +6,7 @@
 
 ```bash
 QEMU=/path/to/qemu-x86_64 \
-./evaluations/1-libs/sdl2-mixer/run.sh --reference --verbose
+  ./evaluations/1-libs/sdl2-mixer/run.sh --verbose
 ```
 
 Hecate 对 SDL2 与 SDL2_mixer 使用 TLC 加 HLR，并关闭 TLC callback replacement。host 预加载 Lorelei QEMU thread hook，因为 SDL 从 native dummy-audio thread 调用 guest callback。port 保留 WAVE 支持，关闭可选外部 music codec。该 workload 验证跨 host-created thread 的 effect callback，不声明覆盖所有 decoder 或完整上游 suite。预期 audit 为 26 个 translation unit、2 个 CCG class、2 个 FDG class 和 3 个重写文件。

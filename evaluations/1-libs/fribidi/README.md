@@ -10,7 +10,6 @@ This recipe fetches the official FriBidi 1.0.16 release through the pinned vcpkg
 
 ```bash
 ./evaluations/1-libs/fribidi/run.sh
-./evaluations/1-libs/fribidi/run.sh --reference --verbose
 ./evaluations/1-libs/fribidi/run.sh --install-only
 ```
 

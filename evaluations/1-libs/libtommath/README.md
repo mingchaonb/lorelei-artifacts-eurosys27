@@ -7,7 +7,7 @@ Public commands use the repository-local `.work/devkit` by default. Set `LORELEI
 This recipe builds the official LibTomMath 1.3.0 shared library. The directed workload installs a deterministic guest random-source callback with `mp_rand_source`, requires two later `mp_rand` calls to invoke it, and compares the resulting multiplication and hexadecimal conversion across native and Hecate paths.
 
 ```bash
-./evaluations/1-libs/libtommath/run.sh --reference --verbose
+./evaluations/1-libs/libtommath/run.sh --verbose
 ```
 
 TLC callback replacement is disabled. HLR detects the internal static random-source initializer as FDG, but the reviewed patch leaves that internal host pointer raw. CCG handles the persistent callback installed by the guest. The demo program and complete arithmetic regression suite are outside this claim-scoped workload.

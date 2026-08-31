@@ -6,7 +6,6 @@ This workload consecutively compresses 100 copies of the same deterministic 64 M
 
 ```bash
 ./evaluations/2-cli-benchmarks/zstd/run.sh
-./evaluations/2-cli-benchmarks/zstd/run.sh --reference
 REPETITIONS=1 ./evaluations/2-cli-benchmarks/zstd/run.sh --lanes native,qemu,blink,qemu-hecate
 ```
 

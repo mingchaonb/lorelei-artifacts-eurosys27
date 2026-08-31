@@ -6,7 +6,6 @@
 
 ```bash
 ./evaluations/1-libs/soxr/run.sh
-./evaluations/1-libs/soxr/run.sh --reference --verbose
 ./evaluations/1-libs/soxr/run.sh --install-only
 ```
 

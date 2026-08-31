@@ -10,7 +10,6 @@ This recipe installs zlib 1.3.2 and its upstream runtime tests through the pinne
 
 ```bash
 ./evaluations/1-libs/zlib/run.sh
-./evaluations/1-libs/zlib/run.sh --reference --verbose
 ./evaluations/1-libs/zlib/run.sh --install-only
 ```
 

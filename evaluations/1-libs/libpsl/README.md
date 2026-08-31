@@ -10,7 +10,6 @@ This recipe fetches the official libpsl 0.21.5 release through the pinned vcpkg 
 
 ```bash
 ./evaluations/1-libs/libpsl/run.sh
-./evaluations/1-libs/libpsl/run.sh --reference --verbose
 ./evaluations/1-libs/libpsl/run.sh --install-only
 ```
 

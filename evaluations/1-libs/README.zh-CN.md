@@ -132,7 +132,6 @@ Hecate library 使用以下机制之一：
 ```bash
 ./evaluations/1-libs/sdl2/run.sh
 ./evaluations/1-libs/sdl2/run.sh --verbose
-./evaluations/1-libs/sdl2/run.sh --reference
 ./evaluations/1-libs/sdl2/run.sh --install-only
 ```
 
@@ -140,7 +139,6 @@ Hecate library 使用以下机制之一：
 
 - 默认模式：安装所需 package，生成机制文件并运行 native 与 Hecate 测试。
 - `--verbose`：显示 vcpkg、TLC、HLR、build 和测试输出，同时保留原始日志。
-- `--reference`：执行相同流程，但写入作者参考结果目录。
 - `--install-only`：只准备 package 与机制文件，不运行测试。
 
 某个选项不适用于特定 library 时，其 README 必须明确说明。
@@ -192,12 +190,6 @@ Hecate library 使用以下机制之一：
 
 ```text
 evaluations/1-libs/<package>/results/<run-id>/
-```
-
-作者参考结果写入：
-
-```text
-evaluations/1-libs/<package>/reference-results/<run-id>/
 ```
 
 每次运行至少保存：

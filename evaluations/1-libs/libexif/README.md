@@ -10,7 +10,6 @@ This recipe fetches the official libexif 0.6.26 release through the pinned vcpkg
 
 ```bash
 ./evaluations/1-libs/libexif/run.sh
-./evaluations/1-libs/libexif/run.sh --reference --verbose
 ./evaluations/1-libs/libexif/run.sh --install-only
 ```
 

@@ -6,7 +6,6 @@
 
 ```bash
 ./evaluations/1-libs/json-c/run.sh
-./evaluations/1-libs/json-c/run.sh --reference --verbose
 ./evaluations/1-libs/json-c/run.sh --install-only
 ```
 

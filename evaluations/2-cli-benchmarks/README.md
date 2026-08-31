@@ -156,21 +156,12 @@ Batch behavior is:
 - `--plain` disables the progress display fixed to the bottom of the terminal.
 - An interactive terminal shows the 3 most recent results, the current workload, and overall progress.
 
-Generate author reference results with:
-
-```bash
-./evaluations/2-cli-benchmarks/run-all.sh --reference
-```
-
-`--reference` and `--install-only` cannot be combined.
-
 ## 8. Run one workload
 
 Each `<workload>/run.sh` is its public entry point. For example:
 
 ```bash
 ./evaluations/2-cli-benchmarks/fftw/run.sh
-./evaluations/2-cli-benchmarks/zlib/run.sh --reference
 REPETITIONS=1 ./evaluations/2-cli-benchmarks/zstd/run.sh \
   --lanes native,qemu,blink,qemu-hecate
 ```
@@ -191,12 +182,6 @@ Evaluator results are written to:
 evaluations/2-cli-benchmarks/<workload>/results/<run-id>/
 ```
 
-Author reference results are written to:
-
-```text
-evaluations/2-cli-benchmarks/<workload>/reference-results/<run-id>/
-```
-
 Each workload preserves at least:
 
 1. Complete commands for every lane.
@@ -212,13 +197,6 @@ Preview and remove evaluator results with:
 ```bash
 ./evaluations/2-cli-benchmarks/delete-all-results.sh --dry-run
 ./evaluations/2-cli-benchmarks/delete-all-results.sh
-```
-
-Reference results use a separate script:
-
-```bash
-./evaluations/2-cli-benchmarks/delete-all-reference-results.sh --dry-run
-./evaluations/2-cli-benchmarks/delete-all-reference-results.sh
 ```
 
 Cleanup never removes `_inputs/`, shared vcpkg downloads, or package caches.

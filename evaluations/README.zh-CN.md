@@ -125,7 +125,6 @@ vcpkg-overlay/
 结果目录的职责为：
 
 - `results/<run-id>/` 保存评审者本地生成的证据。
-- `reference-results/<run-id>/` 保存作者提供的参考证据。
 - 每次运行使用新的 UTC 时间戳目录，不覆盖以前结果。
 - `.work/`、vcpkg buildtree、安装 prefix、download cache 和临时输入不属于证据。
 - 清理结果时不删除共享 vcpkg download 或 package cache。

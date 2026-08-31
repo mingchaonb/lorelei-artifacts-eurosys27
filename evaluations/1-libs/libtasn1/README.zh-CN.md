@@ -7,5 +7,5 @@
 port 把完整 suite 安装到 `tools/libtasn1/upstream-tests`，包括 9 个 fuzz regression 程序、24 个普通程序、7 个 shell 测试、fixture 和 shell 测试使用的 3 个 CLI。`run.sh` 只使用安装文件，不重建源码。清理前验证中，40 项测试在两条 lane 均通过且分类相同，没有排除项。
 
 ```bash
-./run.sh --reference
+./run.sh
 ```

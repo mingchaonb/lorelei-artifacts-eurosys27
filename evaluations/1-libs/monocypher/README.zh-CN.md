@@ -7,5 +7,5 @@
 port 构建并安装完整上游 vector test。`run.sh` 只使用安装后的 package，运行 native 与 Hecate，绝不运行纯 QEMU lane。两条 lane 均以状态 0 退出且输出等价即为成功。
 
 ```bash
-./run.sh --reference
+./run.sh
 ```

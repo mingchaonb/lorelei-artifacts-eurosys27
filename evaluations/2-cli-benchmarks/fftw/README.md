@@ -6,6 +6,5 @@ The selected problem is an out-of-place forward complex two-dimensional transfor
 
 ```bash
 ./evaluations/2-cli-benchmarks/fftw/run.sh
-./evaluations/2-cli-benchmarks/fftw/run.sh --reference
 REPETITIONS=1 ./evaluations/2-cli-benchmarks/fftw/run.sh --lanes native,qemu,blink,qemu-hecate
 ```

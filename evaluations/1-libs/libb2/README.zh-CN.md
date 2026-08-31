@@ -8,8 +8,8 @@ Hecate lane 使用 TLC 生成的 GTL 与 HTL 库，不启用 `hlr` feature，不
 
 vcpkg port 将 4 项测试全部安装到 `tools/libb2/upstream-tests`。`run.sh` 只使用安装后的 package，不从源码树或 vcpkg buildtree 重建。清理前验证显示 4 项测试在 native 与 Hecate 均通过且输出相同，没有配置 skip 或 failure。
 
-runner 从 `LORELEI_DEVKIT` 读取 devkit，默认使用仓库内 `.work/devkit`。`--install-only` 在两个包完成安装和 audit 后停止，`--reference` 写入只追加参考证据，`--verbose` 显示 vcpkg 准备输出并保留原始日志。不提供纯 QEMU lane。
+runner 从 `LORELEI_DEVKIT` 读取 devkit，默认使用仓库内 `.work/devkit`。`--install-only` 在两个包完成安装和 audit 后停止，`--verbose` 显示 vcpkg 准备输出并保留原始日志。不提供纯 QEMU lane。
 
 ```bash
-./run.sh --reference
+./run.sh
 ```

@@ -6,7 +6,6 @@
 
 ```bash
 ./evaluations/1-libs/libvorbisfile/run.sh
-./evaluations/1-libs/libvorbisfile/run.sh --reference --verbose
 ./evaluations/1-libs/libvorbisfile/run.sh --install-only
 ```
 

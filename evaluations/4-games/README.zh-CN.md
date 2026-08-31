@@ -158,7 +158,7 @@ MangoHud 默认包裹 host 侧 QEMU 进程，因为 AArch64 GL 与 Vulkan driver
 python3 evaluations/export-paper-data.py
 ```
 
-可读表格写入 `evaluations/paper-data/game-fps.csv`。加 `--reference` 时，脚本读取 `reference-results/`，而不是 `results/`。
+可读表格写入 `evaluations/paper-data/game-fps.csv`。
 
 关闭采集：
 
@@ -196,13 +196,6 @@ evaluations/4-games/<game>/results/<UTC timestamp>/
 ```bash
 ./evaluations/4-games/delete-all-results.sh --dry-run
 ./evaluations/4-games/delete-all-results.sh
-```
-
-参考结果使用独立脚本：
-
-```bash
-./evaluations/4-games/delete-all-reference-results.sh --dry-run
-./evaluations/4-games/delete-all-reference-results.sh
 ```
 
 清理脚本不会删除游戏 package、共享 vcpkg cache 或用户提供的 `GAME_DIR`。

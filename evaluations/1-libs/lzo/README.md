@@ -10,7 +10,6 @@ This recipe installs lzo 2.10 and its upstream tests through the pinned vcpkg ov
 
 ```bash
 ./evaluations/1-libs/lzo/run.sh
-./evaluations/1-libs/lzo/run.sh --reference --verbose
 ./evaluations/1-libs/lzo/run.sh --install-only
 ```
 

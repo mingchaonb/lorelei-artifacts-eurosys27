@@ -6,7 +6,6 @@
 
 ```bash
 ./evaluations/1-libs/xxhash/run.sh
-./evaluations/1-libs/xxhash/run.sh --reference --verbose
 ./evaluations/1-libs/xxhash/run.sh --install-only
 ```
 

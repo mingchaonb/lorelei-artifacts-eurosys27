@@ -6,7 +6,6 @@
 
 ```bash
 ./evaluations/1-libs/pcre2-posix/run.sh
-./evaluations/1-libs/pcre2-posix/run.sh --reference --verbose
 ./evaluations/1-libs/pcre2-posix/run.sh --install-only
 ```
 

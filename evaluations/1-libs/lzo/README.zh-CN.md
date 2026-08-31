@@ -6,7 +6,6 @@
 
 ```bash
 ./evaluations/1-libs/lzo/run.sh
-./evaluations/1-libs/lzo/run.sh --reference --verbose
 ./evaluations/1-libs/lzo/run.sh --install-only
 ```
 

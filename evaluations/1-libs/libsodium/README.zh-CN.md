@@ -7,5 +7,5 @@
 port 读取当前配置的上游 `TESTS` 列表，构建并安装全部 80 个程序及 fixture。`run.sh` 只使用安装后的 package，不运行纯 QEMU lane。预期结果是 80 项测试在 native 与 Hecate 全部通过。
 
 ```bash
-./run.sh --reference
+./run.sh
 ```

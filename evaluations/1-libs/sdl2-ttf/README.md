@@ -7,7 +7,7 @@ Public commands use the repository-local `.work/devkit` by default. Set `LORELEI
 This recipe builds official SDL2_ttf 2.24.0 with FreeType and without HarfBuzz. Upstream does not register an automated CMake test suite for this release. The port therefore installs one directed text-size test and a checksum-pinned DejaVu Sans font under `tools/sdl2-ttf/upstream-tests`. It runs that test in native and Hecate lanes and requires identical output.
 
 ```bash
-./evaluations/1-libs/sdl2-ttf/run.sh --reference --verbose
+./evaluations/1-libs/sdl2-ttf/run.sh --verbose
 ```
 
 The Hecate lane uses the SDL2 TLC plus HLR dependency path and a TLC thunk for SDL2_ttf. HLR still audits the exact SDL2_ttf shared target with callback replacement disabled. The expected result is one translation unit, zero CCG classes, zero FDG classes, and zero rewritten files. SDL2_ttf therefore remains an audited zero-hit item and is not counted as an HLR-transformed DSO.

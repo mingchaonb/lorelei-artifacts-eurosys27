@@ -6,7 +6,6 @@
 
 ```bash
 ./evaluations/2-cli-benchmarks/zstd/run.sh
-./evaluations/2-cli-benchmarks/zstd/run.sh --reference
 REPETITIONS=1 ./evaluations/2-cli-benchmarks/zstd/run.sh --lanes native,qemu,blink,qemu-hecate
 ```
 

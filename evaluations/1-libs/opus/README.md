@@ -10,7 +10,6 @@ This recipe builds the pinned official release as shared libraries for the AArch
 
 ```bash
 ./evaluations/1-libs/opus/run.sh
-./evaluations/1-libs/opus/run.sh --reference --verbose
 ./evaluations/1-libs/opus/run.sh --install-only
 ```
 

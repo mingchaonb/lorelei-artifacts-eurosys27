@@ -6,7 +6,6 @@
 
 ```bash
 ./evaluations/1-libs/libconfig/run.sh
-./evaluations/1-libs/libconfig/run.sh --reference --verbose
 ./evaluations/1-libs/libconfig/run.sh --install-only
 ```
 

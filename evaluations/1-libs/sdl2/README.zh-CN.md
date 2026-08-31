@@ -26,13 +26,7 @@
 
 install-only 模式不要求 QEMU 或 thread hook。它在 `summary.json` 写入安装路径和 `tests_run: false`。安装文件保留在 `.work/evaluations/sdl2/`，直到下一次 SDL2 运行替换该可丢弃 workspace。
 
-默认运行把评审者证据写入 `results/<run-id>/`。作者参考证据使用：
-
-```bash
-./evaluations/1-libs/sdl2/run.sh --reference
-```
-
-参考结果写入 `reference-results/<run-id>/`。该选项只改变证据目的地和 `meta.json` result kind，不改变 build 或测试策略。开发树中的 patched QEMU 尚未安装进 devkit 时可使用：
+默认运行把评审者证据写入 `results/<run-id>/`。开发树中的 patched QEMU 尚未安装进 devkit 时可使用：
 
 ```bash
 QEMU=/path/to/patched/qemu-x86_64 \

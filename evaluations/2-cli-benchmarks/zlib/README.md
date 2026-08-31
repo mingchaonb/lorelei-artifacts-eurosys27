@@ -8,6 +8,5 @@ The x86-64 package uses the GNU cross compiler because Blink's AArch64 JIT does 
 
 ```bash
 ./evaluations/2-cli-benchmarks/zlib/run.sh
-./evaluations/2-cli-benchmarks/zlib/run.sh --reference
 REPETITIONS=1 ./evaluations/2-cli-benchmarks/zlib/run.sh --lanes native,qemu,blink,qemu-hecate
 ```

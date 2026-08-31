@@ -6,7 +6,6 @@
 
 ```bash
 ./evaluations/1-libs/zstd/run.sh
-./evaluations/1-libs/zstd/run.sh --reference --verbose
 ./evaluations/1-libs/zstd/run.sh --install-only
 ```
 

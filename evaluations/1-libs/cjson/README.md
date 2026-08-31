@@ -10,7 +10,6 @@ This recipe fetches the official cJSON 1.7.19 release through the pinned vcpkg o
 
 ```bash
 ./evaluations/1-libs/cjson/run.sh
-./evaluations/1-libs/cjson/run.sh --reference --verbose
 ./evaluations/1-libs/cjson/run.sh --install-only
 ```
 

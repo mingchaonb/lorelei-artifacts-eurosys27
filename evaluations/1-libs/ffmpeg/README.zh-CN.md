@@ -13,7 +13,7 @@
 每个包都把当前配置的测试安装到 `tools/ffmpeg/upstream-tests`。
 
 ```bash
-./evaluations/1-libs/ffmpeg/run.sh --reference --verbose
+./evaluations/1-libs/ffmpeg/run.sh --verbose
 ```
 
 评审者只会看到两条结果 lane：
@@ -36,13 +36,5 @@ port 固定到上游 tag `n7.1.5` 和 commit `3a0867c2bfda4a4d4309ca1a8cbdc6175e
 TLC callback replacement 已关闭，因此保存的 callback 由 HLR 处理。HLR 后 patch 导出 `LoreGetFileContext`，并在 C static descriptor 中保留原始 host 函数指针，因为运行时 FDG expression 不是常量。它们不会全局关闭 FDG，动态赋值和调用仍保留生成的 FDG guard。
 
 本配方采用原复现记录所述的无 samples、刻意收窄的 FFmpeg 配置。由于配置关闭 image2 demuxer，native 基线预计有 20 项 pixfmt FATE 失败，Hecate 对应失败分类为基线跳过。任何 Hecate 独有失败、测试未完整执行、manifest 不一致，或连续 5 次 `api-threadmessage` 检查中的失败都会使评测失败。
-
-参考运行 `20260830T053017Z` 完成全部 151 项注册测试：
-
-- Native：131 项通过，20 项配置基线失败。
-- Hecate，TLC + HLR：131 项通过，20 项匹配的基线跳过，0 项失败。
-- `fate-hwdevice`：两条 lane 均通过。
-- `api-threadmessage`：两条 lane 均连续通过 5 次。
-- 测试 manifest：完全一致，没有未执行测试。
 
 MP3、FDK AAC、Vorbis 和 x264 四个命令行 workload 属于性能证据，不在本目录作为额外上游单元测试计数。

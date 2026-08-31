@@ -9,13 +9,12 @@ This recipe builds the pinned Ubuntu 24.04 libX11 source as native AArch64, x86-
 Run it with:
 
 ```bash
-./run.sh --reference
+./run.sh
 ```
 
 The runner inherits `DISPLAY` and `XAUTHORITY` from its current environment. To select another graphical session, set `GUI_ENV` to a file containing both variables.
 
 - `--install-only` installs and audits all three packages and generates the TLC thunk without requiring an active X11 session.
-- `--reference` stores the run below `reference-results`.
 - `--verbose` mirrors vcpkg preparation output while preserving the raw log.
 
 The runtime comparison is native versus Hecate only. It never runs a pure QEMU lane. This is a directed display integration workload rather than the complete upstream suite, so the title intentionally has no `[ALL TESTS PASSED]` marker.

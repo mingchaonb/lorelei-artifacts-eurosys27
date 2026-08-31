@@ -6,10 +6,10 @@ This recipe pins OpenSSL 3.0.22. The production targets are libcrypto.so.3 and l
 
 OpenSSL is the explicit exception in this migration batch. The port builds and installs only the software payload. It does not build or install upstream tests.
 
-The runner reads the devkit from `LORELEI_DEVKIT`, defaulting to `.work/devkit` relative to the artifact repository, and installs both architecture packages, then records the shared-library audit. `--install-only` is accepted for interface consistency. `--reference` writes append-only reference evidence. `--verbose` mirrors vcpkg preparation output while retaining the raw logs.
-
-No OpenSSL test, speed benchmark, Hecate lane, or pure QEMU lane is run. This target intentionally does not carry the `[ALL TESTS PASSED]` marker.
+The runner reads the devkit from `LORELEI_DEVKIT`, defaulting to `.work/devkit` relative to the artifact repository, and installs both architecture packages, then records the shared-library audit. `--install-only` is accepted for interface consistency. `--verbose` mirrors vcpkg preparation output while retaining the raw logs.
 
 ```bash
-./run.sh --reference
+./run.sh
 ```
+
+No OpenSSL test, speed benchmark, Hecate lane, or pure QEMU lane is run. This target intentionally does not carry the `[ALL TESTS PASSED]` marker.

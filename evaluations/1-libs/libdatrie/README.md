@@ -10,7 +10,6 @@ This recipe fetches the official libdatrie 0.2.14 release through the pinned vcp
 
 ```bash
 ./evaluations/1-libs/libdatrie/run.sh
-./evaluations/1-libs/libdatrie/run.sh --reference --verbose
 ./evaluations/1-libs/libdatrie/run.sh --install-only
 ```
 

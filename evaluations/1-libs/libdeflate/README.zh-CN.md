@@ -6,7 +6,6 @@
 
 ```bash
 ./evaluations/1-libs/libdeflate/run.sh
-./evaluations/1-libs/libdeflate/run.sh --reference --verbose
 ./evaluations/1-libs/libdeflate/run.sh --install-only
 ```
 

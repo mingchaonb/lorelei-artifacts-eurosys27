@@ -9,5 +9,5 @@ port 将配置 suite 安装到 `tools/nettle/upstream-tests`。`run.sh` 只使�
 清理前验证中两条 lane 分类相同：75 项通过、5 项由共享 build 配置跳过、0 项失败。配置关闭 public-key、assembler、OpenSSL integration、文档和静态库，因此 public-key helper、3 个 RSA example 和 x86 IBT probe 在两条 lane 同样跳过，它们是配置排除而非 Hecate 失败。
 
 ```bash
-./run.sh --reference
+./run.sh
 ```

@@ -132,7 +132,6 @@ Using SDL2 as an example:
 ```bash
 ./evaluations/1-libs/sdl2/run.sh
 ./evaluations/1-libs/sdl2/run.sh --verbose
-./evaluations/1-libs/sdl2/run.sh --reference
 ./evaluations/1-libs/sdl2/run.sh --install-only
 ```
 
@@ -140,7 +139,6 @@ Common modes are:
 
 - Default: installs required packages, generates mechanism files, and runs native and Hecate tests.
 - `--verbose`: streams vcpkg, TLC, HLR, build, and test output while retaining raw logs.
-- `--reference`: runs the same procedure but writes author reference results.
 - `--install-only`: prepares packages and mechanism files without running tests.
 
 If an option is not applicable to a specific library, that library's README must say so explicitly.
@@ -192,12 +190,6 @@ Evaluator results are written to:
 
 ```text
 evaluations/1-libs/<package>/results/<run-id>/
-```
-
-Author reference results are written to:
-
-```text
-evaluations/1-libs/<package>/reference-results/<run-id>/
 ```
 
 Every run preserves at least:

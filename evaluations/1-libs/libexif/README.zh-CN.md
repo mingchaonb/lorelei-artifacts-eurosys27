@@ -6,7 +6,6 @@
 
 ```bash
 ./evaluations/1-libs/libexif/run.sh
-./evaluations/1-libs/libexif/run.sh --reference --verbose
 ./evaluations/1-libs/libexif/run.sh --install-only
 ```
 

@@ -10,7 +10,6 @@ This recipe fetches the official GNU Libidn2 2.3.8 release through the pinned vc
 
 ```bash
 ./evaluations/1-libs/libidn2/run.sh
-./evaluations/1-libs/libidn2/run.sh --reference --verbose
 ./evaluations/1-libs/libidn2/run.sh --install-only
 ```
 

@@ -10,7 +10,6 @@ This recipe installs lz4 1.10.0 and its upstream test through the pinned vcpkg o
 
 ```bash
 ./evaluations/1-libs/lz4/run.sh
-./evaluations/1-libs/lz4/run.sh --reference --verbose
 ./evaluations/1-libs/lz4/run.sh --install-only
 ```
 

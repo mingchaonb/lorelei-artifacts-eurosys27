@@ -8,7 +8,7 @@
 python3 evaluations/export-paper-data.py
 ```
 
-默认读取每项 `results/` 中最新且包含可识别汇总的运行，输出到本目录。使用 `--reference` 改读 `reference-results/`，使用 `--output DIR` 改变输出目录。脚本不会运行 benchmark，也不会修改原始证据。
+默认读取每项 `results/` 中最新且包含可识别汇总的运行，输出到本目录。使用 `--output DIR` 改变输出目录。脚本不会运行 benchmark，也不会修改原始证据。
 
 输出包括 `overall.csv`、`game-fps.csv`、`function-breakdown.csv`、`callback-track.csv`、`coverage-effort.csv` 和 `modifications.csv`。`manifest.json` 记录每个输入文件和 SHA-256。
 

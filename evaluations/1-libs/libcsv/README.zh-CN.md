@@ -6,7 +6,6 @@
 
 ```bash
 ./evaluations/1-libs/libcsv/run.sh
-./evaluations/1-libs/libcsv/run.sh --reference --verbose
 ./evaluations/1-libs/libcsv/run.sh --install-only
 ```
 

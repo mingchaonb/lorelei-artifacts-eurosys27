@@ -8,7 +8,7 @@ This recipe builds the official SDL2_mixer 2.8.2 shared library and the pinned S
 
 ```bash
 QEMU=/path/to/qemu-x86_64 \
-./evaluations/1-libs/sdl2-mixer/run.sh --reference --verbose
+  ./evaluations/1-libs/sdl2-mixer/run.sh --verbose
 ```
 
 The Hecate lane uses TLC plus HLR for SDL2 and SDL2_mixer with TLC callback replacement disabled. The host preloads the Lorelei QEMU thread hook because SDL invokes the guest callbacks from its native dummy-audio thread. The port keeps WAVE support and disables optional external music codecs. This workload validates effect callbacks across a host-created thread and does not claim coverage of every decoder or the complete upstream suite.

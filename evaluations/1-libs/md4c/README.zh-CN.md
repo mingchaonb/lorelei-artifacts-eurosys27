@@ -6,7 +6,6 @@
 
 ```bash
 ./evaluations/1-libs/md4c/run.sh
-./evaluations/1-libs/md4c/run.sh --reference --verbose
 ./evaluations/1-libs/md4c/run.sh --install-only
 ```
 

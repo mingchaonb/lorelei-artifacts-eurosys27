@@ -13,7 +13,7 @@ This recipe installs FFmpeg 7.1.5 through one repository overlay port and three 
 Every package installs its configured tests at `tools/ffmpeg/upstream-tests`.
 
 ```bash
-./evaluations/1-libs/ffmpeg/run.sh --reference --verbose
+./evaluations/1-libs/ffmpeg/run.sh --verbose
 ```
 
 The evaluator sees two result lanes only:
@@ -36,13 +36,5 @@ Generated source and FileContext files stay in vcpkg's disposable buildtree and 
 TLC callback replacement is disabled, so saved callbacks are handled by HLR. The post-HLR patches export `LoreGetFileContext` and keep raw host function pointers in C static descriptors, where a run-time FDG expression is not a constant. They do not disable FDG globally. Dynamic assignments and calls retain their generated FDG guards.
 
 This is the no-samples, deliberately restricted FFmpeg configuration documented by the original reproduction record. Twenty pixfmt FATE entries are expected to fail in the native baseline because the configuration disables the image2 demuxer. Matching Hecate failures are classified as baseline skips. Any Hecate-only failure, incomplete test execution, manifest mismatch, or failure in five repeated `api-threadmessage` checks makes the evaluation fail.
-
-The reference run `20260830T053017Z` completed all 151 registered tests:
-
-- Native: 131 passed and 20 configuration-baseline failures.
-- Hecate, TLC + HLR: 131 passed, 20 matching baseline skips, and 0 failures.
-- `fate-hwdevice`: passed in both lanes.
-- `api-threadmessage`: passed five consecutive repetitions in both lanes.
-- Test manifests: identical, with no unexecuted test.
 
 The four MP3, FDK AAC, Vorbis, and x264 command-line workloads remain performance-workload evidence. They are not counted as additional upstream unit tests in this directory.

@@ -10,7 +10,6 @@ This recipe fetches the official Expat release through the repository vcpkg over
 
 ```bash
 ./evaluations/1-libs/expat/run.sh
-./evaluations/1-libs/expat/run.sh --reference --verbose
 ./evaluations/1-libs/expat/run.sh --install-only
 ```
 

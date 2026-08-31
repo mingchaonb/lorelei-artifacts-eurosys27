@@ -28,13 +28,7 @@ To install the HLR-rewritten host SDL, generate the SDL thunk and libc shim, and
 
 Install-only mode does not require QEMU or the QEMU thread hook. It writes the installed paths and `tests_run: false` to `summary.json`. The installed files remain under `.work/evaluations/sdl2/` until the next SDL2 invocation replaces that disposable workspace.
 
-The default command writes evaluator-generated evidence to `results/<run-id>/`. To produce the reference evidence shipped from the authors' machine, use:
-
-```bash
-./evaluations/1-libs/sdl2/run.sh --reference
-```
-
-Reference runs are written to `reference-results/<run-id>/`. The option changes only the evidence destination and `meta.json` result kind. Both commands execute the same build and test policy.
+The default command writes evaluator-generated evidence to `results/<run-id>/`.
 
 For a development tree where patched QEMU has not yet been installed into the devkit:
 

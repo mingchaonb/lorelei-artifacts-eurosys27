@@ -10,7 +10,6 @@ This recipe installs libbase64 0.5.2 and its upstream tests through the pinned v
 
 ```bash
 ./evaluations/1-libs/libbase64/run.sh
-./evaluations/1-libs/libbase64/run.sh --reference --verbose
 ./evaluations/1-libs/libbase64/run.sh --install-only
 ```
 
