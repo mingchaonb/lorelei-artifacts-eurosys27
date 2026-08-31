@@ -16,7 +16,6 @@ while (($#)); do
 done
 devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/.work/devkit}")
 qemu=$(realpath -m "${QEMU:-$repo_root/vcpkg/installed/arm64-linux/tools/qemu-ae/qemu-x86_64}")
-gui_env=${GUI_ENV:-$HOME/Desktop/spark-gui-env.txt}
 run_id=$(date -u +%Y%m%dT%H%M%SZ)
 run_dir=$recipe_dir/results/$run_id
 work_dir=$repo_root/.work/evaluations/glvnd
@@ -25,7 +24,18 @@ vcpkg=$repo_root/vcpkg/vcpkg
 overlay=$repo_root/vcpkg-overlay
 
 if ! $install_only; then
-    [[ -x $qemu && -f $gui_env ]] || { echo "Missing QEMU or GUI environment" >&2; exit 2; }
+    [[ -x $qemu ]] || { echo "Missing QEMU: $qemu" >&2; exit 2; }
+    display=${DISPLAY:-}
+    xauthority=${XAUTHORITY:-}
+    if [[ -n ${GUI_ENV:-} ]]; then
+        [[ -f $GUI_ENV ]] || { echo "GUI environment file not found: $GUI_ENV" >&2; exit 2; }
+        display=$(sed -n 's/^DISPLAY=//p' "$GUI_ENV" | tail -1)
+        xauthority=$(sed -n 's/^XAUTHORITY=//p' "$GUI_ENV" | tail -1)
+    fi
+    [[ -n $display && -n $xauthority ]] || {
+        echo "Set DISPLAY and XAUTHORITY, or provide both through GUI_ENV." >&2
+        exit 2
+    }
 fi
 if [[ -e $work_dir && ! -f $work_dir/.lorelei-evaluations-workspace ]]; then
     echo "Refusing to replace unmarked work directory: $work_dir" >&2
@@ -47,9 +57,6 @@ if $install_only; then
     echo "Installed glvnd at $installed"
     exit 0
 fi
-
-display=$(sed -n 's/^DISPLAY=//p' "$gui_env" | tail -1)
-xauthority=$(sed -n 's/^XAUTHORITY=//p' "$gui_env" | tail -1)
 
 dpkg-query -W -f='${Package} ${Version}\n' libgl1 libglvnd0 libglx0 \
     | tee "$run_dir/generated/system-packages.txt"

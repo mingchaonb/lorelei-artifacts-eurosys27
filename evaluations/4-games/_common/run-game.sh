@@ -13,7 +13,7 @@ Common environment overrides:
   QEMU                  Patched qemu-x86_64 executable
   GAMES_ROOT            Legacy packaged game directory override
   GAME_DIR              Selected game's installation directory
-  GUI_ENV               File containing DISPLAY and XAUTHORITY
+  GUI_ENV               Optional file overriding DISPLAY and XAUTHORITY
   RUNTIME_HOME_ROOT     Per-game writable home directories
   MANGOHUD_ENABLED      Set to 0 to disable FPS collection
   MANGOHUD_CONFIG_EXTRA  Additional comma-separated MangoHud options
@@ -46,7 +46,6 @@ rover_root=$(cd "$repo_root/.." && pwd)
 devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/.work/devkit}")
 qemu=$(realpath -m "${QEMU:-$repo_root/vcpkg/installed/arm64-linux/tools/qemu-ae/qemu-x86_64}")
 games_root=${GAMES_ROOT:-$rover_root/ae-games}
-gui_env=${GUI_ENV:-$HOME/Desktop/spark-gui-env.txt}
 runtime_home_root=${RUNTIME_HOME_ROOT:-$repo_root/.work/evaluations/games/runtime-home}
 mangohud_enabled=${MANGOHUD_ENABLED:-1}
 mangohud=
@@ -57,6 +56,18 @@ elif [[ $mangohud_enabled != 0 ]]; then
     echo "MANGOHUD_ENABLED must be 0 or 1: $mangohud_enabled" >&2
     exit 2
 fi
+
+display=${DISPLAY:-}
+xauthority=${XAUTHORITY:-}
+if [[ -n ${GUI_ENV:-} ]]; then
+    [[ -f $GUI_ENV ]] || { echo "GUI environment file not found: $GUI_ENV" >&2; exit 2; }
+    display=$(sed -n 's/^DISPLAY=//p' "$GUI_ENV" | tail -1)
+    xauthority=$(sed -n 's/^XAUTHORITY=//p' "$GUI_ENV" | tail -1)
+fi
+[[ -n $display && -n $xauthority ]] || {
+    echo "Set DISPLAY and XAUTHORITY, or provide both through GUI_ENV." >&2
+    exit 2
+}
 
 sdl_prefix=$repo_root/.work/evaluations/sdl2/installed/hecate/arm64-linux-ae
 sdl_thunk=$repo_root/.work/evaluations/sdl2/thunks/hecate
@@ -85,7 +96,7 @@ if [[ $game != hollow-knight && -z ${GAMES_ROOT:-} && -z ${GAME_DIR:-} ]]; then
     guest_game_prefix=$game_installed/x64-linux-ae
 fi
 
-for required in "$qemu" "$gui_env" "$devkit/bin/x86_64-linux-gnu-clang" \
+for required in "$qemu" "$devkit/bin/x86_64-linux-gnu-clang" \
     "$devkit/x86_64/sysroot" "$devkit/lib/libLoreHostHLRExtension.so" \
     "$devkit/x86_64/lib/libLoreGuestHLRExtension.so" \
     "$sdl_thunk/x86_64/libSDL2.so" \
@@ -203,8 +214,6 @@ if [[ ! -x $executable ]]; then
     exit 2
 fi
 
-display=$(sed -n 's/^DISPLAY=//p' "$gui_env" | tail -1)
-xauthority=$(sed -n 's/^XAUTHORITY=//p' "$gui_env" | tail -1)
 run_id=$(date -u +%Y%m%dT%H%M%SZ)
 game_recipe_dir=$(realpath -m "$recipe_dir/../$game")
 run_dir=$game_recipe_dir/results/$run_id

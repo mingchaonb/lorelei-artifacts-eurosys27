@@ -9,7 +9,7 @@ This repository is the evaluator-facing build, test, and evidence workspace for 
 ```text
 eurosys-lorelei-artifacts/
 ├── docker/
-│   └── Dockerfile              Ubuntu 24.04 ARM64 evaluation image
+│   └── Dockerfile              Ubuntu 24.04 evaluation image
 ├── evaluations/
 │   ├── 1-libs/                 upstream library tests and native versus Hecate comparisons
 │   ├── 2-cli-benchmarks/       the eight command-line workloads in the paper
@@ -42,19 +42,10 @@ The five numbered directories below `evaluations/` correspond to five groups of 
 
 ### 2.1 Build the Ubuntu 24.04 ARM64 image
 
-The formal evaluation requires a physical ARM64 host running Ubuntu 24.04 with a working Docker Engine. Both the host and container operating systems must be Ubuntu 24.04. Transparent QEMU emulation on an x86-64 host is not a substitute for an ARM64 host. Confirm the host architecture and operating system first:
-
-```bash
-test "$(uname -m)" = aarch64
-grep -qx 'ID=ubuntu' /etc/os-release
-grep -qx 'VERSION_ID="24.04"' /etc/os-release
-```
-
 Build the image from the repository root. The Dockerfile installs every system dependency required by the library, DBT, plotting, game, and MangoHud evaluations. It also creates an unprivileged `user` whose UID and GID match the host account:
 
 ```bash
 docker build \
-  --platform linux/arm64 \
   --file docker/Dockerfile \
   --build-arg USER_UID="$(id -u)" \
   --build-arg USER_GID="$(id -g)" \
@@ -66,7 +57,6 @@ When building in mainland China, add `--build-arg USE_USTC_MIRROR=1` to switch t
 
 ```bash
 docker build \
-  --platform linux/arm64 \
   --file docker/Dockerfile \
   --build-arg USE_USTC_MIRROR=1 \
   --build-arg USER_UID="$(id -u)" \
@@ -88,7 +78,6 @@ test -f "$AE_XAUTHORITY"
 
 docker run --detach \
   --name lorelei-eurosys27-ae-ubuntu2404 \
-  --platform linux/arm64 \
   --network host \
   --device /dev/dri \
   --group-add "$(stat -c '%g' /dev/dri/renderD128)" \
@@ -133,18 +122,11 @@ Run these four installation scripts from the repository root:
 ./evaluations/install-games.sh
 ```
 
-`install-devkit.sh` downloads the architecture-matched EuroSys 2027 AE release, verifies its SHA-256, and installs it under `.work/devkit/`. `install-tools.sh` also verifies and reuses this devkit. It installs separate QEMU and Box64 packages for ordinary performance evaluation and instrumented breakdowns. The remaining scripts reuse installed vcpkg packages, downloads, and build state. They do not clear caches before each invocation.
+- `install-devkit.sh` downloads the architecture-matched EuroSys 2027 AE release, verifies its SHA-256, and installs it under `.work/devkit/`.
+- `install-tools.sh` verifies and reuses this devkit, then installs separate QEMU and Box64 packages for ordinary performance evaluation and instrumented breakdowns.
+- The remaining scripts reuse installed vcpkg packages, downloads, and build state. They do not clear caches before each invocation.
 
 Installation keeps complete vcpkg output visible and displays progress at the bottom of the terminal. Add `--plain` when redirecting output or when terminal control sequences are undesirable. Every public script resolves paths relative to its own location and can be started from any current directory.
-
-Game runners in the container need a two-line file containing `DISPLAY` and `XAUTHORITY`:
-
-```bash
-mkdir -p .work
-printf 'DISPLAY=%s\nXAUTHORITY=%s\n' \
-  "$DISPLAY" "$XAUTHORITY" >.work/gui-env
-export GUI_ENV=$PWD/.work/gui-env
-```
 
 ## 3. Validate the artifact
 
@@ -223,7 +205,12 @@ An evaluator may select any installed game. The argument is a watchdog duration 
 ./evaluations/4-games/supertuxkart/run.sh 30
 ```
 
-The game runner performs graphics, window-system, and thunk preflight checks before starting an unmodified x86-64 game through Hecate. MangoHud collects frame-rate and frame-time samples on the host and stores raw samples and a summary under the game's `results/<run-id>/`. For paper-compatible FPS evidence, enter the selected gameplay scene, remain there for at least 15 seconds, and then close the game. The exporter uses only the ten-second window from 12 seconds before close up to 2 seconds before close. A longer watchdog such as `300` leaves enough time for manual scene entry. Every game supports `GAME_DIR` as an override for the selected game's installation directory. A Hollow Knight runner is also provided under `evaluations/4-games/hollow-knight/`, but its proprietary game files cannot be redistributed with this artifact. The evaluator must provide a legally obtained copy. `GAME_DIR` must directly contain the `Hollow Knight` executable and `Hollow Knight_Data/`:
+- The game runner performs graphics, window-system, and thunk preflight checks before starting an unmodified x86-64 game through Hecate.
+- MangoHud collects frame-rate and frame-time samples on the host and stores raw samples and a summary under the game's `results/<run-id>/`.
+- For paper-compatible FPS evidence, enter the selected gameplay scene, remain there for at least 15 seconds, and then close the game. The exporter uses only the ten-second window from 12 seconds before close up to 2 seconds before close.
+- A longer watchdog such as `300` leaves enough time for manual scene entry.
+- Every game supports `GAME_DIR` as an override for the selected game's installation directory.
+- The Hollow Knight runner is under `evaluations/4-games/hollow-knight/`. Its proprietary game files cannot be redistributed with this artifact, so the evaluator must provide a legally obtained copy. For Hollow Knight, `GAME_DIR` must directly contain the `Hollow Knight` executable and `Hollow Knight_Data/`:
 
 ```bash
 GAME_DIR="/absolute/path/to/Hollow Knight" ./evaluations/4-games/hollow-knight/run.sh 30
@@ -271,7 +258,7 @@ ROUNDS=1 ./evaluations/3-breakdown/breakdown-test/run.sh
 Next, select one game and allow a long enough watchdog. Enter the target scene, remain there for at least 15 seconds, then close the game normally:
 
 ```bash
-GUI_ENV=$PWD/.work/gui-env ./evaluations/4-games/openarena/run.sh 300
+./evaluations/4-games/openarena/run.sh 300
 ```
 
 Finally, analyze coverage and modifications and export all available evidence in one step:

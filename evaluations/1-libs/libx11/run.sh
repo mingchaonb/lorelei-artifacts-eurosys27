@@ -20,7 +20,6 @@ while (($#)); do
 done
 devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/.work/devkit}")
 qemu=$(realpath "${QEMU:-$repo_root/vcpkg/installed/arm64-linux/tools/qemu-ae/qemu-x86_64}")
-gui_env=${GUI_ENV:-$HOME/Desktop/spark-gui-env.txt}
 run_id=$(date -u +%Y%m%dT%H%M%SZ)
 results_root=$recipe_dir/results
 result_kind=evaluator
@@ -33,7 +32,18 @@ overlay=$repo_root/vcpkg-overlay
 [[ -x $vcpkg ]] || { echo "Bootstrap ./vcpkg before running this recipe" >&2; exit 2; }
 [[ -x $devkit/bin/LoreMakeThunk.py ]] || { echo "Invalid devkit: $devkit" >&2; exit 2; }
 if ! $install_only; then
-    [[ -x $qemu && -f $gui_env ]] || { echo "Missing QEMU or GUI environment" >&2; exit 2; }
+    [[ -x $qemu ]] || { echo "Missing QEMU: $qemu" >&2; exit 2; }
+    display=${DISPLAY:-}
+    xauthority=${XAUTHORITY:-}
+    if [[ -n ${GUI_ENV:-} ]]; then
+        [[ -f $GUI_ENV ]] || { echo "GUI environment file not found: $GUI_ENV" >&2; exit 2; }
+        display=$(sed -n 's/^DISPLAY=//p' "$GUI_ENV" | tail -1)
+        xauthority=$(sed -n 's/^XAUTHORITY=//p' "$GUI_ENV" | tail -1)
+    fi
+    [[ -n $display && -n $xauthority ]] || {
+        echo "Set DISPLAY and XAUTHORITY, or provide both through GUI_ENV." >&2
+        exit 2
+    }
     [[ -e $devkit/lib/libLoreQEMUThreadHook.so ]] || { echo "Missing Hecate thread hook" >&2; exit 2; }
     nm -D "$qemu" | grep qemu_lorelei_reentry > /dev/null || { echo "QEMU lacks Hecate reentry support" >&2; exit 2; }
 fi
@@ -95,10 +105,6 @@ PY
     echo "Installation evidence: $run_dir"
     exit 0
 fi
-
-display=$(sed -n 's/^DISPLAY=//p' "$gui_env" | tail -1)
-xauthority=$(sed -n 's/^XAUTHORITY=//p' "$gui_env" | tail -1)
-[[ -n $display && -n $xauthority ]] || { echo "DISPLAY or XAUTHORITY missing" >&2; exit 2; }
 
 cc -I"$native/include" "$recipe_dir/tests/TestX11.c" -L"$native/lib" -Wl,-rpath,"$native/lib" -lX11 -o "$work_dir/test-native"
 "$devkit/bin/x86_64-linux-gnu-clang" --sysroot="$devkit/x86_64/sysroot" \

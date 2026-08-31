@@ -9,8 +9,10 @@ This recipe builds the pinned Ubuntu 24.04 libX11 source as native AArch64, x86-
 Run it with:
 
 ```bash
-QEMU=/path/to/qemu-x86_64 GUI_ENV=/path/to/spark-gui-env.txt ./run.sh --reference
+./run.sh --reference
 ```
+
+The runner inherits `DISPLAY` and `XAUTHORITY` from its current environment. To select another graphical session, set `GUI_ENV` to a file containing both variables.
 
 - `--install-only` installs and audits all three packages and generates the TLC thunk without requiring an active X11 session.
 - `--reference` stores the run below `reference-results`.

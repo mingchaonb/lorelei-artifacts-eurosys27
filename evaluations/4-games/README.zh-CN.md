@@ -98,13 +98,7 @@ OpenArena 额外运行 SDL 1.2 video probe。其他游戏运行 SDL2 display pro
 
 ## 6. 图形环境
 
-runner 默认从以下文件读取 `DISPLAY` 与 `XAUTHORITY`：
-
-```text
-$HOME/Desktop/spark-gui-env.txt
-```
-
-可使用 `GUI_ENV` 指定另一个环境文件：
+runner 默认继承当前环境的 `DISPLAY` 与 `XAUTHORITY`。Docker 启动命令已经传入这两个变量，无需再创建环境文件。需要覆盖当前图形会话时，可通过 `GUI_ENV` 指定一个同时包含这两个变量的文件：
 
 ```bash
 GUI_ENV=/absolute/path/to/gui-env.txt \

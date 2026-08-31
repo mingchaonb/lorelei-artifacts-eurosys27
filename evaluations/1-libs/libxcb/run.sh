@@ -19,7 +19,7 @@ while (($#)); do
         -h|--help)
             echo "Usage: $0 [--reference] [--install-only] [--verbose]"
             echo "Set QEMU=/path/to/qemu-x86_64 only for a development devkit."
-            echo "Set GUI_ENV=/path/to/gui-env.txt to select the X11 session."
+            echo "The runner inherits DISPLAY and XAUTHORITY. GUI_ENV may override both."
             exit 0
             ;;
         --*) echo "Unknown option: $1" >&2; exit 2 ;;
@@ -171,11 +171,17 @@ run_logged "$run_dir/logs/preparation/test-guest.log" "$devkit/bin/x86_64-linux-
     --sysroot="$devkit/x86_64/sysroot" -I"$hecate_prefix/include" "$recipe_dir/tests/TestXcb.c" \
     -L"$thunk/x86_64" -Wl,-rpath,"$thunk/x86_64" -l:libxcb.so -o "$work_dir/tests/guest/test-xcb"
 
-gui_env=${GUI_ENV:-$HOME/Desktop/spark-gui-env.txt}
-[[ -f $gui_env ]] || { echo "GUI environment file not found: $gui_env" >&2; exit 2; }
-display=$(sed -n 's/^DISPLAY=//p' "$gui_env" | tail -1)
-xauthority=$(sed -n 's/^XAUTHORITY=//p' "$gui_env" | tail -1)
-[[ -n $display && -n $xauthority ]] || { echo "DISPLAY or XAUTHORITY missing from $gui_env" >&2; exit 2; }
+display=${DISPLAY:-}
+xauthority=${XAUTHORITY:-}
+if [[ -n ${GUI_ENV:-} ]]; then
+    [[ -f $GUI_ENV ]] || { echo "GUI environment file not found: $GUI_ENV" >&2; exit 2; }
+    display=$(sed -n 's/^DISPLAY=//p' "$GUI_ENV" | tail -1)
+    xauthority=$(sed -n 's/^XAUTHORITY=//p' "$GUI_ENV" | tail -1)
+fi
+[[ -n $display && -n $xauthority ]] || {
+    echo "Set DISPLAY and XAUTHORITY, or provide both through GUI_ENV." >&2
+    exit 2
+}
 printf 'DISPLAY=%s\nXAUTHORITY=%s\n' "$display" "$xauthority" >"$run_dir/generated/gui-environment.txt"
 
 stage "Run the native workload"

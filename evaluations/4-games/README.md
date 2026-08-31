@@ -98,13 +98,7 @@ OpenArena additionally runs an SDL 1.2 video probe. Other games run an SDL2 disp
 
 ## 6. Graphics environment
 
-By default, the runner reads `DISPLAY` and `XAUTHORITY` from:
-
-```text
-$HOME/Desktop/spark-gui-env.txt
-```
-
-Select another file with `GUI_ENV`:
+The runner inherits `DISPLAY` and `XAUTHORITY` from its current environment. The Docker launch command already passes both variables, so no additional environment file is needed. To select another graphical session, set `GUI_ENV` to a file containing both variables:
 
 ```bash
 GUI_ENV=/absolute/path/to/gui-env.txt \

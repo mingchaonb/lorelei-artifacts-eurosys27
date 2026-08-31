@@ -9,7 +9,7 @@
 ```text
 eurosys-lorelei-artifacts/
 ├── docker/
-│   └── Dockerfile              Ubuntu 24.04 ARM64 评测镜像
+│   └── Dockerfile              Ubuntu 24.04 评测镜像
 ├── evaluations/
 │   ├── 1-libs/                 library 上游测试与 native、Hecate 对照
 │   ├── 2-cli-benchmarks/       论文中的八个命令行 workload
@@ -42,19 +42,10 @@ eurosys-lorelei-artifacts/
 
 ### 2.1 构建 Ubuntu 24.04 ARM64 镜像
 
-正式评测要求运行 Ubuntu 24.04 的物理 ARM64 主机和已经可用的 Docker Engine。host 与容器都必须使用 Ubuntu 24.04，不能用 x86-64 主机上的透明 QEMU 模拟代替 ARM64 主机。先在 host 上确认架构和操作系统：
-
-```bash
-test "$(uname -m)" = aarch64
-grep -qx 'ID=ubuntu' /etc/os-release
-grep -qx 'VERSION_ID="24.04"' /etc/os-release
-```
-
 从仓库根目录构建镜像。Dockerfile 会安装 library、DBT、绘图、游戏和 MangoHud 评测需要的全部系统依赖，并创建与 host UID、GID 一致的普通用户 `user`：
 
 ```bash
 docker build \
-  --platform linux/arm64 \
   --file docker/Dockerfile \
   --build-arg USER_UID="$(id -u)" \
   --build-arg USER_GID="$(id -g)" \
@@ -66,7 +57,6 @@ docker build \
 
 ```bash
 docker build \
-  --platform linux/arm64 \
   --file docker/Dockerfile \
   --build-arg USE_USTC_MIRROR=1 \
   --build-arg USER_UID="$(id -u)" \
@@ -88,7 +78,6 @@ test -f "$AE_XAUTHORITY"
 
 docker run --detach \
   --name lorelei-eurosys27-ae-ubuntu2404 \
-  --platform linux/arm64 \
   --network host \
   --device /dev/dri \
   --group-add "$(stat -c '%g' /dev/dri/renderD128)" \
@@ -133,18 +122,11 @@ git -C vcpkg checkout 2026.07.29
 ./evaluations/install-games.sh
 ```
 
-`install-devkit.sh` 根据主机架构下载 EuroSys 2027 AE release 并校验 SHA-256，然后安装到 `.work/devkit/`。`install-tools.sh` 也会检查并复用该 devkit，并分别安装普通性能评测与 breakdown 使用的 QEMU、Box64 package。其余脚本会复用已经安装的 vcpkg package、下载和构建状态，不会在每次执行前清空缓存。
+- `install-devkit.sh` 根据主机架构下载 EuroSys 2027 AE release，校验 SHA-256，并安装到 `.work/devkit/`。
+- `install-tools.sh` 检查并复用该 devkit，分别安装普通性能评测与 breakdown 使用的 QEMU、Box64 package。
+- 其余脚本复用已经安装的 vcpkg package、下载和构建状态，不会在每次执行前清空缓存。
 
 安装过程保留完整的 vcpkg 输出，并在终端底部显示进度。重定向输出或不希望出现终端控制序列时可添加 `--plain`。所有公开脚本都根据自身位置解析路径，可以从任意当前目录启动。
-
-容器中的游戏 runner 需要一个只含 `DISPLAY` 和 `XAUTHORITY` 的环境文件：
-
-```bash
-mkdir -p .work
-printf 'DISPLAY=%s\nXAUTHORITY=%s\n' \
-  "$DISPLAY" "$XAUTHORITY" >.work/gui-env
-export GUI_ENV=$PWD/.work/gui-env
-```
 
 ## 3. 验证 Artifact
 
@@ -221,7 +203,12 @@ python3 evaluations/3-breakdown/coverage-effort/run.py
 ./evaluations/4-games/supertuxkart/run.sh 30
 ```
 
-游戏 runner 会先执行图形、窗口系统和 thunk preflight，再通过 Hecate 启动未修改的 x86-64 游戏程序。MangoHud 默认在 host 侧采集帧率和帧时间，并将原始样本与汇总写入该游戏的 `results/<run-id>/`。采集论文口径的 FPS 时，进入要测的实际游戏场景，保持至少 15 秒，然后关闭游戏；导出器只采用整段记录关闭前第 12 秒到第 2 秒之间的 10 秒窗口。可以传入较长 watchdog，例如 `300`，给人工进入场景留足时间。所有游戏都可以使用 `GAME_DIR` 覆盖当前所选游戏的默认安装目录。Hollow Knight 的 runner 也保留在 `evaluations/4-games/hollow-knight/`，但其专有游戏文件不能随 artifact 分发，评审者需自行提供合法副本。对 Hollow Knight，`GAME_DIR` 应直接包含 `Hollow Knight` 可执行文件和 `Hollow Knight_Data/`：
+- 游戏 runner 先执行图形、窗口系统和 thunk preflight，再通过 Hecate 启动未修改的 x86-64 游戏程序。
+- MangoHud 默认在 host 侧采集帧率和帧时间，并将原始样本与汇总写入该游戏的 `results/<run-id>/`。
+- 采集论文口径的 FPS 时，进入要测的实际游戏场景，保持至少 15 秒，然后关闭游戏。导出器只采用整段记录关闭前第 12 秒到第 2 秒之间的 10 秒窗口。
+- 可以传入较长 watchdog，例如 `300`，给人工进入场景留足时间。
+- 所有游戏都可以使用 `GAME_DIR` 覆盖当前所选游戏的默认安装目录。
+- Hollow Knight 的 runner 位于 `evaluations/4-games/hollow-knight/`。其专有游戏文件不能随 artifact 分发，评审者需自行提供合法副本。对 Hollow Knight，`GAME_DIR` 应直接包含 `Hollow Knight` 可执行文件和 `Hollow Knight_Data/`：
 
 ```bash
 GAME_DIR="/absolute/path/to/Hollow Knight" ./evaluations/4-games/hollow-knight/run.sh 30
@@ -269,7 +256,7 @@ ROUNDS=1 ./evaluations/3-breakdown/breakdown-test/run.sh
 然后任选一个游戏，以足够长的 watchdog 启动。进入目标场景后保持至少 15 秒，再正常关闭游戏：
 
 ```bash
-GUI_ENV=$PWD/.work/gui-env ./evaluations/4-games/openarena/run.sh 300
+./evaluations/4-games/openarena/run.sh 300
 ```
 
 最后运行 coverage、修改量分析并一次性导出全部现有证据：

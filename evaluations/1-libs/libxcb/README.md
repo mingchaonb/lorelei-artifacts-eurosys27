@@ -6,7 +6,7 @@ Public commands use the repository-local `.work/devkit` by default. Set `LORELEI
 
 `tests/TestXcb.c` is a directed native and Hecate smoke workload for the Ubuntu 24.04 libxcb core port. It connects to a real X server, reads the setup record, allocates an XID, creates and maps a window, performs a checked request, obtains a reply, and destroys the window.
 
-Run it with `./evaluations/1-libs/libxcb/run.sh`. The recipe keeps packages, vcpkg build trees, generated thunks, and test executables below `.work/evaluations/libxcb`. Set `GUI_ENV=/path/to/gui-env.txt` when the X11 session environment is not stored at `~/Desktop/spark-gui-env.txt`.
+Run it with `./evaluations/1-libs/libxcb/run.sh`. The recipe keeps packages, vcpkg build trees, generated thunks, and test executables below `.work/evaluations/libxcb`. The runner inherits `DISPLAY` and `XAUTHORITY` from its current environment. To select another graphical session, set `GUI_ENV` to a file containing both variables.
 
 The workload also transfers socket ownership with `xcb_take_socket`. Its next request forces libxcb to return the socket through a guest callback. Success requires both the callback closure counter and the guest-global callback counter to equal one.
 
