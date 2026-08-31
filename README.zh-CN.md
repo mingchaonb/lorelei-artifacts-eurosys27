@@ -66,14 +66,23 @@ docker run --detach \
 
 `/dev/dri`、X11 socket 和 Xauthority 三项用于游戏评测。只复现 library、命令行和 breakdown 数据时可以省略这三个 mount 或 device 参数。若 host 使用 NVIDIA 专有驱动，需要按 host 的容器运行时配置额外传入 GPU。
 
-进入容器的 root shell，把 Ubuntu Ports 切换到中科大镜像，并创建与 host UID、GID 一致的普通用户 `user`：
+进入容器的 root shell。大多数评审环境直接使用 Ubuntu Ports 官方源即可：
 
 ```bash
 docker exec -it lorelei-eurosys27-ae-ubuntu2404 bash
+```
 
+如果容器位于中国大陆，可以选择切换到中科大镜像，提高软件包下载的稳定性。其他地区应跳过这一步：
+
+```bash
 sed -Ei \
   's#https?://ports\.ubuntu\.com/ubuntu-ports/?#http://mirrors.ustc.edu.cn/ubuntu-ports/#g' \
   /etc/apt/sources.list.d/ubuntu.sources
+```
+
+创建与 host UID、GID 一致的普通用户 `user`：
+
+```bash
 apt update
 apt install -y sudo
 groupadd --gid "$HOST_GID" user

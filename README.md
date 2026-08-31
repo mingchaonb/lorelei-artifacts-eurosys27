@@ -66,14 +66,23 @@ docker run --detach \
 
 The `/dev/dri` device, X11 socket, and Xauthority mounts are needed by game evaluations. They may be omitted when reproducing only library, command-line, and breakdown data. Hosts using the proprietary NVIDIA driver must also expose the GPU through their configured container runtime.
 
-Open a root shell in the container, switch Ubuntu Ports to the USTC mirror, and create an unprivileged `user` whose UID and GID match the host account:
+Open a root shell in the container. The default Ubuntu Ports source is suitable for most evaluators:
 
 ```bash
 docker exec -it lorelei-eurosys27-ae-ubuntu2404 bash
+```
 
+When running in mainland China, switching to the USTC mirror can improve package-download reliability. This step is optional and should be skipped elsewhere:
+
+```bash
 sed -Ei \
   's#https?://ports\.ubuntu\.com/ubuntu-ports/?#http://mirrors.ustc.edu.cn/ubuntu-ports/#g' \
   /etc/apt/sources.list.d/ubuntu.sources
+```
+
+Create an unprivileged `user` whose UID and GID match the host account:
+
+```bash
 apt update
 apt install -y sudo
 groupadd --gid "$HOST_GID" user
