@@ -40,10 +40,12 @@ The five numbered directories below `evaluations/` correspond to five groups of 
 
 ### 2.1 Start a clean Ubuntu 24.04 ARM64 container
 
-The formal evaluation requires a physical ARM64 host with a working Docker Engine. `--platform linux/arm64` prevents Docker from selecting the wrong image; it must not be used to substitute transparent QEMU emulation on an x86-64 host. Confirm the host architecture, then create the container from the repository root:
+The formal evaluation requires a physical ARM64 host running Ubuntu 24.04 with a working Docker Engine. Both the host and container operating systems must be Ubuntu 24.04. `--platform linux/arm64` prevents Docker from selecting the wrong image. It must not be used to substitute transparent QEMU emulation on an x86-64 host. Confirm the host architecture and operating system, then create the container from the repository root:
 
 ```bash
 test "$(uname -m)" = aarch64
+grep -qx 'ID=ubuntu' /etc/os-release
+grep -qx 'VERSION_ID="24.04"' /etc/os-release
 
 export AE_REPO=$PWD
 export AE_XAUTHORITY=${XAUTHORITY:-$HOME/.Xauthority}
@@ -270,8 +272,6 @@ python3 evaluations/plots/plot-coverage-effort.py
 python3 evaluations/plots/plot-function-breakdown.py
 python3 evaluations/plots/plot-callback-track.py
 ```
-
-The export explicitly excludes Risotto performance, aggregate VA and FP statistics, and library distribution. Games that have not been run manually and all other absent experiment lanes remain marked `missing`; they are never filled with constants from the old paper.
 
 ### 3.6 Quick walkthrough from a clean container
 

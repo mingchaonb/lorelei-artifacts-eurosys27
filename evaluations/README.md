@@ -146,4 +146,4 @@ python3 evaluations/3-breakdown/coverage-effort/run.py
 python3 evaluations/export-paper-data.py
 ```
 
-The exporter writes `overall.csv`, `game-fps.csv`, `function-breakdown.csv`, `callback-track.csv`, `coverage-effort.csv`, `modifications.csv`, and an input-hash manifest under `evaluations/paper-data/`. Experiments that have not been run remain `missing`; constants from an older paper are never substituted.
+The exporter writes `overall.csv`, `game-fps.csv`, `function-breakdown.csv`, `callback-track.csv`, `coverage-effort.csv`, `modifications.csv`, and an input-hash manifest under `evaluations/paper-data/`.

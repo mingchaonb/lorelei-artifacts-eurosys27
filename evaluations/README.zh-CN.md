@@ -150,4 +150,4 @@ python3 evaluations/3-breakdown/coverage-effort/run.py
 python3 evaluations/export-paper-data.py
 ```
 
-导出器在 `evaluations/paper-data/` 中写入 `overall.csv`、`game-fps.csv`、`function-breakdown.csv`、`callback-track.csv`、`coverage-effort.csv`、`modifications.csv` 和输入哈希 manifest。未运行的实验保留为 `missing`，不会使用旧论文常量填补。
+导出器在 `evaluations/paper-data/` 中写入 `overall.csv`、`game-fps.csv`、`function-breakdown.csv`、`callback-track.csv`、`coverage-effort.csv`、`modifications.csv` 和输入哈希 manifest。

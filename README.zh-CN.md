@@ -40,10 +40,12 @@ eurosys-lorelei-artifacts/
 
 ### 2.1 启动空 Ubuntu 24.04 ARM64 容器
 
-正式评测要求物理 ARM64 主机和已经可用的 Docker Engine。`--platform linux/arm64` 只用于防止 Docker 选错镜像，不能用 x86-64 主机上的透明 QEMU 模拟代替 ARM64 主机。先在 host 上确认架构并从仓库根目录创建容器：
+正式评测要求运行 Ubuntu 24.04 的物理 ARM64 主机和已经可用的 Docker Engine。host 与容器都必须使用 Ubuntu 24.04。`--platform linux/arm64` 只用于防止 Docker 选错镜像，不能用 x86-64 主机上的透明 QEMU 模拟代替 ARM64 主机。先在 host 上确认架构和操作系统，再从仓库根目录创建容器：
 
 ```bash
 test "$(uname -m)" = aarch64
+grep -qx 'ID=ubuntu' /etc/os-release
+grep -qx 'VERSION_ID="24.04"' /etc/os-release
 
 export AE_REPO=$PWD
 export AE_XAUTHORITY=${XAUTHORITY:-$HOME/.Xauthority}
@@ -268,8 +270,6 @@ python3 evaluations/plots/plot-coverage-effort.py
 python3 evaluations/plots/plot-function-breakdown.py
 python3 evaluations/plots/plot-callback-track.py
 ```
-
-该导出明确排除 Risotto 性能、VA 与 FP 总体统计和 library distribution。尚未人工运行的游戏及其他缺失实验 lane 保留为 `missing`，不会用旧论文常量填补。
 
 ### 3.6 从空容器快速 walkthrough
 
