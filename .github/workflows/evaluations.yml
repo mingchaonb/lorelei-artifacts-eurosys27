@@ -65,6 +65,96 @@ jobs:
       VCPKG_BINARY_SOURCES: clear;files,/home/user/eurosys-lorelei-artifacts/.cache/vcpkg-binary,readwrite
 
     steps:
+      - name: Report the SPARK host configuration
+        shell: bash
+        run: |
+          set -uo pipefail
+
+          echo "::group::Runner identity"
+          printf 'timestamp_utc=%s\n' "$(date -u +%FT%TZ)"
+          printf 'runner_name=%s\n' "${RUNNER_NAME:-unknown}"
+          printf 'runner_os=%s\n' "${RUNNER_OS:-unknown}"
+          printf 'runner_arch=%s\n' "${RUNNER_ARCH:-unknown}"
+          printf 'user=%s\n' "$(id -un)"
+          id
+          printf 'hostname=%s\n' "$(hostname)"
+          printf 'virtualization=%s\n' "$(systemd-detect-virt 2>/dev/null || echo none)"
+          uname -a
+          echo "::endgroup::"
+
+          echo "::group::Operating system and kernel"
+          cat /etc/os-release
+          printf '\nKernel command line:\n'
+          cat /proc/cmdline
+          printf '\nLoaded kernel modules:\n'
+          lsmod || true
+          echo "::endgroup::"
+
+          echo "::group::CPU and NUMA"
+          lscpu
+          printf '\nOnline CPUs: '
+          cat /sys/devices/system/cpu/online
+          printf 'CPU governor: '
+          cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor 2>/dev/null || echo unavailable
+          if command -v numactl >/dev/null; then
+              numactl --hardware
+          fi
+          echo "::endgroup::"
+
+          echo "::group::Memory"
+          free -h
+          printf '\nSelected memory details:\n'
+          grep -E '^(MemTotal|MemAvailable|SwapTotal|SwapFree|HugePages_Total|Hugepagesize):' /proc/meminfo
+          echo "::endgroup::"
+
+          echo "::group::Storage"
+          lsblk -e 7 -o NAME,TYPE,SIZE,FSTYPE,MOUNTPOINTS,MODEL,ROTA
+          printf '\nMounted filesystem capacity:\n'
+          df -hT
+          echo "::endgroup::"
+
+          echo "::group::PCIe and graphics hardware"
+          if command -v lspci >/dev/null; then
+              lspci -nnk
+          fi
+          printf '\nDRM devices:\n'
+          ls -la /dev/dri 2>/dev/null || true
+          for property in vendor product_name product_version board_name; do
+              path="/sys/devices/virtual/dmi/id/$property"
+              if [[ -r $path ]]; then
+                  printf '%s=' "$property"
+                  cat "$path"
+              fi
+          done
+          echo "::endgroup::"
+
+          echo "::group::NVIDIA GPU and driver"
+          if command -v nvidia-smi >/dev/null; then
+              nvidia-smi --query-gpu=name,driver_version,pci.bus_id,memory.total,power.limit,clocks.max.graphics,clocks.max.memory \
+                  --format=csv
+              printf '\nGPU topology:\n'
+              nvidia-smi topo --matrix || true
+          else
+              echo "nvidia-smi is unavailable"
+          fi
+          echo "::endgroup::"
+
+          echo "::group::Display and graphics APIs"
+          printf 'DISPLAY=%s\n' "${DISPLAY:-unset}"
+          printf 'XAUTHORITY=%s\n' "${XAUTHORITY:-unset}"
+          if command -v xdpyinfo >/dev/null && [[ -n ${DISPLAY:-} ]]; then
+              env DISPLAY="$DISPLAY" XAUTHORITY="${XAUTHORITY:-}" xdpyinfo | sed -n '1,35p' || true
+          fi
+          if command -v glxinfo >/dev/null && [[ -n ${DISPLAY:-} ]]; then
+              env DISPLAY="$DISPLAY" XAUTHORITY="${XAUTHORITY:-}" glxinfo -B || true
+          fi
+          echo "::endgroup::"
+
+          echo "::group::Docker engine"
+          docker version || true
+          docker info --format 'Server={{.ServerVersion}} OS={{.OperatingSystem}} Kernel={{.KernelVersion}} Architecture={{.Architecture}} CPUs={{.NCPU}} Memory={{.MemTotal}} StorageDriver={{.Driver}} CgroupDriver={{.CgroupDriver}}' || true
+          echo "::endgroup::"
+
       - name: Check out the artifact repository
         uses: actions/checkout@v4
         with:
