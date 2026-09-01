@@ -58,6 +58,14 @@ packages=(
 )
 package_names=(ffmpeg qemu qemu-breakdown blink box64 box64-callback-track fex)
 
+# An ordinary install accepts an older installed version as satisfying the
+# request. Upgrade only packages whose pinned port recipe changed, while
+# retaining every package that is already current.
+echo "Refresh installed AE tools whose pinned recipe changed"
+"$vcpkg" upgrade --no-dry-run \
+    "--overlay-ports=$tool_ports" \
+    "--overlay-triplets=$triplets"
+
 echo "Install AE tools with triplet: $triplet"
 install_progress_init Tools "${#packages[@]}" "$plain"
 install_progress_setup

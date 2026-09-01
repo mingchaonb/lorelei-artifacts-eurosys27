@@ -328,6 +328,7 @@ jobs:
           path: |
             evaluations/1-libs/*/results/**
             evaluations/2-cli-benchmarks/*/results/**
+            !evaluations/2-cli-benchmarks/*/results/**/outputs/**
             evaluations/3-breakdown/*/results/**
             evaluations/4-games/*/results/**
             evaluations/5-modifications/results/**

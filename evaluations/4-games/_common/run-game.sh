@@ -546,6 +546,10 @@ fi
 set +e
 preexisting_windows=$(env DISPLAY="$display" XAUTHORITY="$xauthority" \
     xprop -root _NET_CLIENT_LIST 2>/dev/null || true)
+# Give the game and every child it creates a dedicated process group. The
+# watchdog can then stop the whole lane instead of leaving old windows and GL
+# contexts alive during the next measurement.
+set -m
 (
     cd "$game_dir" || exit 2
     case $lane in
@@ -607,6 +611,8 @@ preexisting_windows=$(env DISPLAY="$display" XAUTHORITY="$xauthority" \
     esac
 ) > "$run_dir/game.log" 2>&1 &
 game_pid=$!
+game_pgid=$game_pid
+set +m
 window_probe_pid=
 window_probe_seconds=${WINDOW_PROBE_SECONDS:-8}
 if (( window_probe_seconds > 0 )); then
@@ -639,12 +645,12 @@ fi
             sleep 3
         fi
     fi
-    kill -0 "$game_pid" 2>/dev/null || exit 0
-    kill -TERM "$game_pid" 2>/dev/null || exit 0
+    kill -0 -- "-$game_pgid" 2>/dev/null || exit 0
+    kill -TERM -- "-$game_pgid" 2>/dev/null || exit 0
     sleep 2
-    if kill -0 "$game_pid" 2>/dev/null; then
+    if kill -0 -- "-$game_pgid" 2>/dev/null; then
         touch "$run_dir/watchdog-killed"
-        kill -KILL "$game_pid" 2>/dev/null || true
+        kill -KILL -- "-$game_pgid" 2>/dev/null || true
     fi
 ) &
 watchdog_pid=$!
@@ -652,6 +658,11 @@ wait "$game_pid"
 status=$?
 kill "$watchdog_pid" 2>/dev/null
 wait "$watchdog_pid" 2>/dev/null
+# A launcher may exit before a helper process. Clean up any remaining member
+# of this lane's process group before starting another game.
+kill -TERM -- "-$game_pgid" 2>/dev/null || true
+sleep 1
+kill -KILL -- "-$game_pgid" 2>/dev/null || true
 if [[ -n $window_probe_pid ]]; then
     wait "$window_probe_pid" 2>/dev/null
 fi

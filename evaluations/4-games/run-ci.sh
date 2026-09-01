@@ -16,6 +16,18 @@ run_id=${GITHUB_RUN_ID:-local}-$(date -u +%Y%m%dT%H%M%SZ)
 history=$repo_root/.work/evaluations/games/ci-result-history/$run_id
 mkdir -p "$history"
 
+cleanup_game_processes() {
+    local pattern="$repo_root/.work/evaluations/games/.*/installed/"
+    pkill -TERM -f "$pattern" 2>/dev/null || true
+    sleep 1
+    pkill -KILL -f "$pattern" 2>/dev/null || true
+}
+
+# A canceled self-hosted run may leave a host game outside any container.
+# Limit cleanup to executables installed under this checkout.
+cleanup_game_processes
+trap cleanup_game_processes EXIT
+
 # Keep a CI batch independent from older interactive measurements. Previous
 # result directories remain recoverable below .work instead of being deleted.
 for game in "${games[@]}"; do
