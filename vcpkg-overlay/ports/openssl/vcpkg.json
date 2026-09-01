@@ -1,6 +1,7 @@
 {
   "name": "openssl",
   "version-string": "3.0.22",
+  "port-version": 1,
   "description": "Pinned shared build for the OpenSSL TLC Only evaluation",
   "homepage": "https://github.com/openssl/openssl",
   "supports": "linux & (arm64 | x64)",

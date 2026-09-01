@@ -80,7 +80,20 @@ export VCPKG_MAX_CONCURRENCY
 VCPKG_MAX_CONCURRENCY=$(nproc)
 install_lane() {
     local lane=$1 triplet=$2
-    run_logged "$run_dir/logs/vcpkg-$lane.log" "$vcpkg" install "fftw3:$triplet"         --overlay-ports="$repo_root/vcpkg-overlay/ports"         --overlay-triplets="$repo_root/vcpkg-overlay/triplets"         --x-install-root="$work/installed/$lane"         --x-buildtrees-root="$work/vcpkg/$lane/buildtrees"         --x-packages-root="$work/vcpkg/$lane/packages"         --downloads-root="$repo_root/vcpkg/downloads" --triplet="$triplet" --binarysource=clear
+    local common=(
+        --overlay-ports="$repo_root/vcpkg-overlay/ports"
+        --overlay-triplets="$repo_root/vcpkg-overlay/triplets"
+        --x-install-root="$work/installed/$lane"
+        --x-buildtrees-root="$work/vcpkg/$lane/buildtrees"
+        --x-packages-root="$work/vcpkg/$lane/packages"
+        --downloads-root="$repo_root/vcpkg/downloads"
+        --triplet="$triplet"
+        --binarysource=clear
+    )
+    run_logged "$run_dir/logs/vcpkg-$lane-upgrade.log" \
+        "$vcpkg" upgrade --no-dry-run "${common[@]}"
+    run_logged "$run_dir/logs/vcpkg-$lane.log" \
+        "$vcpkg" install "fftw3:$triplet" "${common[@]}"
 }
 install_lane host arm64-linux-ae
 install_lane guest x64-linux-ae

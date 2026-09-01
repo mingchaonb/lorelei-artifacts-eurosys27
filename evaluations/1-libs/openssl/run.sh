@@ -39,7 +39,18 @@ export LORELEI_DEVKIT=$devkit
 install_lane() {
     local lane=$1 triplet=$2
     local log=$run_dir/logs/preparation/vcpkg-$lane.log
-    local command=("$vcpkg" install "openssl:$triplet" --overlay-ports="$overlay/ports" --overlay-triplets="$overlay/triplets" --x-install-root="$work/installed/$lane" --x-buildtrees-root="$work/vcpkg/$lane/buildtrees" --x-packages-root="$work/vcpkg/$lane/packages" --downloads-root="$repo_root/vcpkg/downloads")
+    local common=(
+        --overlay-ports="$overlay/ports"
+        --overlay-triplets="$overlay/triplets"
+        --x-install-root="$work/installed/$lane"
+        --x-buildtrees-root="$work/vcpkg/$lane/buildtrees"
+        --x-packages-root="$work/vcpkg/$lane/packages"
+        --downloads-root="$repo_root/vcpkg/downloads"
+        --triplet="$triplet"
+    )
+    local command=("$vcpkg" install "openssl:$triplet" "${common[@]}")
+    "$vcpkg" upgrade --no-dry-run "${common[@]}" \
+        >"$run_dir/logs/preparation/vcpkg-$lane-upgrade.log" 2>&1
     if $verbose; then
         "${command[@]}" 2>&1 | tee "$log"
     else

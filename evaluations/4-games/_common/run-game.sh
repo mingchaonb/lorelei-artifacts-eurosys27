@@ -227,16 +227,15 @@ case "$game" in
                 [[ -e $required ]] || { echo "Missing SDL 1.2 runtime input: $required" >&2; exit 2; }
             done
         fi
-        # ioquake3 leaves this crash marker when a watchdog ends a run. Remove
-        # only a stale marker, otherwise the next automated run blocks on a
-        # host-side Zenity safe-mode dialog before SDL is initialized.
-        openarena_pid_file=/tmp/ioq3+oa.pid
-        if [[ -f $openarena_pid_file ]]; then
-            openarena_old_pid=$(<"$openarena_pid_file")
-            if [[ ! $openarena_old_pid =~ ^[0-9]+$ ]] || ! kill -0 "$openarena_old_pid" 2>/dev/null; then
-                cmake -E remove "$openarena_pid_file"
-            fi
-        fi
+        # ioquake3 leaves these crash markers when a watchdog ends a run. Every
+        # lane is process-isolated, so remove them before launch to prevent the
+        # host-side Zenity safe-mode dialog from blocking SDL initialization.
+        openarena_pid_files=(
+            "$runtime_home_root/openarena/.q3a/baseoa/ioq3.pid"
+            "$runtime_home_root/openarena/.openarena/baseoa/ioq3.pid"
+            /tmp/ioq3+oa.pid
+        )
+        cmake -E remove "${openarena_pid_files[@]}"
         ;;
     supertux)
         if [[ -n $selected_game_prefix ]]; then
@@ -670,11 +669,8 @@ set -e
 
 restore_display_mode
 trap - EXIT
-if [[ $game == openarena && -f ${openarena_pid_file:-} ]]; then
-    openarena_old_pid=$(<"$openarena_pid_file")
-    if [[ ! $openarena_old_pid =~ ^[0-9]+$ ]] || ! kill -0 "$openarena_old_pid" 2>/dev/null; then
-        cmake -E remove "$openarena_pid_file"
-    fi
+if [[ $game == openarena ]]; then
+    cmake -E remove "${openarena_pid_files[@]}"
 fi
 
 echo "$status" > "$run_dir/status.txt"
