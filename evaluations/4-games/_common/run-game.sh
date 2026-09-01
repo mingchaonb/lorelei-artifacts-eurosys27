@@ -307,7 +307,7 @@ join_colon() {
 
 host_xorg_path=$(join_colon "${host_xorg[@]}")
 guest_xorg_path=$(join_colon "${guest_xorg[@]}")
-host_library_path="$host_xorg_path:$sdl1_thunk:$sdl1_prefix/lib:$sdl_prefix/lib:$sdl_thunk:$sdl_image_prefix/lib:$sdl_image_thunk:$sdl_mixer_prefix/lib:$sdl_mixer_thunk:$gl_prefix/share/glvnd/glx-thunk:$gl_prefix/share/glvnd/thunk:$gl_prefix/share/glvnd/x11-thunk:$gl_prefix/lib:$vk_prefix/share/vulkan-loader/thunk:$vk_prefix/lib"
+host_library_path="$devkit/lib:$host_xorg_path:$sdl1_thunk:$sdl1_prefix/lib:$sdl_prefix/lib:$sdl_thunk:$sdl_image_prefix/lib:$sdl_image_thunk:$sdl_mixer_prefix/lib:$sdl_mixer_thunk:$gl_prefix/share/glvnd/glx-thunk:$gl_prefix/share/glvnd/thunk:$gl_prefix/share/glvnd/x11-thunk:$gl_prefix/lib:$vk_prefix/share/vulkan-loader/thunk:$vk_prefix/lib"
 guest_library_path="$guest_xorg_path:$gl_prefix/share/glvnd/x11-thunk/x86_64:$sdl1_thunk/x86_64:$sdl_thunk/x86_64:$sdl_image_thunk/x86_64:$sdl_mixer_thunk/x86_64:$gl_prefix/share/glvnd/glx-thunk/x86_64:$gl_prefix/share/glvnd/thunk/x86_64:$vk_prefix/share/vulkan-loader/thunk/x86_64"
 if [[ -n $game_library_path ]]; then
     guest_library_path="$guest_library_path:$game_library_path"
@@ -340,6 +340,9 @@ host_preload=${HOST_PRELOAD-}
 preflight_host_preload=
 if [[ $lane == qemu-hecate ]]; then
     host_preload=${HOST_PRELOAD-$devkit/lib/libLoreHostRT.so:$devkit/lib/libLoreQEMUThreadHook.so}
+    preflight_host_preload=$host_preload
+elif [[ $lane == box64-hecate ]]; then
+    host_preload=${HOST_PRELOAD-$devkit/lib/libLoreHostRT.so}
     preflight_host_preload=$host_preload
 fi
 thunk_databases="$repo_root/vcpkg-overlay/ports/glvnd/lorelei/ThunkDB.json:$repo_root/vcpkg-overlay/ports/vulkan-loader/lorelei/ThunkDB.json"

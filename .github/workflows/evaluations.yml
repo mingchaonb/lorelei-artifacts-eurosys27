@@ -37,7 +37,7 @@ jobs:
       REPETITIONS: ${{ inputs.repetitions }}
       ROUNDS: ${{ inputs.rounds }}
       CPU: ${{ inputs.cpu }}
-      VCPKG_BINARY_SOURCES: clear;files,${{ github.workspace }}/.cache/vcpkg-binary,readwrite
+      VCPKG_BINARY_SOURCES: clear;files,/home/user/eurosys-lorelei-artifacts/.cache/vcpkg-binary,readwrite
 
     steps:
       - name: Check out the artifact repository

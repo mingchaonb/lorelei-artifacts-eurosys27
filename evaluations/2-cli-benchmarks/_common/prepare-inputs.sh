@@ -37,6 +37,7 @@ source_media=$download_dir/c6nXIvXtg_o.mkv
 source_info=$download_dir/c6nXIvXtg_o.info.json
 if [[ ! -s $source_media ]]; then
     if ! "$yt_dlp" --no-playlist --write-info-json --merge-output-format mkv \
+        --ffmpeg-location "$prep_ffmpeg" \
         -f '136+140/b[vcodec^=avc1][height<=720]' \
         -o "$download_dir/c6nXIvXtg_o.%(ext)s" "$source_url"; then
         echo "yt-dlp could not download the source. Ubuntu's packaged version may be obsolete." >&2

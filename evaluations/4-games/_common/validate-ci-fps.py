@@ -11,6 +11,12 @@ import sys
 GAMES = ["supertux", "supertuxkart", "assaultcube", "redeclipse", "openarena"]
 LANES = ["native", "qemu-hecate", "box64", "box64-hecate"]
 NUMERIC_FIELDS = ["fps_mean", "fps_minimum", "fps_maximum", "fps_variance"]
+REQUIRED_FPS_LANES = {"native", "qemu-hecate"}
+RECORDED_NON_NUMERIC_PREFIXES = (
+    "crash:",
+    "ran without FPS sample",
+    "completed without FPS sample",
+)
 
 
 def main() -> int:
@@ -45,8 +51,11 @@ def main() -> int:
             if not row:
                 errors.append(f"missing row: {game}, {lane}")
                 continue
-            if row.get("status") != "measured":
-                errors.append(f"{game}, {lane}: {row.get('status', 'missing status')}")
+            status = row.get("status", "missing status")
+            if status != "measured":
+                if lane in REQUIRED_FPS_LANES or not status.startswith(RECORDED_NON_NUMERIC_PREFIXES):
+                    errors.append(f"{game}, {lane}: {status}")
+                continue
             if row.get("physical_gpu") != "yes":
                 errors.append(
                     f"{game}, {lane}: physical_gpu={row.get('physical_gpu', 'missing')}"

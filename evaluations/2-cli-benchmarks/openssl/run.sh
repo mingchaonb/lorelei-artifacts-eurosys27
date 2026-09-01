@@ -97,7 +97,7 @@ done
 input=$input_dir/data-256m.bin
 [[ -s $input ]] || python3 "$cli_root/_common/generate-data.py" "$input" --size-mib 256
 
-cli_begin_result openssl
+cli_begin_result openssl "$input"
 native_ld=$native_prefix/lib
 guest_ld=$guest_prefix/lib:$devkit/x86_64/lib
 host_hecate_ld=$devkit/lib:$native_prefix/lib:$crypto_thunk:$ssl_thunk:$libc_thunk

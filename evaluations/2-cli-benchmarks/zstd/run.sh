@@ -42,8 +42,8 @@ done
 [[ -s $input_dir/data-64m.bin ]] || \
     python3 "$cli_root/_common/generate-data.py" "$input_dir/data-64m.bin" --size-mib 64
 
-cli_begin_result zstd
 input=$input_dir/data-64m.bin
+cli_begin_result zstd "$input"
 native_ld=$native_prefix/lib
 guest_ld=$guest_prefix/lib:$devkit/x86_64/lib
 host_hecate_ld=$devkit/lib:$hecate_prefix/lib:$thunk

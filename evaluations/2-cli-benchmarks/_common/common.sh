@@ -40,6 +40,7 @@ cli_parse_options() {
 
 cli_begin_result() {
     local workload=$1
+    shift
     local root=$workload_dir/results
     $reference && root=$workload_dir/reference-results
     run_id=$(date -u +%Y%m%dT%H%M%SZ)
@@ -65,7 +66,31 @@ cli_begin_result() {
             fi
         done
     } >"$result_dir/environment.txt" 2>&1
-    cp "$input_dir/manifest.json" "$result_dir/input-manifest.json"
+    if [[ ${1:-} == --manifest ]]; then
+        local manifest=${2:?--manifest requires a path}
+        [[ -s $manifest ]] || { echo "Missing input manifest: $manifest" >&2; return 2; }
+        cp "$manifest" "$result_dir/input-manifest.json"
+    else
+        python3 - "$result_dir/input-manifest.json" "$@" <<'PY'
+import hashlib
+import json
+import pathlib
+import sys
+
+destination = pathlib.Path(sys.argv[1])
+items = []
+for name in sys.argv[2:]:
+    path = pathlib.Path(name)
+    if not path.is_file():
+        raise SystemExit(f"Missing workload input: {path}")
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    items.append({"path": str(path), "bytes": path.stat().st_size, "sha256": digest.hexdigest()})
+destination.write_text(json.dumps({"schema_version": 1, "files": items}, indent=2) + "\n")
+PY
+    fi
 }
 
 cli_has_lane() {

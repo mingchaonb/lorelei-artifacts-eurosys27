@@ -265,11 +265,8 @@ def export_game_fps(repo: pathlib.Path, kind: str, output: pathlib.Path, inputs:
         )
         lane_results: dict[str, pathlib.Path] = {}
         for result_dir in result_dirs:
-            raw_path = game_raw_csv(result_dir)
-            if not raw_path:
-                continue
             run_env = read_env_file(result_dir / "run.env")
-            lane = run_env.get("lane", "qemu-hecate")
+            lane = run_env.get("lane")
             if lane in GAME_LANES and lane not in lane_results:
                 lane_results[lane] = result_dir
 
@@ -297,10 +294,12 @@ def export_game_fps(repo: pathlib.Path, kind: str, output: pathlib.Path, inputs:
                 continue
 
             raw_path = game_raw_csv(result_dir)
-            assert raw_path
             summary_path = result_dir / "fps-summary.json"
             run_env_path = result_dir / "run.env"
             preflight_path = result_dir / "preflight-status.tsv"
+            status_path = result_dir / "status.txt"
+            fps_status_path = result_dir / "fps-status.txt"
+            game_log_path = result_dir / "game.log"
             interval_ms = 100
             if summary_path.is_file():
                 try:
@@ -311,7 +310,7 @@ def export_game_fps(repo: pathlib.Path, kind: str, output: pathlib.Path, inputs:
                 {
                     "sample_interval_ms": interval_ms,
                     "result_dir": str(result_dir.relative_to(repo)),
-                    "raw_csv": str(raw_path.relative_to(repo)),
+                    "raw_csv": str(raw_path.relative_to(repo)) if raw_path else "",
                 }
             )
             physical_gpu = "unknown"
@@ -324,6 +323,26 @@ def export_game_fps(repo: pathlib.Path, kind: str, output: pathlib.Path, inputs:
                 elif marker == "1":
                     physical_gpu = "no"
             row["physical_gpu"] = physical_gpu
+            if not raw_path:
+                try:
+                    exit_status = int(status_path.read_text().strip())
+                except (OSError, ValueError):
+                    row["status"] = "missing execution status"
+                else:
+                    signal_names = {132: "SIGILL", 134: "SIGABRT", 139: "SIGSEGV"}
+                    if exit_status in signal_names:
+                        row["status"] = f"crash: {signal_names[exit_status]}"
+                    elif exit_status == 143 and (result_dir / "watchdog-fired").is_file():
+                        row["status"] = "ran without FPS sample"
+                    elif exit_status == 0:
+                        row["status"] = "completed without FPS sample"
+                    else:
+                        row["status"] = f"failed: exit {exit_status}"
+                for evidence in (run_env_path, preflight_path, status_path, fps_status_path, game_log_path):
+                    if evidence.is_file():
+                        inputs.add(evidence)
+                rows.append(row)
+                continue
             try:
                 samples = mangohud_samples(raw_path)
                 row["total_sample_count"] = len(samples)
@@ -343,7 +362,7 @@ def export_game_fps(repo: pathlib.Path, kind: str, output: pathlib.Path, inputs:
                     row["status"] = "invalid: non-physical OpenGL renderer"
             except (OSError, ValueError, KeyError) as error:
                 row["status"] = f"insufficient: {error}"
-            for evidence in (raw_path, summary_path, run_env_path, preflight_path):
+            for evidence in (raw_path, summary_path, run_env_path, preflight_path, status_path, fps_status_path, game_log_path):
                 if evidence.is_file():
                     inputs.add(evidence)
             rows.append(row)

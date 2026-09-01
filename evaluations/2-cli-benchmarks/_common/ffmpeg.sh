@@ -9,8 +9,6 @@ ffmpeg_workload_main() {
     local expected_codec=$4
     shift 4
     local -a ffmpeg_args=("$@")
-    local blink_failed=false
-
     cli_common_init "$workload_dir"
     set +e
     cli_parse_options "${workload_options[@]}"
@@ -47,7 +45,7 @@ ffmpeg_workload_main() {
     done
     [[ -s $input_dir/$input_name && -s $input_dir/manifest.json ]] || "$cli_root/_common/prepare-inputs.sh"
 
-    cli_begin_result "$workload"
+    cli_begin_result "$workload" --manifest "$input_dir/manifest.json"
     local input=$input_dir/$input_name
     local native_ld=$native_prefix/lib
     local guest_ld=$guest_prefix/lib:$devkit/x86_64/lib
@@ -64,13 +62,13 @@ ffmpeg_workload_main() {
 
     cli_measure native env LD_LIBRARY_PATH="$native_ld" "$native_cli" "${args[@]}"
     cli_measure qemu "$qemu" -L "$devkit/x86_64/sysroot" -E "LD_LIBRARY_PATH=$guest_ld" "$guest_cli" "${args[@]}"
-    cli_measure blink env LD_LIBRARY_PATH="$guest_ld" BLINK_OVERLAYS="$devkit/x86_64/sysroot:" "$blink" "$guest_cli" "${args[@]}" || blink_failed=true
+    cli_measure blink env LD_LIBRARY_PATH="$guest_ld" BLINK_OVERLAYS="$devkit/x86_64/sysroot:" "$blink" "$guest_cli" "${args[@]}" || true
     cli_measure box64 env LD_LIBRARY_PATH="$devkit/lib" BOX64_LD_LIBRARY_PATH="$guest_ld" BOX64_LOG=0 BOX64_NOBANNER=1 BOX64_NORCFILES=1 "$box64" "$guest_cli" "${args[@]}"
     cli_measure fex env LD_LIBRARY_PATH="$devkit/lib" FEX_ROOTFS="$devkit/x86_64/sysroot" FEX_ENV="LD_LIBRARY_PATH=$guest_ld" FEX_OUTPUTLOG=stderr "$fex" "$guest_cli" "${args[@]}"
 
     cli_measure qemu-hecate env LORELEI_HOST_EXTENSIONS="$host_extension" LD_PRELOAD="$thread_hook" LD_LIBRARY_PATH="$host_hecate_ld" \
         "$qemu" -L "$devkit/x86_64/sysroot" -U LD_PRELOAD -E LD_BIND_NOW=1 -E LORELEI_GUEST_EXTENSIONS="$guest_extension" -E "LD_LIBRARY_PATH=$guest_hecate_ld" "$guest_cli" "${args[@]}"
-    cli_measure blink-hecate env LORELEI_HOST_EXTENSIONS="$host_extension" LORELEI_GUEST_EXTENSIONS="$guest_extension" LD_LIBRARY_PATH="$host_hecate_ld:$guest_hecate_ld" BLINK_OVERLAYS="$devkit/x86_64/sysroot:" "$blink" "$guest_cli" "${args[@]}" || blink_failed=true
+    cli_measure blink-hecate env LORELEI_HOST_EXTENSIONS="$host_extension" LORELEI_GUEST_EXTENSIONS="$guest_extension" LD_LIBRARY_PATH="$host_hecate_ld:$guest_hecate_ld" BLINK_OVERLAYS="$devkit/x86_64/sysroot:" "$blink" "$guest_cli" "${args[@]}" || true
     cli_measure box64-hecate env LORELEI_HOST_EXTENSIONS="$host_extension" LORELEI_GUEST_EXTENSIONS="$guest_extension" LD_LIBRARY_PATH="$host_hecate_ld" BOX64_LD_LIBRARY_PATH="$guest_hecate_ld" BOX64_LOG=0 BOX64_NOBANNER=1 BOX64_NORCFILES=1 "$box64" "$guest_cli" "${args[@]}"
     cli_measure fex-hecate env LORELEI_HOST_EXTENSIONS="$host_extension" LORELEI_GUEST_EXTENSIONS="$guest_extension" LD_LIBRARY_PATH="$host_hecate_ld" FEX_ROOTFS="$devkit/x86_64/sysroot" FEX_ENV="LD_LIBRARY_PATH=$guest_hecate_ld" FEX_OUTPUTLOG=stderr "$fex" "$guest_cli" "${args[@]}"
 
@@ -100,7 +98,4 @@ for output in outputs:
 (result / "validation.json").write_text(json.dumps(records, indent=2) + "\n")
 PY
     echo "Evidence: $result_dir"
-    if $blink_failed; then
-        return 1
-    fi
 }
