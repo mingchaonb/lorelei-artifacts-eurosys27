@@ -120,8 +120,8 @@ jobs:
           echo "AE_CONTAINER=$container" >>"$GITHUB_ENV"
           trap - EXIT
 
-      - name: Install the devkit, tools, libraries, and games
-        id: install
+      - name: Bootstrap the pinned vcpkg release
+        id: vcpkg
         shell: bash
         run: |
           set -euo pipefail
@@ -138,15 +138,43 @@ jobs:
                       ./vcpkg/bootstrap-vcpkg.sh -disableMetrics
                   fi
                   mkdir -p .cache/vcpkg-binary
-                  ./evaluations/install-devkit.sh
-                  ./evaluations/install-tools.sh --plain
-                  ./evaluations/install-libs.sh --plain
-                  ./evaluations/install-games.sh --plain
               '
+
+      - name: Install the Lorelei devkit
+        id: install_devkit
+        shell: bash
+        run: |
+          docker exec \
+              --workdir /home/user/eurosys-lorelei-artifacts \
+              "$AE_CONTAINER" ./evaluations/install-devkit.sh
+
+      - name: Install evaluation tools
+        id: install_tools
+        shell: bash
+        run: |
+          docker exec \
+              --workdir /home/user/eurosys-lorelei-artifacts \
+              "$AE_CONTAINER" ./evaluations/install-tools.sh --plain
+
+      - name: Install library packages
+        id: install_libraries
+        shell: bash
+        run: |
+          docker exec \
+              --workdir /home/user/eurosys-lorelei-artifacts \
+              "$AE_CONTAINER" ./evaluations/install-libs.sh --plain
+
+      - name: Install game packages
+        id: install_games
+        shell: bash
+        run: |
+          docker exec \
+              --workdir /home/user/eurosys-lorelei-artifacts \
+              "$AE_CONTAINER" ./evaluations/install-games.sh --plain
 
       - name: Run group 1 library correctness
         id: libraries
-        if: steps.install.outcome == 'success'
+        if: steps.install_games.outcome == 'success'
         continue-on-error: true
         shell: bash
         run: |
@@ -157,7 +185,7 @@ jobs:
 
       - name: Run group 2 command-line benchmarks
         id: cli
-        if: steps.install.outcome == 'success'
+        if: steps.install_games.outcome == 'success'
         continue-on-error: true
         shell: bash
         run: |
@@ -169,7 +197,7 @@ jobs:
 
       - name: Run group 3 breakdowns and coverage
         id: breakdown
-        if: steps.install.outcome == 'success'
+        if: steps.install_games.outcome == 'success'
         continue-on-error: true
         shell: bash
         run: |
@@ -190,7 +218,7 @@ jobs:
 
       - name: Run group 4 initial-scene game FPS
         id: games
-        if: steps.install.outcome == 'success'
+        if: steps.install_games.outcome == 'success'
         continue-on-error: true
         shell: bash
         run: |
@@ -266,7 +294,11 @@ jobs:
           for result in \
               "host=${{ steps.host.outcome }}" \
               "container=${{ steps.container.outcome }}" \
-              "install=${{ steps.install.outcome }}" \
+              "vcpkg=${{ steps.vcpkg.outcome }}" \
+              "install-devkit=${{ steps.install_devkit.outcome }}" \
+              "install-tools=${{ steps.install_tools.outcome }}" \
+              "install-libraries=${{ steps.install_libraries.outcome }}" \
+              "install-games=${{ steps.install_games.outcome }}" \
               "libraries=${{ steps.libraries.outcome }}" \
               "cli=${{ steps.cli.outcome }}" \
               "breakdown=${{ steps.breakdown.outcome }}" \

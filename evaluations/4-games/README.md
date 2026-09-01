@@ -207,7 +207,7 @@ Cleanup never deletes game packages, shared vcpkg caches, or an evaluator-suppli
 <!--
 ## 9. SPARK self-hosted GitHub Actions
 
-The repository provides [`.github/workflows/evaluation.yml`](../../.github/workflows/evaluation.yml). This workflow is manually triggered and requires an Ubuntu 24.04 ARM64 self-hosted runner carrying the `spark-gpu` label. It executes evaluation groups 1 through 5:
+The repository provides [`.github/workflows/evaluations.yml`](../../.github/workflows/evaluations.yml). This workflow is manually triggered and requires an Ubuntu 24.04 ARM64 self-hosted runner carrying the `spark-gpu` label. It executes evaluation groups 1 through 5:
 
 1. Install the devkit, all tools, all library packages, and five redistributable games inside the AE Docker image.
 2. Run library correctness, all nine CLI lanes, three breakdowns, and the coverage audit inside the container.

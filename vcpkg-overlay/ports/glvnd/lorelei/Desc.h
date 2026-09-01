@@ -8,11 +8,15 @@ extern "C" {
 #include <GL/glext.h>
 #include <GL/glx.h>
 #include <GL/glxext.h>
+#include <GLES/gl.h>
+#include <GLES/glext.h>
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
+#include <GLES3/gl32.h>
 
 // Ubuntu's desktop GL headers do not declare several desktop-compatible aliases
 // that libGL exports and drivers return from glXGetProcAddress. Keep the small
-// non-debug subset observed in the game workload explicit instead of importing
-// the complete GLES extension header.
+// remaining non-debug subset observed in the game workload explicit.
 GLAPI GLboolean APIENTRY glBufferRegionEnabled(void);
 GLAPI GLuint APIENTRY glNewBufferRegion(GLenum region);
 GLAPI void APIENTRY glDeleteBufferRegion(GLuint region);

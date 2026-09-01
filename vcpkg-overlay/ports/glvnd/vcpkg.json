@@ -1,7 +1,7 @@
 {
   "name": "glvnd",
   "version": "1.7.0-system",
-  "port-version": 1,
+  "port-version": 3,
   "description": "Lorelei thunk and validation binaries for the Ubuntu system libglvnd DSO",
   "homepage": "https://gitlab.freedesktop.org/glvnd/libglvnd",
   "license": "MIT",

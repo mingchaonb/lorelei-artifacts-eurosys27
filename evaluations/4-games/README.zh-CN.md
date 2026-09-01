@@ -207,7 +207,7 @@ evaluations/4-games/<game>/results/<UTC timestamp>-<lane>/
 <!--
 ## 9. SPARK self-hosted GitHub Actions
 
-仓库提供 [`.github/workflows/evaluation.yml`](../../.github/workflows/evaluation.yml)。该 workflow 只接受手动触发，并要求带有 `spark-gpu` 标签的 Ubuntu 24.04 ARM64 self-hosted runner。它完整执行评测组 1 到 5：
+仓库提供 [`.github/workflows/evaluations.yml`](../../.github/workflows/evaluations.yml)。该 workflow 只接受手动触发，并要求带有 `spark-gpu` 标签的 Ubuntu 24.04 ARM64 self-hosted runner。它完整执行评测组 1 到 5：
 
 1. 在 AE Docker 镜像内安装 devkit、全部工具、全部 library package 和五个可再分发游戏。
 2. 在容器内运行 library 正确性、九条 CLI lane、三个 breakdown 和 coverage 审计。
