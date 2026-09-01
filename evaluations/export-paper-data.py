@@ -523,6 +523,17 @@ def manual_configuration_loc(path: pathlib.Path, classify) -> int:
     return classify(path.read_text(errors="replace"))["code"]
 
 
+def box64_manual_configuration_loc(path: pathlib.Path, classify) -> int:
+    """Count active code and manually maintained wrapper declarations."""
+    pattern = re.compile(
+        r"^\s*//\s*(?:GO|GOM|GO2|GOW|GOWM|GOS|DATA|DATAB|DATAM)\s*\("
+    )
+    text = path.read_text(errors="replace")
+    return classify(text)["code"] + sum(
+        bool(pattern.match(line)) for line in text.splitlines()
+    )
+
+
 def load_loc_counter(repo: pathlib.Path):
     path = repo / "evaluations/common/tools/count-configuration-loc.py"
     spec = importlib.util.spec_from_file_location("configuration_loc", path)
@@ -602,7 +613,9 @@ def export_coverage(repo: pathlib.Path, output: pathlib.Path, inputs: Inputs) ->
             box_supported = len(exports & box64_wrapper_names(private))
             hecate_supported = int(audit["hecate_supported_functions"])
             total = int(audit["exported_functions"])
-            box_loc = sum(manual_configuration_loc(path, classify) for path in box64_files)
+            box_loc = sum(
+                box64_manual_configuration_loc(path, classify) for path in box64_files
+            )
             hecate_loc = sum(manual_configuration_loc(path, classify) for path in config_files)
             evidence_dir = repo / audit["evidence_dir"]
             audit_stat = evidence_dir / "ThunkStat.json"
