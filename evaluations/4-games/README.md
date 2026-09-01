@@ -149,7 +149,8 @@ Each game receives a separate writable home under:
 
 All four lanes collect at the host-side presentation boundary used by the AArch64 driver:
 
-- Native and QEMU-Hecate use MangoHud.
+- Native and QEMU-Hecate normally use MangoHud.
+- SuperTux creates two OpenGL contexts whose independent swap intervals cannot be combined as one MangoHud FPS stream. Its native and QEMU-Hecate lanes therefore record the SDL presentation boundary with a shared evaluation hook.
 - Box64 and Box64-Hecate record SDL or GLX presentation timestamps in the pinned Box64 build. This measurement hook does not change guest instruction execution or library selection.
 - Presentation timestamps are aggregated over 100 ms windows into an FPS CSV with the same fields as the MangoHud CSV.
 - Raw samples are written into the run directory.

@@ -149,7 +149,8 @@ GUI_ENV=/absolute/path/to/gui-env.txt \
 
 四条 lane 都在 AArch64 driver 实际提交画面的 host 侧采集：
 
-- native 与 QEMU-Hecate 使用 MangoHud。
+- native 与 QEMU-Hecate 通常使用 MangoHud。
+- SuperTux 会创建两个 OpenGL context，不能把二者独立的 swap 间隔合并为一条 MangoHud FPS 流。因此，其 native 与 QEMU-Hecate lane 使用共享评测 hook 记录 SDL presentation 边界。
 - Box64 与 Box64-Hecate 在固定版本的 Box64 中记录 SDL 或 GLX presentation 时间戳。该测量 hook 不改变 guest 指令执行与 library 选择。
 - presentation 时间戳按 100 ms 窗口转换为与 MangoHud 相同字段的 FPS CSV。
 - 原始采样写入本次结果目录。

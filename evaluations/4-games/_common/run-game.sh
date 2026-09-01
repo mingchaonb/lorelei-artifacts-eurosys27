@@ -258,6 +258,7 @@ case "$game" in
             game_library_path=$game_dir/runtime-libs
             game_args=(--datadir "$game_dir/build/install/share/games/supertux2")
         fi
+        game_environment+=(__GL_SYNC_TO_VBLANK=1)
         ;;
     supertuxkart)
         if [[ -n $selected_game_prefix ]]; then
@@ -369,6 +370,7 @@ fi
 thunk_variables="SDL1_PREFIX=$sdl1_prefix;SDL1_THUNK=$sdl1_thunk;GLVND_PREFIX=$gl_prefix;VULKAN_PREFIX=$vk_prefix"
 mangohud_env=()
 box64_fps_log=
+presentation_fps_log=
 if [[ $mangohud_enabled == 1 ]]; then
     mangohud_dir=$run_dir/mangohud
     mkdir -p "$mangohud_dir"
@@ -416,6 +418,24 @@ trap restore_display_mode EXIT
 # Compile the small guest probes from source for this devkit. The binaries are
 # disposable work products; only their logs and exit statuses become evidence.
 preflight_build=$repo_root/.work/evaluations/games/preflight-build
+if [[ $mangohud_enabled == 1 && $game == supertux &&
+      ( $lane == native || $lane == qemu-hecate ) ]]; then
+    # SuperTux owns two OpenGL contexts. MangoHud combines their independent
+    # swap intervals into one stream, so collect the actual SDL presentation
+    # boundary instead. This is the same boundary used by the Box64 hook.
+    presentation_hook_dir=$repo_root/.work/evaluations/games/presentation-hook
+    presentation_hook=$presentation_hook_dir/libae-presentation-hook.so
+    presentation_fps_log=$mangohud_dir/presentation-times.txt
+    mkdir -p "$presentation_hook_dir"
+    if [[ ! -f $presentation_hook ||
+          $recipe_dir/presentation-hook.c -nt $presentation_hook ]]; then
+        cc -shared -fPIC "$recipe_dir/presentation-hook.c" \
+            -o "$presentation_hook" -ldl
+    fi
+    cmake -E remove "$presentation_fps_log"
+    mangohud_env+=(LORELEI_FPS_LOG="$presentation_fps_log")
+    host_preload="$presentation_hook${host_preload:+:$host_preload}"
+fi
 game_sdl_abi=2
 preflight_sdl_cmake=(-DSDL2_PREFIX="$sdl_prefix" -DSDL2_THUNK="$sdl_thunk")
 if [[ $game == openarena ]]; then
@@ -676,19 +696,31 @@ fi
 echo "$status" > "$run_dir/status.txt"
 if [[ $mangohud_enabled == 1 ]]; then
     collector=MangoHud
-    if [[ $lane == box64 || $lane == box64-hecate ]]; then
+    if [[ -s $presentation_fps_log ]]; then
+        raw_csv=$mangohud_dir/presentation-fps.csv
+        summary_csv=$mangohud_dir/presentation-fps_summary.csv
+        collector="SDL presentation hook"
+        if ! python3 "$recipe_dir/presentation-times-to-csv.py" \
+            "$presentation_fps_log" "$raw_csv" "$summary_csv"; then
+            cmake -E remove "$raw_csv" "$summary_csv"
+        fi
+    elif [[ $lane == box64 || $lane == box64-hecate ]]; then
         raw_csv=$mangohud_dir/box64-fps.csv
         summary_csv=$mangohud_dir/box64-fps_summary.csv
         collector="Box64 presentation hook"
         if [[ -s $box64_fps_log ]]; then
-            if ! python3 "$recipe_dir/box64-frames-to-csv.py" \
+            if ! python3 "$recipe_dir/presentation-times-to-csv.py" \
                 "$box64_fps_log" "$raw_csv" "$summary_csv"; then
                 cmake -E remove "$raw_csv" "$summary_csv"
             fi
         fi
     fi
-    raw_csv=$(find "$mangohud_dir" -maxdepth 1 -type f -name '*.csv' ! -name '*_summary.csv' | sort | head -1)
-    summary_csv=$(find "$mangohud_dir" -maxdepth 1 -type f -name '*_summary.csv' | sort | head -1)
+    if [[ -z ${raw_csv:-} || ! -f $raw_csv ]]; then
+        raw_csv=$(find "$mangohud_dir" -maxdepth 1 -type f -name '*.csv' ! -name '*_summary.csv' | sort | head -1)
+    fi
+    if [[ -z ${summary_csv:-} || ! -f $summary_csv ]]; then
+        summary_csv=$(find "$mangohud_dir" -maxdepth 1 -type f -name '*_summary.csv' | sort | head -1)
+    fi
     if [[ -n $raw_csv && -n $summary_csv ]]; then
         python3 "$recipe_dir/summarize-mangohud.py" \
             "$run_dir/fps-summary.json" "$raw_csv" "$summary_csv" "$collector"

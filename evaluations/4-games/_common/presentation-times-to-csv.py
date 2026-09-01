@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Aggregate Box64 presentation timestamps into 100 ms FPS samples."""
+"""Aggregate host-side presentation timestamps into 100 ms FPS samples."""
 
 import csv
 import pathlib
@@ -20,13 +20,13 @@ for line in timestamps_path.read_text(errors="replace").splitlines():
         timestamps.append(timestamp)
 
 if len(timestamps) < 2:
-    raise SystemExit("Box64 recorded fewer than two GLX swap timestamps")
+    raise SystemExit("fewer than two presentation timestamps were recorded")
 
 first = timestamps[0]
 last = timestamps[-1]
 complete_bins = int((last - first) / SAMPLE_SECONDS)
 if complete_bins < 1:
-    raise SystemExit("Box64 recorded less than one complete FPS interval")
+    raise SystemExit("less than one complete FPS interval was recorded")
 
 counts = [0] * complete_bins
 for timestamp in timestamps:
