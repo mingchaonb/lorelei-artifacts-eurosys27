@@ -51,6 +51,7 @@ ffmpeg_workload_main() {
     local guest_ld=$guest_prefix/lib:$devkit/x86_64/lib
     local host_hecate_ld=$devkit/lib:$hecate_prefix/lib:$pack
     local guest_hecate_ld=$devkit/x86_64/lib:$pack/x86_64
+    local box64_hecate_preload=$pack/x86_64/libavcodec.so.61:$pack/x86_64/libavdevice.so.61:$pack/x86_64/libavfilter.so.10:$pack/x86_64/libavformat.so.61:$pack/x86_64/libavutil.so.59:$pack/x86_64/libswresample.so.5:$pack/x86_64/libswscale.so.8
     local host_extension=$devkit/lib/libLoreHostHLRExtension.so
     local guest_extension=$devkit/x86_64/lib/libLoreGuestHLRExtension.so
     local thread_hook=$devkit/lib/libLoreQEMUThreadHook.so
@@ -69,7 +70,7 @@ ffmpeg_workload_main() {
     cli_measure qemu-hecate env LORELEI_HOST_EXTENSIONS="$host_extension" LD_PRELOAD="$thread_hook" LD_LIBRARY_PATH="$host_hecate_ld" \
         "$qemu" -L "$devkit/x86_64/sysroot" -U LD_PRELOAD -E LD_BIND_NOW=1 -E LORELEI_GUEST_EXTENSIONS="$guest_extension" -E "LD_LIBRARY_PATH=$guest_hecate_ld" "$guest_cli" "${args[@]}"
     cli_measure blink-hecate env LORELEI_HOST_EXTENSIONS="$host_extension" LORELEI_GUEST_EXTENSIONS="$guest_extension" LD_LIBRARY_PATH="$host_hecate_ld:$guest_hecate_ld" BLINK_OVERLAYS="$devkit/x86_64/sysroot:" "$blink" "$guest_cli" "${args[@]}" || true
-    cli_measure box64-hecate env LORELEI_HOST_EXTENSIONS="$host_extension" LORELEI_GUEST_EXTENSIONS="$guest_extension" LD_LIBRARY_PATH="$host_hecate_ld" BOX64_LD_LIBRARY_PATH="$guest_hecate_ld" BOX64_LOG=0 BOX64_NOBANNER=1 BOX64_NORCFILES=1 "$box64" "$guest_cli" "${args[@]}"
+    cli_measure box64-hecate env LORELEI_HOST_EXTENSIONS="$host_extension" LORELEI_GUEST_EXTENSIONS="$guest_extension" LD_LIBRARY_PATH="$host_hecate_ld" BOX64_LD_LIBRARY_PATH="$guest_hecate_ld" BOX64_LD_PRELOAD="$box64_hecate_preload" BOX64_LOG=0 BOX64_NOBANNER=1 BOX64_NORCFILES=1 "$box64" "$guest_cli" "${args[@]}"
     cli_measure fex-hecate env LORELEI_HOST_EXTENSIONS="$host_extension" LORELEI_GUEST_EXTENSIONS="$guest_extension" LD_LIBRARY_PATH="$host_hecate_ld" FEX_ROOTFS="$devkit/x86_64/sysroot" FEX_ENV="LD_LIBRARY_PATH=$guest_hecate_ld" FEX_OUTPUTLOG=stderr "$fex" "$guest_cli" "${args[@]}"
 
     env LD_LIBRARY_PATH="$native_ld" python3 - "$native_probe" "$result_dir" "$output_suffix" "$expected_codec" <<'PY'
@@ -80,21 +81,29 @@ import sys
 
 ffprobe, result_name, suffix, expected_codec = sys.argv[1:]
 result = pathlib.Path(result_name)
-outputs = sorted((result / "outputs").glob(f"*/run-*{suffix}"))
 records = []
-for output in outputs:
-    command = [
-        ffprobe, "-v", "error", "-show_entries",
-        "stream=codec_name,duration:format=duration,size", "-of", "json", str(output),
-    ]
-    data = json.loads(subprocess.check_output(command))
-    codecs = [stream.get("codec_name") for stream in data.get("streams", [])]
-    if expected_codec not in codecs:
-        raise SystemExit(f"expected codec {expected_codec} in {output}, found {codecs}")
-    duration = float(data["format"]["duration"])
-    if duration < 9.0:
-        raise SystemExit(f"unexpectedly short output {output}: {duration}")
-    records.append({"path": str(output), "bytes": output.stat().st_size, "duration": duration, "codecs": codecs})
+for summary_path in sorted(result.glob("*.json")):
+    summary = json.loads(summary_path.read_text())
+    if summary.get("status") != "pass" or not summary.get("lane"):
+        continue
+    lane = summary["lane"]
+    outputs = sorted((result / "outputs" / lane).glob(f"run-*{suffix}"))
+    expected_outputs = summary["repetitions_requested"]
+    if len(outputs) != expected_outputs:
+        raise SystemExit(f"expected {expected_outputs} outputs for {lane}, found {len(outputs)}")
+    for output in outputs:
+        command = [
+            ffprobe, "-v", "error", "-show_entries",
+            "stream=codec_name,duration:format=duration,size", "-of", "json", str(output),
+        ]
+        data = json.loads(subprocess.check_output(command))
+        codecs = [stream.get("codec_name") for stream in data.get("streams", [])]
+        if expected_codec not in codecs:
+            raise SystemExit(f"expected codec {expected_codec} in {output}, found {codecs}")
+        duration = float(data["format"]["duration"])
+        if duration < 9.0:
+            raise SystemExit(f"unexpectedly short output {output}: {duration}")
+        records.append({"path": str(output), "bytes": output.stat().st_size, "duration": duration, "codecs": codecs})
 (result / "validation.json").write_text(json.dumps(records, indent=2) + "\n")
 PY
     echo "Evidence: $result_dir"

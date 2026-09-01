@@ -3,6 +3,31 @@ name: EuroSys AE 1-5 on SPARK
 on:
   workflow_dispatch:
     inputs:
+      run_libraries:
+        description: Run group 1 library correctness
+        required: true
+        default: true
+        type: boolean
+      run_cli:
+        description: Run group 2 command-line benchmarks
+        required: true
+        default: true
+        type: boolean
+      run_breakdown:
+        description: Run group 3 breakdowns and coverage
+        required: true
+        default: true
+        type: boolean
+      run_games:
+        description: Run group 4 initial-scene game FPS
+        required: true
+        default: true
+        type: boolean
+      run_modifications:
+        description: Run group 5 modification analysis
+        required: true
+        default: true
+        type: boolean
       repetitions:
         description: Repetitions for each command-line benchmark lane
         required: true
@@ -135,6 +160,7 @@ jobs:
 
       - name: Bootstrap the pinned vcpkg release
         id: vcpkg
+        if: inputs.run_libraries || inputs.run_cli || inputs.run_breakdown || inputs.run_games
         shell: bash
         run: |
           set -euo pipefail
@@ -155,6 +181,7 @@ jobs:
 
       - name: Install the Lorelei devkit
         id: install_devkit
+        if: inputs.run_libraries || inputs.run_cli || inputs.run_breakdown || inputs.run_games
         shell: bash
         run: |
           docker exec \
@@ -163,6 +190,7 @@ jobs:
 
       - name: Install evaluation tools
         id: install_tools
+        if: inputs.run_libraries || inputs.run_cli || inputs.run_breakdown || inputs.run_games
         shell: bash
         run: |
           docker exec \
@@ -171,6 +199,7 @@ jobs:
 
       - name: Install library packages
         id: install_libraries
+        if: inputs.run_libraries || inputs.run_cli || inputs.run_breakdown || inputs.run_games
         shell: bash
         run: |
           docker exec \
@@ -179,6 +208,7 @@ jobs:
 
       - name: Install game packages
         id: install_games
+        if: inputs.run_games && steps.install_libraries.outcome == 'success'
         shell: bash
         run: |
           docker exec \
@@ -187,7 +217,7 @@ jobs:
 
       - name: Run group 1 library correctness
         id: libraries
-        if: steps.install_games.outcome == 'success'
+        if: inputs.run_libraries && steps.install_libraries.outcome == 'success'
         continue-on-error: true
         shell: bash
         run: |
@@ -198,7 +228,7 @@ jobs:
 
       - name: Run group 2 command-line benchmarks
         id: cli
-        if: steps.install_games.outcome == 'success'
+        if: inputs.run_cli && steps.install_libraries.outcome == 'success'
         continue-on-error: true
         shell: bash
         run: |
@@ -210,7 +240,7 @@ jobs:
 
       - name: Run group 3 breakdowns and coverage
         id: breakdown
-        if: steps.install_games.outcome == 'success'
+        if: inputs.run_breakdown && steps.install_libraries.outcome == 'success'
         continue-on-error: true
         shell: bash
         run: |
@@ -231,27 +261,31 @@ jobs:
 
       - name: Run group 4 initial-scene game FPS
         id: games
-        if: steps.install_games.outcome == 'success'
+        if: inputs.run_games && steps.install_games.outcome == 'success'
         continue-on-error: true
         shell: bash
         run: |
           ./evaluations/4-games/run-ci.sh "$CI_GAME_SECONDS"
 
-      - name: Run group 5 modification analysis and export all paper data
+      - name: Run group 5 modification analysis
+        id: modifications
+        if: inputs.run_modifications && steps.container.outcome == 'success'
+        continue-on-error: true
+        shell: bash
+        run: |
+          docker exec \
+              --workdir /home/user/eurosys-lorelei-artifacts \
+              "$AE_CONTAINER" ./evaluations/5-modifications/run.sh
+
+      - name: Export available paper data
         id: export
         if: always() && steps.container.outcome == 'success'
         continue-on-error: true
         shell: bash
         run: |
-          set -uo pipefail
-          failed=0
           docker exec \
               --workdir /home/user/eurosys-lorelei-artifacts \
-              "$AE_CONTAINER" ./evaluations/5-modifications/run.sh || failed=1
-          docker exec \
-              --workdir /home/user/eurosys-lorelei-artifacts \
-              "$AE_CONTAINER" python3 evaluations/export-paper-data.py || failed=1
-          exit "$failed"
+              "$AE_CONTAINER" python3 evaluations/export-paper-data.py
 
       - name: Stop the AE container
         if: always() && steps.container.outcome == 'success'
@@ -304,20 +338,47 @@ jobs:
         run: |
           set -euo pipefail
           failed=0
-          for result in \
-              "host=${{ steps.host.outcome }}" \
-              "container=${{ steps.container.outcome }}" \
-              "vcpkg=${{ steps.vcpkg.outcome }}" \
-              "install-devkit=${{ steps.install_devkit.outcome }}" \
-              "install-tools=${{ steps.install_tools.outcome }}" \
-              "install-libraries=${{ steps.install_libraries.outcome }}" \
-              "install-games=${{ steps.install_games.outcome }}" \
-              "libraries=${{ steps.libraries.outcome }}" \
-              "cli=${{ steps.cli.outcome }}" \
-              "breakdown=${{ steps.breakdown.outcome }}" \
-              "games=${{ steps.games.outcome }}" \
-              "export=${{ steps.export.outcome }}"; do
-              echo "$result"
-              [[ $result == *=success ]] || failed=1
-          done
+
+          check_required() {
+              local name=$1 outcome=$2
+              echo "$name=$outcome"
+              [[ $outcome == success ]] || failed=1
+          }
+
+          report_group() {
+              local number=$1 name=$2 enabled=$3 outcome=$4
+              local status=skipped
+              if [[ $enabled == true ]]; then
+                  status=$outcome
+                  [[ $outcome != skipped ]] || status=blocked
+                  [[ $outcome == success ]] || failed=1
+              fi
+              printf '%s=%s\n' "$name" "$status"
+              printf '| %s | %s | %s |\n' "$number" "$name" "$status" >>"$GITHUB_STEP_SUMMARY"
+          }
+
+          check_required host "${{ steps.host.outcome }}"
+          check_required container "${{ steps.container.outcome }}"
+          if [[ "${{ inputs.run_libraries || inputs.run_cli || inputs.run_breakdown || inputs.run_games }}" == true ]]; then
+              check_required vcpkg "${{ steps.vcpkg.outcome }}"
+              check_required install-devkit "${{ steps.install_devkit.outcome }}"
+              check_required install-tools "${{ steps.install_tools.outcome }}"
+              check_required install-libraries "${{ steps.install_libraries.outcome }}"
+          fi
+          if [[ "${{ inputs.run_games }}" == true ]]; then
+              check_required install-games "${{ steps.install_games.outcome }}"
+          fi
+          check_required export "${{ steps.export.outcome }}"
+
+          {
+              echo '## Evaluation group status'
+              echo
+              echo '| Group | Evaluation | Status |'
+              echo '| --- | --- | --- |'
+          } >>"$GITHUB_STEP_SUMMARY"
+          report_group 1 libraries "${{ inputs.run_libraries }}" "${{ steps.libraries.outcome }}"
+          report_group 2 cli "${{ inputs.run_cli }}" "${{ steps.cli.outcome }}"
+          report_group 3 breakdown "${{ inputs.run_breakdown }}" "${{ steps.breakdown.outcome }}"
+          report_group 4 games "${{ inputs.run_games }}" "${{ steps.games.outcome }}"
+          report_group 5 modifications "${{ inputs.run_modifications }}" "${{ steps.modifications.outcome }}"
           exit "$failed"
