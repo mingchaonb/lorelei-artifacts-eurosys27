@@ -150,3 +150,15 @@ python3 evaluations/export-paper-data.py
 ```
 
 导出器在 `evaluations/paper-data/` 中写入 `overall.csv`、`game-fps.csv`、`function-breakdown.csv`、`callback-track.csv`、`coverage-effort.csv`、`modifications.csv` 和输入哈希 manifest。
+
+## 7. SPARK GitHub Actions
+
+手动触发的 [`.github/workflows/evaluation.yml`](../.github/workflows/evaluation.yml) 在带 `spark-gpu` 标签的 Ubuntu 24.04 ARM64 self-hosted runner 上执行以下完整流程：
+
+1. 在 AE 容器内安装全部评测内容。
+2. 运行评测组 1、2 和 3。
+3. 在 SPARK 宿主的物理 GPU 上运行评测组 4。五个可再分发游戏均测量启动后的初始场景。
+4. 运行评测组 5 和统一数据导出器。
+5. 上传 `paper-data` 和 `raw-evidence` 两个 GitHub Actions artifact。
+
+每次 CI 会先把该 checkout 中以前生成的 `results` 和 `paper-data` 移到 `.work/evaluations/ci-result-history/`，从而避免旧证据填补本次缺失 lane。vcpkg download、binary package、build 和安装状态继续保留并复用。SPARK runner 的注册、X11 会话和 Docker 要求见 [`4-games/README.zh-CN.md`](4-games/README.zh-CN.md#9-spark-self-hosted-github-actions)。

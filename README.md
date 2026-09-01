@@ -269,6 +269,8 @@ GAME_DIR="/absolute/path/to/Hollow Knight" ./evaluations/4-games/hollow-knight/r
 
 See [`evaluations/4-games/README.md`](evaluations/4-games/README.md) for each game's installation source, runtime prerequisites, FPS sampling window, and result format.
 
+The repository also provides the manually triggered `EuroSys AE 1-5 on SPARK` GitHub Actions workflow. On an Ubuntu 24.04 ARM64 self-hosted runner labeled `spark-gpu`, it executes evaluation groups 1 through 5. The game stage measures the initial scene reached after startup for five redistributable games. All generated CSV files and the manifest are uploaded as the `paper-data` artifact, with raw evidence uploaded separately. See [`evaluations/4-games/README.md`](evaluations/4-games/README.md#9-spark-self-hosted-github-actions) for runner registration, graphical-session, and Docker setup.
+
 ### 3.5 Export paper data and render plots
 
 Run the coverage and source-change analyses, then export all available evidence to readable, paper-compatible CSV files in one step:

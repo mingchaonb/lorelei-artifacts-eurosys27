@@ -267,6 +267,8 @@ GAME_DIR="/absolute/path/to/Hollow Knight" ./evaluations/4-games/hollow-knight/r
 
 各游戏的安装来源、运行前提、FPS 采样窗口和结果格式见 [`evaluations/4-games/README.zh-CN.md`](evaluations/4-games/README.zh-CN.md)。
 
+仓库还提供手动触发的 `EuroSys AE 1-5 on SPARK` GitHub Actions workflow。它在带 `spark-gpu` 标签的 Ubuntu 24.04 ARM64 self-hosted runner 上完整运行评测组 1 到 5，其中游戏自动测量五个可再分发游戏启动后的初始场景。最终生成的全部 CSV 和 manifest 作为 `paper-data` artifact 上传，原始证据单独上传。runner 注册、图形会话和 Docker 配置见 [`evaluations/4-games/README.zh-CN.md`](evaluations/4-games/README.zh-CN.md#9-spark-self-hosted-github-actions)。
+
 ### 3.5 导出论文数据与构图
 
 运行 coverage、源码修改量分析，随后一次性把现有实验证据导出为与论文口径对应的可读 CSV：

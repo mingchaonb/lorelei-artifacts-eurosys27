@@ -203,3 +203,51 @@ evaluations/4-games/<game>/results/<UTC timestamp>-<lane>/
 ```
 
 清理脚本不会删除游戏 package、共享 vcpkg cache 或用户提供的 `GAME_DIR`。
+
+## 9. SPARK self-hosted GitHub Actions
+
+仓库提供 [`.github/workflows/evaluation.yml`](../../.github/workflows/evaluation.yml)。该 workflow 只接受手动触发，并要求带有 `spark-gpu` 标签的 Ubuntu 24.04 ARM64 self-hosted runner。它完整执行评测组 1 到 5：
+
+1. 在 AE Docker 镜像内安装 devkit、全部工具、全部 library package 和五个可再分发游戏。
+2. 在容器内运行 library 正确性、九条 CLI lane、三个 breakdown 和 coverage 审计。
+3. 检查 runner 正在使用物理 OpenGL renderer，然后在 SPARK 宿主的当前 X11 会话运行五个游戏的四条 lane。
+4. 每个游戏启动后停留在默认进入的初始场景，watchdog 缺省为 30 秒。
+5. 回到容器内统计评测系统的修改量，并运行统一论文数据导出器。
+6. 将 `evaluations/paper-data/` 中的全部 CSV 和 manifest 上传为 `paper-data` artifact，同时把五组原始证据上传为单独的 `raw-evidence` artifact。
+
+`game-fps-ci.csv` 明确记录 `scene=initial`，并要求每一行均来自物理 GPU。任一游戏或 lane 缺少有效 FPS 样本时，workflow 在保留并上传已有证据后失败。Hollow Knight 不在 CI 中运行，因为 artifact 不能下载或分发其专有文件。
+
+在 SPARK 上配置 runner：
+
+1. 打开仓库的 **Settings > Actions > Runners > New self-hosted runner**，选择 Linux 和 ARM64。
+2. 使用 GitHub 页面给出的命令下载并解压 runner。注册时添加 `spark-gpu` 标签：
+
+```bash
+./config.sh \
+  --url https://github.com/mingchaonb/lorelei-artifacts-eurosys27 \
+  --token '<GitHub 页面生成的一次性 token>' \
+  --name spark \
+  --labels spark-gpu \
+  --work _work
+```
+
+3. 确认 `functioner` 可以运行 Docker，且宿主已按照第 6 节安装 MangoHud 和图形工具。
+4. 最简单的首次运行方式是在 SPARK 图形桌面的终端中启动 runner。这样它直接继承正确的 `DISPLAY` 和 `XAUTHORITY`：
+
+```bash
+cd /path/to/actions-runner
+./run.sh
+```
+
+5. 在 GitHub 的 **Actions > EuroSys AE 1-5 on SPARK > Run workflow** 中启动任务。可在启动时调整 CLI 重复次数、breakdown 轮数、固定 CPU 和游戏 watchdog。运行游戏评测期间，五个游戏会依次在 SPARK 屏幕上出现，避免同时操作桌面或改变窗口焦点。
+
+需要把 runner 作为 systemd 服务长期运行时，先把图形桌面终端中的实际值写入 runner 目录的 `.env`：
+
+```bash
+cd /path/to/actions-runner
+printf 'DISPLAY=%s\nXAUTHORITY=%s\n' "$DISPLAY" "$XAUTHORITY" >.env
+sudo ./svc.sh install functioner
+sudo ./svc.sh start
+```
+
+桌面会话改变后，重新写入 `.env` 并重启 runner 服务。代理同样使用 runner 目录的 `.env` 配置，workflow 会把大小写代理变量传给 Docker build 和容器。

@@ -146,3 +146,15 @@ python3 evaluations/export-paper-data.py
 ```
 
 The exporter writes `overall.csv`, `game-fps.csv`, `function-breakdown.csv`, `callback-track.csv`, `coverage-effort.csv`, `modifications.csv`, and an input-hash manifest under `evaluations/paper-data/`.
+
+## 7. SPARK GitHub Actions
+
+The manually triggered [`.github/workflows/evaluation.yml`](../.github/workflows/evaluation.yml) runs the following complete sequence on an Ubuntu 24.04 ARM64 self-hosted runner labeled `spark-gpu`:
+
+1. Install all evaluation content inside the AE container.
+2. Run evaluation groups 1, 2, and 3.
+3. Run group 4 on the physical GPU of the SPARK host. Each of the five redistributable games measures the initial scene reached after startup.
+4. Run group 5 and the unified data exporter.
+5. Upload separate `paper-data` and `raw-evidence` GitHub Actions artifacts.
+
+Before each CI batch, generated `results` and `paper-data` in that checkout are moved under `.work/evaluations/ci-result-history/`. This prevents older evidence from filling a missing lane in the current run. vcpkg downloads, binary packages, builds, and installation state remain available for reuse. See [`4-games/README.md`](4-games/README.md#9-spark-self-hosted-github-actions) for SPARK runner registration, X11 session, and Docker requirements.

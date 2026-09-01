@@ -1,0 +1,277 @@
+name: EuroSys AE 1-5 on SPARK
+
+on:
+  workflow_dispatch:
+    inputs:
+      repetitions:
+        description: Repetitions for each command-line benchmark lane
+        required: true
+        default: "5"
+      rounds:
+        description: Rounds for each breakdown measurement
+        required: true
+        default: "5"
+      run_seconds:
+        description: Seconds to keep each game lane in its initial scene
+        required: true
+        default: "30"
+      cpu:
+        description: Logical CPU used by pinned breakdown measurements
+        required: true
+        default: "0"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: spark-eurosys-ae
+  cancel-in-progress: false
+
+jobs:
+  evaluation:
+    name: Complete evaluation groups 1 through 5
+    runs-on: [self-hosted, linux, ARM64, spark-gpu]
+    timeout-minutes: 1440
+    env:
+      CI_GAME_SECONDS: ${{ inputs.run_seconds }}
+      REPETITIONS: ${{ inputs.repetitions }}
+      ROUNDS: ${{ inputs.rounds }}
+      CPU: ${{ inputs.cpu }}
+      VCPKG_BINARY_SOURCES: clear;files,${{ github.workspace }}/.cache/vcpkg-binary,readwrite
+
+    steps:
+      - name: Check out the artifact repository
+        uses: actions/checkout@v4
+        with:
+          clean: false
+
+      - name: Start an evidence-isolated CI batch
+        shell: bash
+        run: ./evaluations/archive-ci-results.sh
+
+      - name: Check the Ubuntu 24.04 ARM64 GPU host
+        id: host
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(uname -m)" = aarch64
+          grep -qx 'ID=ubuntu' /etc/os-release
+          grep -qx 'VERSION_ID="24.04"' /etc/os-release
+          for command in docker mangohud glxinfo xdpyinfo xauth xdotool cmake python3; do
+              command -v "$command" >/dev/null || {
+                  echo "Missing host command: $command" >&2
+                  exit 1
+              }
+          done
+          test -n "${DISPLAY:-}" || {
+              echo "DISPLAY is missing from the self-hosted runner environment" >&2
+              exit 1
+          }
+          test -n "${XAUTHORITY:-}" && test -r "$XAUTHORITY" || {
+              echo "XAUTHORITY is missing or unreadable: ${XAUTHORITY:-unset}" >&2
+              exit 1
+          }
+          env DISPLAY="$DISPLAY" XAUTHORITY="$XAUTHORITY" xdpyinfo >/dev/null
+          env DISPLAY="$DISPLAY" XAUTHORITY="$XAUTHORITY" glxinfo -B
+          renderer=$(env DISPLAY="$DISPLAY" XAUTHORITY="$XAUTHORITY" glxinfo -B |
+              sed -n 's/^[[:space:]]*OpenGL renderer string:[[:space:]]*//p' | head -1)
+          if [[ -z $renderer || $renderer =~ [Ll][Ll][Vv][Mm][Pp][Ii][Pp][Ee] ||
+                $renderer =~ [Ss][Oo][Ff][Tt][Pp][Ii][Pp][Ee] ||
+                $renderer =~ [Ss][Ww][Rr][Aa][Ss][Tt] ]]; then
+              echo "The self-hosted runner is not using a physical OpenGL renderer: ${renderer:-unknown}" >&2
+              exit 1
+          fi
+          docker info >/dev/null
+
+      - name: Build and start the AE container
+        id: container
+        shell: bash
+        run: |
+          set -euo pipefail
+          image=lorelei-eurosys27-ae:github-actions
+          container=lorelei-ae-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}
+          cleanup() {
+              docker rm --force "$container" >/dev/null 2>&1 || true
+          }
+          trap cleanup EXIT
+          proxy_build_args=()
+          proxy_run_args=()
+          for name in http_proxy https_proxy no_proxy HTTP_PROXY HTTPS_PROXY NO_PROXY; do
+              if [[ -n ${!name:-} ]]; then
+                  proxy_build_args+=(--build-arg "$name=${!name}")
+                  proxy_run_args+=(--env "$name=${!name}")
+              fi
+          done
+          docker rm --force "$container" >/dev/null 2>&1 || true
+          docker build \
+              --build-arg "USER_UID=$(id -u)" \
+              --build-arg "USER_GID=$(id -g)" \
+              "${proxy_build_args[@]}" \
+              --tag "$image" \
+              --file docker/Dockerfile .
+          docker run --detach \
+              --name "$container" \
+              --network host \
+              "${proxy_run_args[@]}" \
+              --env "VCPKG_BINARY_SOURCES=$VCPKG_BINARY_SOURCES" \
+              --mount "type=bind,src=$GITHUB_WORKSPACE,dst=/home/user/eurosys-lorelei-artifacts" \
+              "$image" sleep infinity
+          echo "AE_CONTAINER=$container" >>"$GITHUB_ENV"
+          trap - EXIT
+
+      - name: Install the devkit, tools, libraries, and games
+        id: install
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker exec \
+              --workdir /home/user/eurosys-lorelei-artifacts \
+              "$AE_CONTAINER" bash -lc '
+                  set -euo pipefail
+                  if [[ ! -x vcpkg/bootstrap-vcpkg.sh ]]; then
+                      git clone https://github.com/microsoft/vcpkg.git vcpkg
+                  fi
+                  git -C vcpkg fetch --tags --force
+                  git -C vcpkg checkout --force 2026.07.29
+                  if [[ ! -x vcpkg/vcpkg ]]; then
+                      ./vcpkg/bootstrap-vcpkg.sh -disableMetrics
+                  fi
+                  mkdir -p .cache/vcpkg-binary
+                  ./evaluations/install-devkit.sh
+                  ./evaluations/install-tools.sh --plain
+                  ./evaluations/install-libs.sh --plain
+                  ./evaluations/install-games.sh --plain
+              '
+
+      - name: Run group 1 library correctness
+        id: libraries
+        if: steps.install.outcome == 'success'
+        continue-on-error: true
+        shell: bash
+        run: |
+          docker exec \
+              --workdir /home/user/eurosys-lorelei-artifacts \
+              "$AE_CONTAINER" \
+              ./evaluations/1-libs/run-all.sh --restart --verbose --plain
+
+      - name: Run group 2 command-line benchmarks
+        id: cli
+        if: steps.install.outcome == 'success'
+        continue-on-error: true
+        shell: bash
+        run: |
+          docker exec \
+              --env "REPETITIONS=$REPETITIONS" \
+              --workdir /home/user/eurosys-lorelei-artifacts \
+              "$AE_CONTAINER" \
+              ./evaluations/2-cli-benchmarks/run-all.sh --restart --plain
+
+      - name: Run group 3 breakdowns and coverage
+        id: breakdown
+        if: steps.install.outcome == 'success'
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          failed=0
+          run_in_container() {
+              docker exec \
+                  --env "ROUNDS=$ROUNDS" \
+                  --env "CPU=$CPU" \
+                  --workdir /home/user/eurosys-lorelei-artifacts \
+                  "$AE_CONTAINER" "$@" || failed=1
+          }
+          run_in_container ./evaluations/3-breakdown/box64-callback-track/run.sh
+          run_in_container ./evaluations/3-breakdown/hecate-callback-track/run.sh
+          run_in_container ./evaluations/3-breakdown/breakdown-test/run.sh
+          run_in_container python3 evaluations/3-breakdown/coverage-effort/run.py
+          exit "$failed"
+
+      - name: Run group 4 initial-scene game FPS
+        id: games
+        if: steps.install.outcome == 'success'
+        continue-on-error: true
+        shell: bash
+        run: |
+          ./evaluations/4-games/run-ci.sh "$CI_GAME_SECONDS"
+
+      - name: Run group 5 modification analysis and export all paper data
+        id: export
+        if: always() && steps.container.outcome == 'success'
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -uo pipefail
+          failed=0
+          docker exec \
+              --workdir /home/user/eurosys-lorelei-artifacts \
+              "$AE_CONTAINER" ./evaluations/5-modifications/run.sh || failed=1
+          docker exec \
+              --workdir /home/user/eurosys-lorelei-artifacts \
+              "$AE_CONTAINER" python3 evaluations/export-paper-data.py || failed=1
+          exit "$failed"
+
+      - name: Stop the AE container
+        if: always() && steps.container.outcome == 'success'
+        shell: bash
+        run: docker rm --force "$AE_CONTAINER" || true
+
+      - name: Write generated CSV tables to the workflow summary
+        if: always()
+        shell: bash
+        run: |
+          shopt -s nullglob
+          files=(evaluations/paper-data/*.csv)
+          if ((${#files[@]} == 0)); then
+              echo "No paper CSV data was produced." >>"$GITHUB_STEP_SUMMARY"
+              exit 0
+          fi
+          for csv in "${files[@]}"; do
+              python3 evaluations/4-games/_common/csv-to-markdown.py "$csv" \
+                  >>"$GITHUB_STEP_SUMMARY"
+          done
+
+      - name: Upload all exported paper data
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: paper-data-${{ github.run_id }}-${{ github.run_attempt }}
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            evaluations/paper-data/*.csv
+            evaluations/paper-data/manifest.json
+
+      - name: Upload raw evaluation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: raw-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          if-no-files-found: warn
+          retention-days: 30
+          path: |
+            evaluations/1-libs/*/results/**
+            evaluations/2-cli-benchmarks/*/results/**
+            evaluations/3-breakdown/*/results/**
+            evaluations/4-games/*/results/**
+            evaluations/5-modifications/results/**
+
+      - name: Enforce every evaluation group
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          failed=0
+          for result in \
+              "host=${{ steps.host.outcome }}" \
+              "container=${{ steps.container.outcome }}" \
+              "install=${{ steps.install.outcome }}" \
+              "libraries=${{ steps.libraries.outcome }}" \
+              "cli=${{ steps.cli.outcome }}" \
+              "breakdown=${{ steps.breakdown.outcome }}" \
+              "games=${{ steps.games.outcome }}" \
+              "export=${{ steps.export.outcome }}"; do
+              echo "$result"
+              [[ $result == *=success ]] || failed=1
+          done
+          exit "$failed"
