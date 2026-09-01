@@ -1,6 +1,7 @@
 {
   "name": "box64-ae",
   "version-date": "2026-09-01",
+  "port-version": 1,
   "description": "Pinned Hecate-enabled Box64 executable for the Lorelei AE",
   "homepage": "https://github.com/mingchaonb/box64",
   "license": "MIT",

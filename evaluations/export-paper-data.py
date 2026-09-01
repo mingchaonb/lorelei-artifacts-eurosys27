@@ -586,7 +586,13 @@ def export_coverage(repo: pathlib.Path, output: pathlib.Path, inputs: Inputs) ->
         audit_rows = {
             row["library"]: row for row in json.loads(audit_summary.read_text())
         }
-    box64_roots = sorted((repo / "vcpkg/buildtrees/box64-ae/src").glob("*.clean/src/wrapped"))
+    box64_roots = sorted(
+        (repo / "vcpkg/installed").glob("*/share/box64-ae/coverage-source")
+    )
+    if not box64_roots:
+        box64_roots = sorted(
+            (repo / "vcpkg/buildtrees/box64-ae/src").glob("*.clean/src/wrapped")
+        )
     box64_root = box64_roots[-1] if box64_roots else None
     specs = [
         ("zstd", "zstd", "hecate", "libzstd.so.*", "wrappedzstd", ["vcpkg-overlay/ports/zstd/lorelei"]),

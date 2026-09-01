@@ -30,4 +30,38 @@ file(INSTALL "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/box64"
     DESTINATION "${CURRENT_PACKAGES_DIR}/tools/${PORT}"
     USE_SOURCE_PERMISSIONS
 )
+
+# Preserve only the wrapper sources consumed by the coverage and effort
+# exporter. Binary-cache restores do not retain vcpkg's extracted build tree,
+# so the installed tool package must carry this auditable source subset.
+set(COVERAGE_WRAPPERS
+    wrappedzstd
+    wrappedlibavformat58
+    wrappedlibavcodec58
+    wrappedlibavutil56
+    wrappedsdl2
+    wrappedvulkan
+    wrappedlibgl
+    wrappedlibz
+    wrappedlibx11
+    wrappedlibxcb
+    wrappedbz2
+    wrappedbrotlidec
+    wrappedexpat
+    wrappedcurl
+    wrappedevent21
+    wrappedidn2
+    wrappedlzma
+    wrappedlibogg
+    wrappedlibopus
+    wrappedlibsndfile
+)
+foreach(STEM IN LISTS COVERAGE_WRAPPERS)
+    file(INSTALL
+        "${SOURCE_PATH}/src/wrapped/${STEM}.c"
+        "${SOURCE_PATH}/src/wrapped/${STEM}_private.h"
+        DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}/coverage-source"
+    )
+endforeach()
+
 vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")
