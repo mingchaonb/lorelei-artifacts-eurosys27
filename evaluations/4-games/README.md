@@ -2,7 +2,7 @@
 
 [中文版](README.zh-CN.md)
 
-This group compares the native, QEMU-Hecate, Box64, and Box64-Hecate ARM64 game lanes and collects FPS and frametime with MangoHud. `evaluations/1-libs` validates library-level correctness separately, while this group owns game execution and performance evidence.
+This group compares the native, QEMU-Hecate, Box64, and Box64-Hecate ARM64 game lanes and collects FPS and frametime on the host. `evaluations/1-libs` validates library-level correctness separately, while this group owns game execution and performance evidence.
 
 ## 1. Current games
 
@@ -46,7 +46,7 @@ Leave the evaluation container and run games from a desktop terminal on the Ubun
 ./evaluations/4-games/supertux/run.sh --lane box64-hecate 60
 ```
 
-The four lanes use the container-installed ARM64 package, x86-64 package, QEMU, Box64, and Hecate thunks as appropriate. Hollow Knight has no redistributable ARM64 package and therefore has no native lane. `GAME_LANE` may set the default lane.
+The four lanes use the container-installed ARM64 package, x86-64 package, QEMU, Box64, and Hecate thunks as appropriate. Box64-Hecate retains Box64's existing SDL and graphics wrappers instead of loading duplicate Hecate graphics thunks for the same libraries. Hollow Knight has no redistributable ARM64 package and therefore has no native lane. `GAME_LANE` may set the default lane.
 
 For a paper FPS measurement:
 
@@ -145,18 +145,19 @@ Each game receives a separate writable home under:
 
 `RUNTIME_HOME_ROOT` overrides its root.
 
-## 7. MangoHud collection
+## 7. FPS collection
 
-MangoHud wraps the selected lane's host-side process because the AArch64 GL and Vulkan drivers execute there. The default configuration:
+All four lanes collect at the host-side presentation boundary used by the AArch64 driver:
 
-- Keeps the HUD off screen.
-- Records one sample every 100 ms.
-- Writes raw MangoHud CSV data into the run directory.
+- Native and QEMU-Hecate use MangoHud.
+- Box64 and Box64-Hecate record SDL or GLX presentation timestamps in the pinned Box64 build. This measurement hook does not change guest instruction execution or library selection.
+- Presentation timestamps are aggregated over 100 ms windows into an FPS CSV with the same fields as the MangoHud CSV.
+- Raw samples are written into the run directory.
 - Produces `fps-summary.json` with stable FPS and frametime statistics.
 
-The paper-data exporter reads the raw CSV rather than copying MangoHud's whole-run summary. For each game, it uses MangoHud's `elapsed` timestamps to select `[last sample - 12 seconds, last sample - 2 seconds)`. It discards samples above 300 FPS as measurement noise, then reports the retained and ignored sample counts and the FPS mean, minimum, maximum, and population variance. The default 100 ms interval normally yields about 100 samples before filtering. Fixed-interval indexing is only a fallback for older logs without `elapsed`. A log shorter than 12 seconds is marked as insufficient instead of silently changing the window.
+The paper-data exporter reads the raw CSV rather than copying the collector's whole-run summary. For each game, it uses the `elapsed` timestamps to select `[last sample - 12 seconds, last sample - 2 seconds)`. It discards samples above 300 FPS as measurement noise, then reports the retained and ignored sample counts and the FPS mean, minimum, maximum, and population variance. The default 100 ms interval normally yields about 100 samples before filtering. Fixed-interval indexing is only a fallback for older logs without `elapsed`. A log shorter than 12 seconds is marked as insufficient instead of silently changing the window.
 
-Export the latest available MangoHud run for every game and lane with:
+Export the latest available FPS run for every game and lane with:
 
 ```bash
 python3 evaluations/export-paper-data.py
@@ -170,7 +171,7 @@ Disable collection with:
 MANGOHUD_ENABLED=0 ./evaluations/4-games/openarena/run.sh 30
 ```
 
-Append MangoHud options with:
+Append MangoHud options for native or QEMU-Hecate with:
 
 ```bash
 MANGOHUD_CONFIG_EXTRA=output_folder=/absolute/path \
@@ -191,7 +192,7 @@ Evidence includes:
 2. Devkit, QEMU, Box64, library, and thunk identity.
 3. Preflight build and execution logs.
 4. Complete game command and watchdog status.
-5. Raw MangoHud samples.
+5. Raw FPS collector samples.
 6. `fps-summary.json`.
 7. The result and raw-log paths retained by `game-fps.csv`.
 

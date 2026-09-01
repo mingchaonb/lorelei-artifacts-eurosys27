@@ -257,7 +257,7 @@ Complete all four installation scripts inside the container, exit it, and run ga
 ```
 
 - The game runner performs host graphics checks for every lane and additional window-system and thunk preflight checks for the two Hecate lanes.
-- MangoHud collects frame-rate and frame-time samples on the host and stores raw samples and a summary under the game's `results/<run-id>/`.
+- Native and QEMU-Hecate use MangoHud for frame-rate and frame-time sampling. The two Box64 lanes record presentation timestamps. Raw samples and summaries are stored under the game's `results/<run-id>/`.
 - For paper-compatible FPS evidence, enter the selected gameplay scene, remain there for at least 15 seconds, and then close the game. The exporter uses only the ten-second window from 12 seconds before close up to 2 seconds before close.
 - A longer watchdog such as `300` leaves enough time for manual scene entry.
 - Every game supports `GAME_DIR` as an override for the selected game's installation directory.
@@ -284,7 +284,7 @@ python3 evaluations/export-paper-data.py
 The exporter produces:
 
 1. `overall.csv`, containing nine execution paths and normalized time for the eight command-line workloads.
-2. `game-fps.csv`, containing FPS mean, minimum, maximum, and population variance for four lanes over each game's `[12s, 2s)` pre-close window, together with sample counts and raw MangoHud paths.
+2. `game-fps.csv`, containing FPS mean, minimum, maximum, and population variance for four lanes over each game's `[12s, 2s)` pre-close window, together with sample counts and raw FPS log paths.
 3. `function-breakdown.csv` and `callback-track.csv`, containing direct-call and callback breakdowns.
 4. `coverage-effort.csv` and `modifications.csv`, containing coverage, handwritten and generated Hecate code size, and system modification counts.
 5. `manifest.json`, containing SHA-256 hashes of every consumed evidence file and the export configuration.
@@ -340,7 +340,7 @@ REPETITIONS=5 ./evaluations/2-cli-benchmarks/run-all.sh --restart
 3. Tests that do not represent the Lorelei mechanism claim are explicitly excluded rather than counted as Hecate failures. These include atomics and locks, signals, real-device integration, fuzzing, sanitizers, private ABI tests, and stress tests that do not fit the AE time budget.
 4. Library evidence retains native and Hecate raw output, exit status, test classification, source and patch identity, and TLC and HLR configuration line counts. A successful build or thunk generation alone is not correctness evidence.
 5. Performance evidence retains every raw measurement, input size and SHA-256, complete command, environment and tool versions, and the method used to derive summaries. Performance conclusions in the paper should be recomputed from this raw evidence.
-6. Game evidence retains preflight status, run logs, raw MangoHud samples, and frame-rate summaries. Proprietary Hollow Knight files are not part of the artifact or its availability claim.
+6. Game evidence retains preflight status, run logs, raw FPS samples, and frame-rate summaries. Proprietary Hollow Knight files are not part of the artifact or its availability claim.
 
 ## 5. Reproducibility contract
 

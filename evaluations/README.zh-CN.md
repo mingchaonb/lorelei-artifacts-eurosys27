@@ -17,7 +17,7 @@
    - 测量单次调用、callback 地址来源识别和 Hecate 模拟器集成。
 4. [游戏评测](4-games/README.zh-CN.md)
    - 比较 native、QEMU-Hecate、Box64 和 Box64-Hecate 游戏路径。
-   - 使用 MangoHud 记录 FPS 与 frametime。
+   - 在 host 侧记录 FPS 与 frametime。
 5. [QEMU 修改量统计](5-modifications/README.zh-CN.md)
    - 统计 Lat、Risotto 与 Hecate 的 QEMU 接入修改量。
    - 为 Lat 使用可审计的 Box64/KZT build dependency closure。

@@ -2,7 +2,7 @@
 
 [English](README.md)
 
-本组比较 native、QEMU-Hecate、Box64 和 Box64-Hecate 四条 ARM64 游戏路径，并使用 MangoHud 收集 FPS 与 frametime。库级正确性由 `evaluations/1-libs` 单独验证，本组只负责游戏运行与性能证据。
+本组比较 native、QEMU-Hecate、Box64 和 Box64-Hecate 四条 ARM64 游戏路径，并在 host 侧收集 FPS 与 frametime。库级正确性由 `evaluations/1-libs` 单独验证，本组只负责游戏运行与性能证据。
 
 ## 1. 当前游戏
 
@@ -46,7 +46,7 @@
 ./evaluations/4-games/supertux/run.sh --lane box64-hecate 60
 ```
 
-四条路径分别使用容器安装的 ARM64 package、x86-64 package、QEMU、Box64 和 Hecate thunk。Hollow Knight 不提供可分发的 ARM64 package，因此没有 native lane。也可用 `GAME_LANE` 设置默认路径。
+四条路径分别使用容器安装的 ARM64 package、x86-64 package、QEMU、Box64 和 Hecate thunk。Box64-Hecate 保留 Box64 已有的 SDL 与 graphics wrapper，不重复装载相同 library 的 Hecate graphics thunk。Hollow Knight 不提供可分发的 ARM64 package，因此没有 native lane。也可用 `GAME_LANE` 设置默认路径。
 
 采集论文 FPS 数据时：
 
@@ -145,18 +145,19 @@ GUI_ENV=/absolute/path/to/gui-env.txt \
 
 可使用 `RUNTIME_HOME_ROOT` 覆盖根目录。
 
-## 7. MangoHud 采集
+## 7. FPS 采集
 
-MangoHud 默认包裹所选 lane 的 host 侧进程，因为 AArch64 GL 与 Vulkan driver 在该进程内执行。默认行为为：
+四条 lane 都在 AArch64 driver 实际提交画面的 host 侧采集：
 
-- HUD 不显示在屏幕上。
-- 每 100 ms 记录一次 sample。
-- 原始 MangoHud CSV 写入本次结果目录。
+- native 与 QEMU-Hecate 使用 MangoHud。
+- Box64 与 Box64-Hecate 在固定版本的 Box64 中记录 SDL 或 GLX presentation 时间戳。该测量 hook 不改变 guest 指令执行与 library 选择。
+- presentation 时间戳按 100 ms 窗口转换为与 MangoHud 相同字段的 FPS CSV。
+- 原始采样写入本次结果目录。
 - `fps-summary.json` 汇总稳定 FPS 与 frametime。
 
-论文数据导出脚本直接读取原始 CSV，不会照搬 MangoHud 的全程 summary。脚本优先根据 MangoHud 的 `elapsed` 时间戳为每个游戏截取 `[最后一个 sample - 12 秒, 最后一个 sample - 2 秒)`。脚本将超过 300 FPS 的 sample 作为测量噪声忽略，再统计保留与忽略的 sample 数量以及 FPS 平均值、最小值、最大值和总体方差。默认每 100 ms 采样一次，因此过滤前的窗口通常包含约 100 个 sample。旧日志没有 `elapsed` 字段时才按固定采样间隔回退。少于 12 秒的记录会明确标记为数据不足，不会擅自缩短窗口。
+论文数据导出脚本直接读取原始 CSV，不会照搬 collector 的全程 summary。脚本优先根据 `elapsed` 时间戳为每个游戏截取 `[最后一个 sample - 12 秒, 最后一个 sample - 2 秒)`。脚本将超过 300 FPS 的 sample 作为测量噪声忽略，再统计保留与忽略的 sample 数量以及 FPS 平均值、最小值、最大值和总体方差。默认每 100 ms 采样一次，因此过滤前的窗口通常包含约 100 个 sample。旧日志没有 `elapsed` 字段时才按固定采样间隔回退。少于 12 秒的记录会明确标记为数据不足，不会擅自缩短窗口。
 
-导出每个游戏、每条 lane 最新且包含 MangoHud 记录的运行：
+导出每个游戏、每条 lane 最新且包含 FPS 记录的运行：
 
 ```bash
 python3 evaluations/export-paper-data.py
@@ -170,7 +171,7 @@ python3 evaluations/export-paper-data.py
 MANGOHUD_ENABLED=0 ./evaluations/4-games/openarena/run.sh 30
 ```
 
-追加 MangoHud 配置：
+为 native 或 QEMU-Hecate 追加 MangoHud 配置：
 
 ```bash
 MANGOHUD_CONFIG_EXTRA=output_folder=/absolute/path \
@@ -191,7 +192,7 @@ evaluations/4-games/<game>/results/<UTC timestamp>-<lane>/
 2. devkit、QEMU、Box64、library 和 thunk 身份。
 3. preflight build 与运行日志。
 4. 完整游戏启动命令和 watchdog 状态。
-5. MangoHud 原始样本。
+5. FPS collector 原始样本。
 6. `fps-summary.json`。
 7. `game-fps.csv` 保留的 result 与原始日志路径。
 

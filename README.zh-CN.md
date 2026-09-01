@@ -255,7 +255,7 @@ breakdown 的实验关系、统计口径和各入口说明见 [`evaluations/3-br
 ```
 
 - 游戏 runner 对所有 lane 执行宿主图形检查，并对两条 Hecate lane 额外执行窗口系统和 thunk preflight。
-- MangoHud 默认在 host 侧采集帧率和帧时间，并将原始样本与汇总写入该游戏的 `results/<run-id>/`。
+- native 与 QEMU-Hecate 使用 MangoHud 采集帧率和帧时间。Box64 两条 lane 在 presentation 边界记录时间戳。原始样本与汇总均写入该游戏的 `results/<run-id>/`。
 - 采集论文口径的 FPS 时，进入要测的实际游戏场景，保持至少 15 秒，然后关闭游戏。导出器只采用整段记录关闭前第 12 秒到第 2 秒之间的 10 秒窗口。
 - 可以传入较长 watchdog，例如 `300`，给人工进入场景留足时间。
 - 所有游戏都可以使用 `GAME_DIR` 覆盖当前所选游戏的默认安装目录。
@@ -282,7 +282,7 @@ python3 evaluations/export-paper-data.py
 导出器会生成以下数据：
 
 1. `overall.csv`：八个命令行 workload 的九条执行路径及归一化时间。
-2. `game-fps.csv`：每个游戏四条 lane 在关闭前 `[12s, 2s)` 窗口的 FPS 平均值、最小值、最大值和总体方差，并保留样本数与原始 MangoHud 路径。
+2. `game-fps.csv`：每个游戏四条 lane 在关闭前 `[12s, 2s)` 窗口的 FPS 平均值、最小值、最大值和总体方差，并保留样本数与原始 FPS 日志路径。
 3. `function-breakdown.csv` 与 `callback-track.csv`：直通调用和 callback breakdown。
 4. `coverage-effort.csv` 与 `modifications.csv`：覆盖率、Hecate 人工及生成代码量和各系统修改量。
 5. `manifest.json`：所有被读取证据的 SHA-256 及导出配置。
@@ -338,7 +338,7 @@ REPETITIONS=5 ./evaluations/2-cli-benchmarks/run-all.sh --restart
 3. 无法代表 Lorelei 所声明机制的测试会明确排除，而不会计为 Hecate 失败。这些测试包括原子操作与锁、signal、真实设备集成、fuzz、sanitizer、private ABI 测试和不适合 AE 时间预算的压力测试。
 4. library 结果至少保留 native 与 Hecate 的原始测试输出、退出状态、测试分类、源码和 patch 身份，以及 TLC、HLR 配置代码行数。仅构建成功或成功生成 thunk 不作为正确性证据。
 5. 性能结果保留每次原始测量、输入大小与 SHA-256、完整命令、环境与工具版本，以及从原始样本得到汇总结果的方法。论文中的性能结论应从这些原始数据重新计算。
-6. 游戏结果保留 preflight 状态、运行日志、MangoHud 原始采样和帧率汇总。Hollow Knight 的专有文件不属于 artifact，也不纳入可用性声明。
+6. 游戏结果保留 preflight 状态、运行日志、FPS 原始采样和帧率汇总。Hollow Knight 的专有文件不属于 artifact，也不纳入可用性声明。
 
 ## 5. 可复现契约（Reproducibility contract）
 

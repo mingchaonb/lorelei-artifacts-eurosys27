@@ -20,7 +20,8 @@ def percentile(values, fraction):
     return ordered[lower] * (1 - weight) + ordered[upper] * weight
 
 
-output_path, raw_path, mango_summary_path = map(pathlib.Path, sys.argv[1:])
+output_path, raw_path, mango_summary_path = map(pathlib.Path, sys.argv[1:4])
+collector = sys.argv[4] if len(sys.argv) > 4 else "MangoHud"
 rows = list(csv.reader(raw_path.open(newline="")))
 header_index = next(index for index, row in enumerate(rows) if row and row[0] == "fps")
 header = rows[header_index]
@@ -38,7 +39,7 @@ ignored_high_fps_samples = len(samples) - len(retained_samples)
 fps = [sample["fps"] for sample in retained_samples]
 frametime = [sample["frametime"] for sample in retained_samples]
 if not fps:
-    raise SystemExit(f"MangoHud CSV contains no FPS samples at or below {FPS_UPPER_BOUND:g}")
+    raise SystemExit(f"FPS CSV contains no samples at or below {FPS_UPPER_BOUND:g}")
 
 mango_rows = list(csv.reader(mango_summary_path.open(newline="")))
 mango_summary = {}
@@ -47,7 +48,7 @@ if len(mango_rows) >= 2:
 
 data = {
     "schema_version": 1,
-    "collector": "MangoHud",
+    "collector": collector,
     "raw_csv": raw_path.name,
     "mangohud_summary_csv": mango_summary_path.name,
     "samples": len(retained_samples),

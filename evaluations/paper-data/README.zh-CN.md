@@ -12,4 +12,4 @@ python3 evaluations/export-paper-data.py
 
 输出包括 `overall.csv`、`game-fps.csv`、`function-breakdown.csv`、`callback-track.csv`、`coverage-effort.csv` 和 `modifications.csv`。`manifest.json` 记录每个输入文件和 SHA-256。
 
-`game-fps.csv` 分别读取每个游戏在 native、QEMU-Hecate、Box64 和 Box64-Hecate 四条 lane 中最新且可用的 MangoHud 日志，按固定 10 秒窗口统计物理 GPU 状态、保留与忽略的 sample 数量、平均值、最小值、最大值和总体方差。该窗口从最后一个 sample 前第 12 秒开始，到第 2 秒结束。计算统计量前，导出器将超过 300 FPS 的 sample 作为测量噪声忽略。进入游戏场景仍需人工操作，但 review 表格由脚本自动计算。最新日志过短或格式错误时，表格会保留数据不足状态，不会换成更旧的结果。
+`game-fps.csv` 分别读取每个游戏在 native、QEMU-Hecate、Box64 和 Box64-Hecate 四条 lane 中最新且可用的 FPS 采样日志，按固定 10 秒窗口统计物理 GPU 状态、保留与忽略的 sample 数量、平均值、最小值、最大值和总体方差。该窗口从最后一个 sample 前第 12 秒开始，到第 2 秒结束。计算统计量前，导出器将超过 300 FPS 的 sample 作为测量噪声忽略。进入游戏场景仍需人工操作，但 review 表格由脚本自动计算。最新日志过短或格式错误时，表格会保留数据不足状态，不会换成更旧的结果。

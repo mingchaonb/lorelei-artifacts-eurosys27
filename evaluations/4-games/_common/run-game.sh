@@ -73,12 +73,14 @@ runtime_home_root=${RUNTIME_HOME_ROOT:-$repo_root/.work/evaluations/games/runtim
 mangohud_enabled=${MANGOHUD_ENABLED:-1}
 mangohud=
 if [[ $mangohud_enabled == 1 ]]; then
-    mangohud=$(command -v mangohud || true)
-    [[ -x $mangohud ]] || { echo "MangoHud is enabled but mangohud was not found" >&2; exit 2; }
-    mangohud_library=$(find /usr/lib -type f -path '*/mangohud/libMangoHud.so' 2>/dev/null | head -1)
-    mangohud_dlsym_library=$(find /usr/lib -type f -path '*/mangohud/libMangoHud_dlsym.so' 2>/dev/null | head -1)
-    [[ -f $mangohud_library ]] || { echo "MangoHud is enabled but libMangoHud.so was not found" >&2; exit 2; }
-    [[ -f $mangohud_dlsym_library ]] || { echo "MangoHud is enabled but libMangoHud_dlsym.so was not found" >&2; exit 2; }
+    if [[ $lane != box64 && $lane != box64-hecate ]]; then
+        mangohud=$(command -v mangohud || true)
+        [[ -x $mangohud ]] || { echo "MangoHud is enabled but mangohud was not found" >&2; exit 2; }
+        mangohud_library=$(find /usr/lib -type f -path '*/mangohud/libMangoHud.so' 2>/dev/null | head -1)
+        mangohud_dlsym_library=$(find /usr/lib -type f -path '*/mangohud/libMangoHud_dlsym.so' 2>/dev/null | head -1)
+        [[ -f $mangohud_library ]] || { echo "MangoHud is enabled but libMangoHud.so was not found" >&2; exit 2; }
+        [[ -f $mangohud_dlsym_library ]] || { echo "MangoHud is enabled but libMangoHud_dlsym.so was not found" >&2; exit 2; }
+    fi
 elif [[ $mangohud_enabled != 0 ]]; then
     echo "MANGOHUD_ENABLED must be 0 or 1: $mangohud_enabled" >&2
     exit 2
@@ -318,7 +320,23 @@ if [[ -n $game_library_path ]]; then plain_guest_paths+=("$game_library_path"); 
 plain_guest_paths+=("$devkit/x86_64/lib" "$devkit/x86_64/sysroot/lib/x86_64-linux-gnu"
     "$devkit/x86_64/sysroot/usr/lib/x86_64-linux-gnu")
 plain_guest_library_path=$(join_colon "${plain_guest_paths[@]}")
-box64_emulated_libraries=libSDL-1.2.so.0:libSDL2_image-2.0.so.0:libSDL2_mixer-2.0.so.0:libstdc++.so.6
+box64_emulated_libraries=libSDL-1.2.so.0:libSDL2_image-2.0.so.0:libSDL2_mixer-2.0.so.0:libstdc++.so.6:libtiff.so.5:libz.so.1
+box64_guest_preload=
+case $game in
+    supertux)
+        # Ubuntu's libldap relies on resolver entry points folded into newer
+        # glibc without declaring libresolv as a dependency. Load the guest
+        # resolver explicitly so its x86-64 symbols enter the global scope.
+        box64_emulated_libraries="$box64_emulated_libraries:libssh.so.4"
+        box64_guest_preload=libresolv.so.2
+        ;;
+    supertuxkart)
+        # This game imports a wide-stream vtable weakly exported by its bundled
+        # OpenAL build. A native OpenAL wrapper omits that incidental guest C++
+        # data symbol, so retain the bundled x86-64 DSO for this executable.
+        box64_emulated_libraries="$box64_emulated_libraries:libopenal.so.1"
+        ;;
+esac
 qemu_debug_args=()
 if [[ -n ${QEMU_DEBUG:-} ]]; then
     qemu_debug_args=(-d "$QEMU_DEBUG" -D "$run_dir/qemu.log")
@@ -351,6 +369,7 @@ if [[ $game == openarena ]]; then
 fi
 thunk_variables="SDL1_PREFIX=$sdl1_prefix;SDL1_THUNK=$sdl1_thunk;GLVND_PREFIX=$gl_prefix;VULKAN_PREFIX=$vk_prefix"
 mangohud_env=()
+box64_fps_log=
 if [[ $mangohud_enabled == 1 ]]; then
     mangohud_dir=$run_dir/mangohud
     mkdir -p "$mangohud_dir"
@@ -361,23 +380,24 @@ if [[ $mangohud_enabled == 1 ]]; then
     if [[ -n ${MANGOHUD_CONFIG_EXTRA:-} ]]; then
         mangohud_config="$mangohud_config,$MANGOHUD_CONFIG_EXTRA"
     fi
-    mangohud_env=(MANGOHUD=1 MANGOHUD_CONFIG="$mangohud_config")
-    # Preload MangoHud directly into QEMU.  Invoking its shell wrapper while
-    # HostRT is already preloaded would initialize HostRT in /bin/sh before
-    # the QEMU bridge symbol exists in the process.
-    if [[ $game == hollow-knight ]]; then
-        # Unity resolves GLX entry points dynamically. The dlsym interposer
-        # makes its core-profile selection fail before the Hecate GL thunk can
-        # map those addresses, so keep only the main MangoHud library here.
-        mangohud_preload=$mangohud_library
+    if [[ $lane == box64 || $lane == box64-hecate ]]; then
+        box64_fps_log=$mangohud_dir/box64-presentation-times.txt
     else
-        mangohud_preload=$mangohud_dlsym_library:$mangohud_library
-        mangohud_env+=(MANGOHUD_DLSYM=1)
-    fi
-    if [[ -n $host_preload ]]; then
-        host_preload="$host_preload:$mangohud_preload"
-    else
-        host_preload=$mangohud_preload
+        mangohud_env=(MANGOHUD=1 MANGOHUD_CONFIG="$mangohud_config")
+        # Preload MangoHud directly into the host-side process. Invoking its
+        # shell wrapper would initialize HostRT in /bin/sh before the bridge
+        # symbol exists in QEMU.
+        if [[ $game == hollow-knight ]]; then
+            mangohud_preload=$mangohud_library
+        else
+            mangohud_preload=$mangohud_dlsym_library:$mangohud_library
+            mangohud_env+=(MANGOHUD_DLSYM=1)
+        fi
+        if [[ -n $host_preload ]]; then
+            host_preload="$host_preload:$mangohud_preload"
+        else
+            host_preload=$mangohud_preload
+        fi
     fi
 fi
 # Some older SDL 1.2 games change the physical XRandR mode and may be killed
@@ -542,11 +562,15 @@ preexisting_windows=$(env DISPLAY="$display" XAUTHORITY="$xauthority" \
                 SDL_VIDEODRIVER=x11 SDL_AUDIODRIVER=dummy HOME="$game_home" \
                 LD_PRELOAD="$host_preload" LD_LIBRARY_PATH="$devkit/lib" \
                 BOX64_LD_LIBRARY_PATH="$plain_guest_library_path" \
+                BOX64_LD_PRELOAD="$box64_guest_preload" \
                 BOX64_EMULATED_LIBS="$box64_emulated_libraries" \
-                BOX64_LOG=0 BOX64_NOBANNER=1 BOX64_NORCFILES=1 \
+                BOX64_FPS_LOG="$box64_fps_log" \
+                BOX64_LOG="${BOX64_LOG_LEVEL:-0}" BOX64_NOBANNER=1 BOX64_NORCFILES=1 \
                 "$box64" "$executable" "${game_args[@]}"
             ;;
         box64-hecate)
+            # Box64 keeps using its native SDL and graphics wrappers. Loading
+            # duplicate Hecate graphics thunks would bypass those wrappers.
             env "${mangohud_env[@]}" "${game_environment[@]}" \
                 DISPLAY="$display" XAUTHORITY="$xauthority" \
                 SDL_VIDEODRIVER=x11 SDL_AUDIODRIVER=dummy HOME="$game_home" \
@@ -554,10 +578,12 @@ preexisting_windows=$(env DISPLAY="$display" XAUTHORITY="$xauthority" \
                 LORELEI_THUNKS_CONFIG_VARIABLES="$thunk_variables" \
                 LORELEI_HOST_EXTENSIONS="$devkit/lib/libLoreHostHLRExtension.so" \
                 LORELEI_GUEST_EXTENSIONS="$devkit/x86_64/lib/libLoreGuestHLRExtension.so" \
-                LD_PRELOAD="$host_preload" LD_LIBRARY_PATH="$host_library_path" \
-                BOX64_LD_LIBRARY_PATH="$guest_library_path" \
+                LD_PRELOAD="$host_preload" LD_LIBRARY_PATH="$devkit/lib" \
+                BOX64_LD_LIBRARY_PATH="$plain_guest_library_path" \
+                BOX64_LD_PRELOAD="$box64_guest_preload" \
                 BOX64_EMULATED_LIBS="$box64_emulated_libraries" \
-                BOX64_LOG=0 BOX64_NOBANNER=1 BOX64_NORCFILES=1 \
+                BOX64_FPS_LOG="$box64_fps_log" \
+                BOX64_LOG="${BOX64_LOG_LEVEL:-0}" BOX64_NOBANNER=1 BOX64_NORCFILES=1 \
                 "$box64" "$executable" "${game_args[@]}"
             ;;
         qemu-hecate)
@@ -642,15 +668,27 @@ fi
 
 echo "$status" > "$run_dir/status.txt"
 if [[ $mangohud_enabled == 1 ]]; then
+    collector=MangoHud
+    if [[ $lane == box64 || $lane == box64-hecate ]]; then
+        raw_csv=$mangohud_dir/box64-fps.csv
+        summary_csv=$mangohud_dir/box64-fps_summary.csv
+        collector="Box64 presentation hook"
+        if [[ -s $box64_fps_log ]]; then
+            if ! python3 "$recipe_dir/box64-frames-to-csv.py" \
+                "$box64_fps_log" "$raw_csv" "$summary_csv"; then
+                cmake -E remove "$raw_csv" "$summary_csv"
+            fi
+        fi
+    fi
     raw_csv=$(find "$mangohud_dir" -maxdepth 1 -type f -name '*.csv' ! -name '*_summary.csv' | sort | head -1)
     summary_csv=$(find "$mangohud_dir" -maxdepth 1 -type f -name '*_summary.csv' | sort | head -1)
     if [[ -n $raw_csv && -n $summary_csv ]]; then
         python3 "$recipe_dir/summarize-mangohud.py" \
-            "$run_dir/fps-summary.json" "$raw_csv" "$summary_csv"
+            "$run_dir/fps-summary.json" "$raw_csv" "$summary_csv" "$collector"
         echo collected >"$run_dir/fps-status.txt"
     else
         echo missing >"$run_dir/fps-status.txt"
-        echo "MangoHud produced no complete FPS log under $mangohud_dir" >&2
+        echo "$collector produced no complete FPS log under $mangohud_dir" >&2
     fi
 else
     echo disabled >"$run_dir/fps-status.txt"

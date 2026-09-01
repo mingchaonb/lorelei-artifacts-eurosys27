@@ -17,7 +17,7 @@
    - Measures individual calls, callback address-origin recognition, and Hecate emulator integration.
 4. [Game evaluation](4-games/README.md)
    - Compares native, QEMU-Hecate, Box64, and Box64-Hecate game paths.
-   - Records FPS and frametime with MangoHud.
+   - Records FPS and frametime on the host.
 5. [QEMU modification statistics](5-modifications/README.md)
    - Measures QEMU integration changes for Lat, Risotto, and Hecate.
    - Uses an auditable Box64/KZT build dependency closure for Lat.
