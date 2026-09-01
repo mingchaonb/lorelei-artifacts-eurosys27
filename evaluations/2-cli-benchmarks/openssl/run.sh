@@ -95,7 +95,7 @@ for executable in "$native_cli" "$guest_cli" "$qemu" "$blink" "$box64" "$fex"; d
     cli_require_executable "$executable"
 done
 input=$input_dir/data-256m.bin
-[[ -s $input && -s $input_dir/manifest.json ]] || "$cli_root/_common/prepare-inputs.sh"
+[[ -s $input ]] || python3 "$cli_root/_common/generate-data.py" "$input" --size-mib 256
 
 cli_begin_result openssl
 native_ld=$native_prefix/lib

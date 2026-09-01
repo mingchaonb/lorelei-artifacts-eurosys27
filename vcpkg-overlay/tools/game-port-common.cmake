@@ -1,6 +1,12 @@
 function(ae_game_download out_var filename url sha512)
+    set(download_urls "${url}")
+    if("$ENV{USE_USTC_MIRROR}" STREQUAL "1" AND
+       url MATCHES "^https://ports\\.ubuntu\\.com/ubuntu-ports/(.+)$")
+        list(PREPEND download_urls
+            "https://mirrors.ustc.edu.cn/ubuntu-ports/${CMAKE_MATCH_1}")
+    endif()
     vcpkg_download_distfile(archive
-        URLS "${url}"
+        URLS ${download_urls}
         FILENAME "${filename}"
         SHA512 "${sha512}"
     )

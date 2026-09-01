@@ -63,6 +63,20 @@
     },
     "tests": {
       "description": "Build and install the upstream SDL tests"
+    },
+    "x11": {
+      "description": "Build the X11 video backend for native graphical applications",
+      "dependencies": [
+        "libxcursor",
+        "libxext",
+        "libxfixes",
+        "libxi",
+        "libxinerama",
+        "libxrandr",
+        "libxrender",
+        "libxscrnsaver",
+        "libxxf86vm"
+      ]
     }
   }
 }

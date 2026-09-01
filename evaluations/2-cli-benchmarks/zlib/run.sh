@@ -37,7 +37,8 @@ fi
 for executable in "$native_cli" "$guest_cli" "$qemu" "$blink" "$box64" "$fex"; do
     cli_require_executable "$executable"
 done
-[[ -s $input_dir/data-64m.bin && -s $input_dir/manifest.json ]] || "$cli_root/_common/prepare-inputs.sh"
+[[ -s $input_dir/data-64m.bin ]] || \
+    python3 "$cli_root/_common/generate-data.py" "$input_dir/data-64m.bin" --size-mib 64
 
 cli_begin_result zlib
 input=$input_dir/data-64m.bin

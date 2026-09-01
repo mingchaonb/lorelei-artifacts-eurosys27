@@ -34,8 +34,6 @@ fi
 for executable in "$native_bench" "$guest_bench" "$qemu" "$blink" "$box64" "$fex"; do
     cli_require_executable "$executable"
 done
-[[ -s $input_dir/manifest.json ]] || "$cli_root/_common/prepare-inputs.sh"
-
 cli_begin_result fftw
 native_ld=$native_prefix/lib
 guest_ld=$guest_prefix/lib:$devkit/x86_64/lib

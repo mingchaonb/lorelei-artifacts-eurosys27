@@ -20,14 +20,19 @@ set(COMMON_INCLUDE_DIR "${REPO_ROOT}/evaluations/common/include")
 # SDL/src, so callers may combine both features without rewriting test programs.
 set(BUILD_TESTS OFF)
 set(RUN_HLR OFF)
+set(ENABLE_X11 OFF)
 if("tests" IN_LIST FEATURES)
     set(BUILD_TESTS ON)
 endif()
 if("hlr" IN_LIST FEATURES)
     set(RUN_HLR ON)
+    set(ENABLE_X11 ON)
     if(NOT DEFINED ENV{LORELEI_DEVKIT})
         message(FATAL_ERROR "The hlr feature requires LORELEI_DEVKIT")
     endif()
+endif()
+if("x11" IN_LIST FEATURES)
+    set(ENABLE_X11 ON)
 endif()
 # Build a shared SDL library because Lorelei replaces its dynamic dependency at
 # runtime. Keep the dummy drivers for deterministic tests, and add the X11 video
@@ -49,7 +54,7 @@ set(SDL_OPTIONS
     -DSDL_PULSEAUDIO=OFF
     -DSDL_SNDIO=OFF
     -DSDL_DUMMYAUDIO=ON
-    -DSDL_X11=${RUN_HLR}
+    -DSDL_X11=${ENABLE_X11}
     -DSDL_WAYLAND=OFF
     -DSDL_KMSDRM=OFF
     -DSDL_RPI=OFF

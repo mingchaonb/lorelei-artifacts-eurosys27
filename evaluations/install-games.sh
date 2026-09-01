@@ -49,20 +49,31 @@ overlay=$repo_root/vcpkg-overlay
 }
 
 games=(assaultcube openarena redeclipse supertux supertuxkart)
+
+# Classic-mode vcpkg does not replace an installed package merely because its
+# overlay port-version changed. Each game has an isolated installation tree,
+# so upgrade that tree first and then install either missing architecture.
+install_game_packages() {
+    local game=$1 work_dir=$2
+    local common_args=(
+        --overlay-ports="$overlay/ports"
+        --overlay-triplets="$overlay/triplets"
+        --downloads-root="$repo_root/vcpkg/downloads"
+        --x-install-root="$work_dir/installed"
+        --x-buildtrees-root="$work_dir/buildtrees"
+        --x-packages-root="$work_dir/packages"
+    )
+    "$vcpkg" upgrade --no-dry-run "${common_args[@]}"
+    "$vcpkg" install "$game:arm64-linux-ae" "$game:x64-linux-ae" "${common_args[@]}"
+}
+
 install_progress_init Games "${#games[@]}" "$plain"
 install_progress_setup
 index=0
 for game in "${games[@]}"; do
     ((index += 1))
     work_dir=$repo_root/.work/evaluations/games/$game
-    command=("$vcpkg" install "$game:arm64-linux-ae" "$game:x64-linux-ae" \
-        --overlay-ports="$overlay/ports" \
-        --overlay-triplets="$overlay/triplets" \
-        --downloads-root="$repo_root/vcpkg/downloads" \
-        --x-install-root="$work_dir/installed" \
-        --x-buildtrees-root="$work_dir/buildtrees" \
-        --x-packages-root="$work_dir/packages")
-    install_progress_run "$game" "$index" "${command[@]}" || true
+    install_progress_run "$game" "$index" install_game_packages "$game" "$work_dir" || true
 done
 install_progress_finish
 

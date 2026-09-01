@@ -53,7 +53,7 @@ docker build \
   docker
 ```
 
-When building in mainland China, add `--build-arg USE_USTC_MIRROR=1` to switch the Ubuntu apt sources to the USTC mirror. Its default value is `0`, and evaluators elsewhere do not need to set it:
+When building in mainland China, add `--build-arg USE_USTC_MIRROR=1`. This switches the Ubuntu apt sources to USTC and makes the game ports prefer the USTC Ubuntu Ports mirror for AArch64 packages and game data. Its default value is `0`, and evaluators elsewhere do not need to set it:
 
 ```bash
 docker build \

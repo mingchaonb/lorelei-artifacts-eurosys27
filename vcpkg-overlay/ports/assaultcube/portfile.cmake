@@ -15,21 +15,25 @@ file(REMOVE
 )
 
 if(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64")
-    ae_game_download(native_archive
-        "assaultcube_1.3.0.2+dfsg-5_arm64.deb"
-        "https://ports.ubuntu.com/ubuntu-ports/pool/multiverse/a/assaultcube/assaultcube_1.3.0.2%2bdfsg-5_arm64.deb"
-        "2da29498714d978a6416a1d63c3010f5ead54e067649eda487c0c08644c8a8a4e6b21ecb66abf5560825b3a791f7a2ff367bf72e67209671cd49ce88e8dcc767"
+    find_program(MAKE make REQUIRED)
+    find_program(CXX c++ REQUIRED)
+    set(source_dir "${release_root}/source/src")
+    set(client_includes
+        "-I${CURRENT_INSTALLED_DIR}/include/SDL2 -I${CURRENT_INSTALLED_DIR}/include -I. -Ibot -I../enet/include")
+    set(client_libraries
+        "-L../enet/.libs -lenet -L${CURRENT_INSTALLED_DIR}/lib -Wl,-rpath,${CURRENT_INSTALLED_DIR}/lib -lX11 -lSDL2 -lSDL2_image -lz -lGL -lopenal -lvorbisfile")
+    vcpkg_execute_build_process(
+        COMMAND "${CMAKE_COMMAND}" -E env
+            "${MAKE}" -j${VCPKG_CONCURRENCY} -C "${source_dir}"
+                "CXX=${CXX}"
+                "CLIENT_INCLUDES=${client_includes}"
+                "CLIENT_LIBS=${client_libraries}"
+                client server
+        WORKING_DIRECTORY "${source_dir}"
+        LOGNAME "build-${PORT}-${TARGET_TRIPLET}"
     )
-    ae_game_download(sdl_image_archive
-        "libsdl2-image-2.0-0_2.8.2+dfsg-1build2_arm64.deb"
-        "https://ports.ubuntu.com/ubuntu-ports/pool/universe/libs/libsdl2-image/libsdl2-image-2.0-0_2.8.2%2bdfsg-1build2_arm64.deb"
-        "7cddc90d9fa3366b9d9a1477d840340850b9d576e915893826d2bf2514d6423a114a3517640925a178c26ecb8f50d46cb6f26728dfc67a5776d14d3990c0d06b"
-    )
-    set(native_root "${CURRENT_BUILDTREES_DIR}/src/native")
-    ae_game_extract_deb("${native_archive}" "${native_root}")
-    file(COPY_FILE "${native_root}/usr/lib/games/assaultcube/ac_client" "${game_dir}/bin_unix/linux_64_client")
-    file(COPY_FILE "${native_root}/usr/lib/games/assaultcube/ac_server" "${game_dir}/bin_unix/linux_64_server")
-    ae_game_install_deb_libraries("${sdl_image_archive}" "sdl-image-native" "${game_dir}/lib")
+    file(COPY_FILE "${source_dir}/ac_client" "${game_dir}/bin_unix/linux_64_client")
+    file(COPY_FILE "${source_dir}/ac_server" "${game_dir}/bin_unix/linux_64_server")
 endif()
 
 foreach(launcher IN ITEMS linux_64_client linux_64_server)

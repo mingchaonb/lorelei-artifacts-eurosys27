@@ -1,7 +1,7 @@
 {
   "name": "openarena",
   "version": "0.8.8",
-  "port-version": 2,
+  "port-version": 3,
   "description": "Pinned OpenArena game package for native and guest game evaluation",
   "homepage": "https://openarena.ws/",
   "license": "GPL-2.0-or-later",

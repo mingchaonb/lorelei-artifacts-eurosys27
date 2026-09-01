@@ -112,6 +112,7 @@ x11_thunk=$repo_root/.work/evaluations/libx11/thunk
 native_game_prefix=
 guest_game_prefix=
 selected_game_prefix=
+game_environment=()
 if [[ $game == hollow-knight && $lane == native ]]; then
     echo "The native lane is unavailable for Hollow Knight because the artifact cannot distribute an ARM64 game package." >&2
     exit 2
@@ -171,8 +172,11 @@ case "$game" in
         fi
         game_dir=$(resolve_game_dir "$default_game_dir")
         executable=$game_dir/bin_unix/linux_64_client
-        game_library_path=${selected_game_prefix:+$selected_game_prefix/lib}
-        game_args=("--home=$runtime_home_root/assaultcube" --init)
+        game_library_path=$game_dir/lib
+        if [[ -n $selected_game_prefix ]]; then
+            game_library_path="$game_library_path:$selected_game_prefix/lib"
+        fi
+        game_args=("--home=$runtime_home_root/assaultcube")
         ;;
     hollow-knight)
         game_dir=$(resolve_game_dir "$games_root/hollow-knight/game")
@@ -194,6 +198,9 @@ case "$game" in
         game_dir=$(resolve_game_dir "$default_game_dir")
         executable=$game_dir/bin/amd64/redeclipse_linux
         game_library_path=$game_dir/bin/amd64
+        if [[ -n $selected_game_prefix ]]; then
+            game_library_path="$game_library_path:$selected_game_prefix/lib"
+        fi
         game_args=()
         ;;
     openarena)
@@ -207,6 +214,9 @@ case "$game" in
         game_library_path=${selected_game_prefix:+$selected_game_prefix/lib}
         game_args=(+set r_fullscreen 0 +set r_mode -1 +set r_customwidth 1280
             +set r_customheight 720 +set com_introplayed 1)
+        if [[ $lane == native ]]; then
+            game_args=(+set com_basegame baseoa +set fs_basepath "$game_dir" "${game_args[@]}")
+        fi
         if [[ $lane == qemu-hecate || $lane == box64-hecate ]]; then
             for required in "$sdl1_thunk/x86_64/libSDL.so" \
                 "$sdl1_thunk/x86_64/libSDL-1.2.so.0" \
@@ -258,6 +268,9 @@ case "$game" in
         executable=$game_dir/bin/supertuxkart
         game_library_path=$game_dir/lib
         game_args=()
+        if [[ $lane == native && -d $game_dir/data/data ]]; then
+            game_environment+=("SUPERTUXKART_DATADIR=$game_dir/data")
+        fi
         ;;
     *)
         echo "Unknown or excluded game: $game" >&2
@@ -305,6 +318,7 @@ if [[ -n $game_library_path ]]; then plain_guest_paths+=("$game_library_path"); 
 plain_guest_paths+=("$devkit/x86_64/lib" "$devkit/x86_64/sysroot/lib/x86_64-linux-gnu"
     "$devkit/x86_64/sysroot/usr/lib/x86_64-linux-gnu")
 plain_guest_library_path=$(join_colon "${plain_guest_paths[@]}")
+box64_emulated_libraries=libSDL-1.2.so.0:libSDL2_image-2.0.so.0:libSDL2_mixer-2.0.so.0:libstdc++.so.6
 qemu_debug_args=()
 if [[ -n ${QEMU_DEBUG:-} ]]; then
     qemu_debug_args=(-d "$QEMU_DEBUG" -D "$run_dir/qemu.log")
@@ -513,23 +527,24 @@ preexisting_windows=$(env DISPLAY="$display" XAUTHORITY="$xauthority" \
     cd "$game_dir" || exit 2
     case $lane in
         native)
-            env "${mangohud_env[@]}" \
+            env "${mangohud_env[@]}" "${game_environment[@]}" \
                 DISPLAY="$display" XAUTHORITY="$xauthority" \
                 SDL_VIDEODRIVER=x11 SDL_AUDIODRIVER=dummy HOME="$game_home" \
                 LD_PRELOAD="$host_preload" LD_LIBRARY_PATH="$game_library_path" \
                 "$executable" "${game_args[@]}"
             ;;
         box64)
-            env "${mangohud_env[@]}" \
+            env "${mangohud_env[@]}" "${game_environment[@]}" \
                 DISPLAY="$display" XAUTHORITY="$xauthority" \
                 SDL_VIDEODRIVER=x11 SDL_AUDIODRIVER=dummy HOME="$game_home" \
                 LD_PRELOAD="$host_preload" LD_LIBRARY_PATH="$devkit/lib" \
                 BOX64_LD_LIBRARY_PATH="$plain_guest_library_path" \
+                BOX64_EMULATED_LIBS="$box64_emulated_libraries" \
                 BOX64_LOG=0 BOX64_NOBANNER=1 BOX64_NORCFILES=1 \
                 "$box64" "$executable" "${game_args[@]}"
             ;;
         box64-hecate)
-            env "${mangohud_env[@]}" \
+            env "${mangohud_env[@]}" "${game_environment[@]}" \
                 DISPLAY="$display" XAUTHORITY="$xauthority" \
                 SDL_VIDEODRIVER=x11 SDL_AUDIODRIVER=dummy HOME="$game_home" \
                 LORELEI_THUNK_DATABASE="$thunk_databases" \
@@ -538,11 +553,12 @@ preexisting_windows=$(env DISPLAY="$display" XAUTHORITY="$xauthority" \
                 LORELEI_GUEST_EXTENSIONS="$devkit/x86_64/lib/libLoreGuestHLRExtension.so" \
                 LD_PRELOAD="$host_preload" LD_LIBRARY_PATH="$host_library_path" \
                 BOX64_LD_LIBRARY_PATH="$guest_library_path" \
+                BOX64_EMULATED_LIBS="$box64_emulated_libraries" \
                 BOX64_LOG=0 BOX64_NOBANNER=1 BOX64_NORCFILES=1 \
                 "$box64" "$executable" "${game_args[@]}"
             ;;
         qemu-hecate)
-            env "${mangohud_env[@]}" \
+            env "${mangohud_env[@]}" "${game_environment[@]}" \
                 DISPLAY="$display" XAUTHORITY="$xauthority" \
                 SDL_VIDEODRIVER=x11 SDL_AUDIODRIVER=dummy HOME="$game_home" \
                 LORELEI_THUNK_DATABASE="$thunk_databases" \

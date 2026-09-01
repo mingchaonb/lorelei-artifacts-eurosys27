@@ -53,7 +53,7 @@ docker build \
   docker
 ```
 
-在中国大陆构建时，可以额外传入 `--build-arg USE_USTC_MIRROR=1`，把 Ubuntu apt 源切换到中科大镜像。默认值为 `0`，其他地区不需要设置：
+在中国大陆构建时，可以额外传入 `--build-arg USE_USTC_MIRROR=1`。该选项会把 Ubuntu apt 源切换到中科大镜像，并让游戏 port 优先从中科大 Ubuntu Ports 镜像下载 AArch64 package 和游戏数据。默认值为 `0`，其他地区不需要设置：
 
 ```bash
 docker build \

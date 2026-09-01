@@ -35,8 +35,19 @@ if(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64")
     file(COPY_FILE "${engine_root}/usr/lib/ioquake3/ioquake3" "${game_dir}/openarena.x86_64")
     file(GLOB renderer_modules "${engine_root}/usr/lib/ioquake3/renderer_*_aarch64.so")
     file(COPY ${renderer_modules} DESTINATION "${game_dir}")
-    file(COPY "${native_root}/usr/lib/openarena/baseoa/" DESTINATION "${game_dir}/baseoa")
-    file(COPY "${native_root}/usr/lib/openarena/missionpack/" DESTINATION "${game_dir}/missionpack")
+    # The Ubuntu package places assets in /usr/share and represents them with
+    # relative symlinks below /usr/lib. Those links are invalid in this
+    # relocatable vcpkg layout and would overwrite the real PK3 files from the
+    # upstream archive. Copy only the architecture-specific module directories.
+    foreach(game_module_root IN ITEMS baseoa missionpack)
+        file(GLOB native_module_entries
+            "${native_root}/usr/lib/openarena/${game_module_root}/*")
+        foreach(native_module_entry IN LISTS native_module_entries)
+            if(IS_DIRECTORY "${native_module_entry}" AND NOT IS_SYMLINK "${native_module_entry}")
+                file(COPY "${native_module_entry}" DESTINATION "${game_dir}/${game_module_root}")
+            endif()
+        endforeach()
+    endforeach()
 endif()
 
 # The upstream ZIP stores the Linux launchers without executable permission.

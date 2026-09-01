@@ -8,6 +8,7 @@ ARG USER_GID=1000
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV HOME=/home/user
+ENV USE_USTC_MIRROR=${USE_USTC_MIRROR}
 
 SHELL ["/bin/bash", "-lc"]
 
@@ -34,8 +35,21 @@ RUN case "${USE_USTC_MIRROR}" in \
         libpixman-1-dev libslirp-dev libffi-dev libffcall-dev libssl-dev \
         libvulkan1 libvulkan-dev mesa-vulkan-drivers \
         libgl1 libglx0 libgl-dev libglx-dev libx11-dev \
-        yt-dlp mangohud xauth xvfb x11-xserver-utils x11-utils xdotool \
+        mangohud xauth xvfb x11-xserver-utils x11-utils xdotool \
     && rm -rf /var/lib/apt/lists/*
+
+# Ubuntu 24.04 carries an older yt-dlp that no longer handles the pinned media
+# source reliably. Install a fixed current release in an isolated environment.
+# The USTC build mode also applies to this Python package download.
+RUN python3 -m venv /opt/yt-dlp \
+    && if [[ "${USE_USTC_MIRROR}" == 1 ]]; then \
+        /opt/yt-dlp/bin/pip install --no-cache-dir \
+            --index-url https://pypi.mirrors.ustc.edu.cn/simple \
+            yt-dlp==2026.8.19; \
+    else \
+        /opt/yt-dlp/bin/pip install --no-cache-dir yt-dlp==2026.8.19; \
+    fi
+ENV PATH=/opt/yt-dlp/bin:${PATH}
 
 # Match the host account so bind-mounted sources and generated evidence keep
 # their normal ownership. The Ubuntu base image may reserve UID/GID 1000 for an

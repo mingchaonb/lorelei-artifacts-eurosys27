@@ -37,6 +37,26 @@ else()
         "https://ports.ubuntu.com/ubuntu-ports/pool/universe/s/shaderc/libshaderc1_2023.8-1build1_arm64.deb"
         "03352fadb95ec4dd18acf75b37226c67723e858d003f36658bd0d3402f8a82df9b703081a86cdeb14a32c6213b0bec92e5f091b42dd331989cdd7fe7ca1683ac"
     )
+    ae_game_download(cantarell_archive
+        "fonts-cantarell_0.303.1-1_all.deb"
+        "https://ports.ubuntu.com/ubuntu-ports/pool/universe/f/fonts-cantarell/fonts-cantarell_0.303.1-1_all.deb"
+        "a958a71f2b5903549c614afbf2e9b9eb57f02aa838380212a18c9d517ab619bcf2a25e58606f69706777237af5c862ec83ed5a795b36149b6c84d3fb158c75fd"
+    )
+    ae_game_download(noto_core_archive
+        "fonts-noto-core_20201225-2_all.deb"
+        "https://ports.ubuntu.com/ubuntu-ports/pool/main/f/fonts-noto/fonts-noto-core_20201225-2_all.deb"
+        "dd8187da0b4903d2ccd445518094e92c4a6285a886b7091b7ce8151dea358eba36ba41cd215d349c2b9953ad5d2fbeacfcee117327340f59e62af75ca0dba2ee"
+    )
+    ae_game_download(noto_ui_archive
+        "fonts-noto-ui-core_20201225-2_all.deb"
+        "https://ports.ubuntu.com/ubuntu-ports/pool/main/f/fonts-noto/fonts-noto-ui-core_20201225-2_all.deb"
+        "f7e946ce14d603fec7b513a07c46e81d2ca210eb7d23ff1673c5ea167027a68b540269c122afe0ed6feb4787816e365ad51ee2ec3587a66295bf5ea1e2cb523c"
+    )
+    ae_game_download(noto_emoji_archive
+        "fonts-noto-color-emoji_2.047-0ubuntu0.24.04.1_all.deb"
+        "https://ports.ubuntu.com/ubuntu-ports/pool/main/f/fonts-noto-color-emoji/fonts-noto-color-emoji_2.047-0ubuntu0.24.04.1_all.deb"
+        "92c58ab79eb4312a4a1ac118268aa2e2ac6e214a5bcdb98b832ec8cc0c5eb6bea163c550619e020119a98f4e69ef959c234bbf6ea75644cb1a247a8491ca75ff"
+    )
     set(native_root "${CURRENT_BUILDTREES_DIR}/src/native")
     set(data_root "${CURRENT_BUILDTREES_DIR}/src/data-native")
     ae_game_extract_deb("${native_archive}" "${native_root}")
@@ -47,6 +67,18 @@ else()
     ae_game_install_deb_libraries("${mcpp_archive}" "mcpp-native" "${game_dir}/lib")
     ae_game_install_deb_libraries("${squish_archive}" "squish-native" "${game_dir}/lib")
     ae_game_install_deb_libraries("${shaderc_archive}" "shaderc-native" "${game_dir}/lib")
+    set(font_archives "${cantarell_archive}" "${noto_core_archive}"
+        "${noto_ui_archive}" "${noto_emoji_archive}")
+    set(font_index 0)
+    foreach(font_archive IN LISTS font_archives)
+        math(EXPR font_index "${font_index} + 1")
+        set(font_root "${CURRENT_BUILDTREES_DIR}/src/font-${font_index}-native")
+        ae_game_extract_deb("${font_archive}" "${font_root}")
+        file(GLOB_RECURSE packaged_fonts
+            "${font_root}/usr/share/fonts/*.ttf"
+            "${font_root}/usr/share/fonts/*.otf")
+        file(COPY ${packaged_fonts} DESTINATION "${game_dir}/data/data/ttf")
+    endforeach()
     set(copyright_file "${native_root}/usr/share/doc/supertuxkart/copyright")
 endif()
 

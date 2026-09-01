@@ -1,7 +1,7 @@
 {
   "name": "supertuxkart",
   "version": "1.4",
-  "port-version": 2,
+  "port-version": 4,
   "description": "Pinned SuperTuxKart game package for native and guest game evaluation",
   "homepage": "https://supertuxkart.net/",
   "license": "GPL-3.0-or-later",
