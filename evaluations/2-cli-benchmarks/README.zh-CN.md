@@ -10,10 +10,10 @@
 
 | 序号 | Workload | 输入 | 计时操作 | 配方 |
 |---:|---|---|---|---|
-| 1 | FFTW 3.3.10 | `3072x3072` complex 2D problem | planning 与 forward transform | `fftw/` |
+| 1 | FFTW 3.3.10 | `3072x3072` complex 2D 单位脉冲 | 创建 plan 并执行 12 次 forward transform | `fftw/` |
 | 2 | zstd 1.5.7 | 确定性 64 MiB 数据，重复 100 份 | level 3、单 worker 压缩 | `zstd/` |
 | 3 | zlib 1.3.2 | 确定性 64 MiB 数据，重复 5 份 | `minizip -9` | `zlib/` |
-| 4 | OpenSSL 3.0.22 | 确定性 256 MiB 文件，重复 3 份 | SHA-256 digest | `openssl/` |
+| 4 | OpenSSL 3.0.22 | 确定性 256 MiB 文件，重复 3 份 | 流式 SHA-256 digest | `openssl/` |
 | 5 | FFmpeg 加 libmp3lame | 固定 WAV 片段，循环 7 次 | MP3 编码 | `ffmpeg-mp3lame/` |
 | 6 | FFmpeg 加 libfdk_aac | 固定 WAV 片段，循环 10 次 | AAC 编码 | `ffmpeg-fdk-aac/` |
 | 7 | FFmpeg 加 libvorbis | 固定 WAV 片段，循环 7 次 | Vorbis 编码 | `ffmpeg-vorbis/` |

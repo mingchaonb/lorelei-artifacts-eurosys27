@@ -32,6 +32,21 @@ vcpkg_execute_required_process(
     LOGNAME build-software
 )
 vcpkg_execute_required_process(COMMAND make DESTDIR=${CURRENT_PACKAGES_DIR} install_sw WORKING_DIRECTORY "${CURRENT_BUILDTREES_DIR}" LOGNAME install)
+
+# Build the focused SHA-256 client used by the CLI evaluation.  The monolithic
+# openssl app imports unrelated management APIs that are outside this workload.
+set(AE_TEST_DIR "${CURRENT_PACKAGES_DIR}/tools/${PORT}/upstream-tests")
+file(MAKE_DIRECTORY "${AE_TEST_DIR}")
+separate_arguments(OPENSSL_COMPILE_FLAGS NATIVE_COMMAND "${OPENSSL_CFLAGS}")
+vcpkg_execute_required_process(
+    COMMAND "${VCPKG_DETECTED_CMAKE_C_COMPILER}" ${OPENSSL_COMPILE_FLAGS}
+        -O2 -Wno-deprecated-declarations
+        "${CMAKE_CURRENT_LIST_DIR}/lorelei/sha256-ae.c"
+        "-I${CURRENT_PACKAGES_DIR}/include" "-L${CURRENT_PACKAGES_DIR}/lib"
+        -lcrypto -o "${AE_TEST_DIR}/sha256-ae"
+    WORKING_DIRECTORY "${CURRENT_BUILDTREES_DIR}"
+    LOGNAME build-ae-sha256
+)
 file(GLOB OPENSSL_STATIC_ARCHIVES "${CURRENT_PACKAGES_DIR}/lib/*.a")
 file(REMOVE ${OPENSSL_STATIC_ARCHIVES})
 vcpkg_fixup_pkgconfig()

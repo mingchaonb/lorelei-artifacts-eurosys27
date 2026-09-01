@@ -154,7 +154,7 @@ MangoHud wraps the selected lane's host-side process because the AArch64 GL and 
 - Writes raw MangoHud CSV data into the run directory.
 - Produces `fps-summary.json` with stable FPS and frametime statistics.
 
-The paper-data exporter reads the raw CSV rather than copying MangoHud's whole-run summary. For each game, it uses MangoHud's `elapsed` timestamps to select `[last sample - 12 seconds, last sample - 2 seconds)`, then reports the sample count and FPS mean, minimum, maximum, and population variance. The default 100 ms interval normally yields about 100 samples. Fixed-interval indexing is only a fallback for older logs without `elapsed`. A log shorter than 12 seconds is marked as insufficient instead of silently changing the window.
+The paper-data exporter reads the raw CSV rather than copying MangoHud's whole-run summary. For each game, it uses MangoHud's `elapsed` timestamps to select `[last sample - 12 seconds, last sample - 2 seconds)`. It discards samples above 300 FPS as measurement noise, then reports the retained and ignored sample counts and the FPS mean, minimum, maximum, and population variance. The default 100 ms interval normally yields about 100 samples before filtering. Fixed-interval indexing is only a fallback for older logs without `elapsed`. A log shorter than 12 seconds is marked as insufficient instead of silently changing the window.
 
 Export the latest available MangoHud run for every game and lane with:
 

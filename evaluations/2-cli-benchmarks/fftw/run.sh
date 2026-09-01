@@ -20,8 +20,8 @@ state=$repo_root/.work/evaluations/fftw3
 native_prefix=$state/installed/host/arm64-linux-ae
 guest_prefix=$state/installed/guest/x64-linux-ae
 thunk=$state/thunks/fftw3
-native_bench=$native_prefix/tools/fftw3/upstream-tests/build/bench
-guest_bench=$guest_prefix/tools/fftw3/upstream-tests/build/bench
+native_bench=$native_prefix/tools/fftw3/upstream-tests/fftw-ae
+guest_bench=$guest_prefix/tools/fftw3/upstream-tests/fftw-ae
 
 if [[ ! -x $native_bench || ! -x $guest_bench || ! -f $thunk/libfftw3_HTL.so || ! -f $thunk/x86_64/libfftw3.so ]]; then
     env LORELEI_DEVKIT="$devkit" "$repo_root/evaluations/1-libs/fftw3/run.sh" --install-only
@@ -39,7 +39,7 @@ native_ld=$native_prefix/lib
 guest_ld=$guest_prefix/lib:$devkit/x86_64/lib
 host_hecate_ld=$devkit/lib:$native_prefix/lib:$thunk
 guest_hecate_ld=$devkit/x86_64/lib:$thunk/x86_64
-args=(-s 3072x3072)
+args=(3072 12)
 
 cli_measure native env LD_LIBRARY_PATH="$native_ld" "$native_bench" "${args[@]}"
 cli_measure qemu "$qemu" -L "$devkit/x86_64/sysroot" -E "LD_LIBRARY_PATH=$guest_ld" "$guest_bench" "${args[@]}"
@@ -49,7 +49,9 @@ cli_measure fex env LD_LIBRARY_PATH="$devkit/lib" FEX_ROOTFS="$devkit/x86_64/sys
 
 cli_measure qemu-hecate env LD_LIBRARY_PATH="$host_hecate_ld" "$qemu" -L "$devkit/x86_64/sysroot" -E LD_BIND_NOW=1 -E "LD_LIBRARY_PATH=$guest_hecate_ld" "$guest_bench" "${args[@]}"
 cli_measure blink-hecate env LD_LIBRARY_PATH="$host_hecate_ld:$guest_hecate_ld" BLINK_OVERLAYS="$devkit/x86_64/sysroot:" "$blink" "$guest_bench" "${args[@]}"
-cli_measure box64-hecate env LD_LIBRARY_PATH="$host_hecate_ld" BOX64_LD_LIBRARY_PATH="$guest_hecate_ld" BOX64_LOG=0 BOX64_NOBANNER=1 BOX64_NORCFILES=1 "$box64" "$guest_bench" "${args[@]}"
+cli_measure box64-hecate env LD_LIBRARY_PATH="$host_hecate_ld" BOX64_LD_LIBRARY_PATH="$guest_hecate_ld" \
+    BOX64_LD_PRELOAD="$thunk/x86_64/libfftw3.so.3" \
+    BOX64_LOG=0 BOX64_NOBANNER=1 BOX64_NORCFILES=1 "$box64" "$guest_bench" "${args[@]}"
 cli_measure fex-hecate env LD_LIBRARY_PATH="$host_hecate_ld" FEX_ROOTFS="$devkit/x86_64/sysroot" FEX_ENV="LD_LIBRARY_PATH=$guest_hecate_ld" FEX_OUTPUTLOG=stderr "$fex" "$guest_bench" "${args[@]}"
 
 python3 - "$result_dir" <<'PY'
@@ -67,8 +69,8 @@ for summary_name in root.glob("*.json"):
     if len(outputs) != summary["repetitions_requested"]:
         raise SystemExit(f"missing FFTW stdout for {lane}")
     for output in outputs:
-        if not output.read_text(errors="replace").startswith("Problem: 3072x3072, setup:"):
+        if output.read_text(errors="replace").strip() != "size=3072 repeats=12 checksum=1":
             raise SystemExit(f"missing FFTW report: {output}")
 PY
-printf 'problem=3072x3072\nvalidation=every completed run emitted the upstream FFTW benchmark report\n' >"$result_dir/validation.txt"
+printf 'problem=3072x3072\ntransforms=12\ninput=unit impulse\nvalidation=every completed run emitted checksum 1\n' >"$result_dir/validation.txt"
 echo "Evidence: $result_dir"

@@ -81,7 +81,7 @@ def main() -> None:
         }
         records.append(record)
         print(f"{args.lane} {repetition}/{args.repetitions}: {record['elapsed_seconds']:.6f}s exit={status}", flush=True)
-        if timed_out or (status != 0 and args.exclude_nonzero):
+        if status != 0:
             # A timed-out command can leave a partial encoder output behind.
             # It is not valid evidence and must not reach workload validators.
             for partial in output.parent.glob(output.name + "*"):

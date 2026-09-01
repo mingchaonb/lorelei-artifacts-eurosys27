@@ -29,6 +29,7 @@ LANES = [
 ]
 
 GAME_LANES = ["qemu-hecate", "native", "box64", "box64-hecate"]
+GAME_FPS_UPPER_BOUND = 300.0
 GAME_ORDER = [
     "supertux",
     "supertuxkart",
@@ -280,6 +281,8 @@ def export_game_fps(repo: pathlib.Path, kind: str, output: pathlib.Path, inputs:
                 "sample_interval_ms": "",
                 "total_sample_count": "",
                 "window_sample_count": "",
+                "ignored_high_fps_sample_count": "",
+                "fps_upper_bound": f"{GAME_FPS_UPPER_BOUND:g}",
                 "window_start_seconds_from_end": "-12",
                 "window_end_seconds_from_end": "-2",
                 "fps_mean": "",
@@ -347,11 +350,17 @@ def export_game_fps(repo: pathlib.Path, kind: str, output: pathlib.Path, inputs:
                 samples = mangohud_samples(raw_path)
                 row["total_sample_count"] = len(samples)
                 window = game_fps_window(samples, interval_ms)
-                fps = [sample["fps"] for sample in window]
+                fps = [sample["fps"] for sample in window if sample["fps"] <= GAME_FPS_UPPER_BOUND]
+                ignored = len(window) - len(fps)
+                if not fps:
+                    raise ValueError(
+                        f"no FPS samples at or below {GAME_FPS_UPPER_BOUND:g} in the selected window"
+                    )
                 row.update(
                     {
                         "status": "measured",
                         "window_sample_count": len(fps),
+                        "ignored_high_fps_sample_count": ignored,
                         "fps_mean": f"{statistics.fmean(fps):.9f}",
                         "fps_minimum": f"{min(fps):.9f}",
                         "fps_maximum": f"{max(fps):.9f}",
@@ -376,6 +385,8 @@ def export_game_fps(repo: pathlib.Path, kind: str, output: pathlib.Path, inputs:
             "sample_interval_ms",
             "total_sample_count",
             "window_sample_count",
+            "ignored_high_fps_sample_count",
+            "fps_upper_bound",
             "window_start_seconds_from_end",
             "window_end_seconds_from_end",
             "fps_mean",

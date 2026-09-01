@@ -121,8 +121,10 @@ cli_measure() {
     shift
     cli_has_lane "$lane" || return 0
     lane_timeout=$(cli_lane_timeout "$lane")
-    python3 "$measure_py" --result-dir "$result_dir" --lane "$lane" \
-        --repetitions "$repetitions" --timeout "$lane_timeout" -- "$@"
+    if ! python3 "$measure_py" --result-dir "$result_dir" --lane "$lane" \
+        --repetitions "$repetitions" --timeout "$lane_timeout" -- "$@"; then
+        echo "$lane recorded a non-pass result. Continue with the remaining lanes." >&2
+    fi
 }
 
 cli_measure_stdio() {
@@ -132,9 +134,11 @@ cli_measure_stdio() {
     shift 2
     cli_has_lane "$lane" || return 0
     lane_timeout=$(cli_lane_timeout "$lane")
-    python3 "$measure_py" --result-dir "$result_dir" --lane "$lane" \
+    if ! python3 "$measure_py" --result-dir "$result_dir" --lane "$lane" \
         --repetitions "$repetitions" --timeout "$lane_timeout" \
-        --stdin-file "$stdin_file" --stdout-to-output -- "$@"
+        --stdin-file "$stdin_file" --stdout-to-output -- "$@"; then
+        echo "$lane recorded a non-pass result. Continue with the remaining lanes." >&2
+    fi
 }
 
 cli_measure_excludable() {

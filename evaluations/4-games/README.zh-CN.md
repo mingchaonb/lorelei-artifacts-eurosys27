@@ -154,7 +154,7 @@ MangoHud 默认包裹所选 lane 的 host 侧进程，因为 AArch64 GL 与 Vulk
 - 原始 MangoHud CSV 写入本次结果目录。
 - `fps-summary.json` 汇总稳定 FPS 与 frametime。
 
-论文数据导出脚本直接读取原始 CSV，不会照搬 MangoHud 的全程 summary。脚本优先根据 MangoHud 的 `elapsed` 时间戳为每个游戏截取 `[最后一个 sample - 12 秒, 最后一个 sample - 2 秒)`，统计 sample 数量以及 FPS 平均值、最小值、最大值和总体方差。默认每 100 ms 采样一次，因此窗口通常包含约 100 个 sample。旧日志没有 `elapsed` 字段时才按固定采样间隔回退。少于 12 秒的记录会明确标记为数据不足，不会擅自缩短窗口。
+论文数据导出脚本直接读取原始 CSV，不会照搬 MangoHud 的全程 summary。脚本优先根据 MangoHud 的 `elapsed` 时间戳为每个游戏截取 `[最后一个 sample - 12 秒, 最后一个 sample - 2 秒)`。脚本将超过 300 FPS 的 sample 作为测量噪声忽略，再统计保留与忽略的 sample 数量以及 FPS 平均值、最小值、最大值和总体方差。默认每 100 ms 采样一次，因此过滤前的窗口通常包含约 100 个 sample。旧日志没有 `elapsed` 字段时才按固定采样间隔回退。少于 12 秒的记录会明确标记为数据不足，不会擅自缩短窗口。
 
 导出每个游戏、每条 lane 最新且包含 MangoHud 记录的运行：
 

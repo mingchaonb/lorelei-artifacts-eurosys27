@@ -10,10 +10,10 @@ The repository provides all 8 workloads used by the paper:
 
 | No. | Workload | Input | Timed operation | Recipe |
 |---:|---|---|---|---|
-| 1 | FFTW 3.3.10 | `3072x3072` complex 2D problem | Planning and forward transform | `fftw/` |
+| 1 | FFTW 3.3.10 | `3072x3072` complex 2D unit impulse | Plan creation and 12 forward transforms | `fftw/` |
 | 2 | zstd 1.5.7 | 100 copies of deterministic 64 MiB data | Level 3 single-worker compression | `zstd/` |
 | 3 | zlib 1.3.2 | 5 copies of deterministic 64 MiB data | `minizip -9` | `zlib/` |
-| 4 | OpenSSL 3.0.22 | 3 copies of a deterministic 256 MiB file | SHA-256 digest | `openssl/` |
+| 4 | OpenSSL 3.0.22 | 3 copies of a deterministic 256 MiB file | Streaming SHA-256 digest | `openssl/` |
 | 5 | FFmpeg with libmp3lame | Fixed WAV excerpt looped 7 times | MP3 encoding | `ffmpeg-mp3lame/` |
 | 6 | FFmpeg with libfdk_aac | Fixed WAV excerpt looped 10 times | AAC encoding | `ffmpeg-fdk-aac/` |
 | 7 | FFmpeg with libvorbis | Fixed WAV excerpt looped 7 times | Vorbis encoding | `ffmpeg-vorbis/` |

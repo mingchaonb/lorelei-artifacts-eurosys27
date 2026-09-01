@@ -6,6 +6,9 @@ import statistics
 import sys
 
 
+FPS_UPPER_BOUND = 300.0
+
+
 def percentile(values, fraction):
     ordered = sorted(values)
     if not ordered:
@@ -30,10 +33,12 @@ for row in rows[header_index + 1:]:
     except ValueError:
         continue
 
-fps = [sample["fps"] for sample in samples]
-frametime = [sample["frametime"] for sample in samples]
+retained_samples = [sample for sample in samples if sample["fps"] <= FPS_UPPER_BOUND]
+ignored_high_fps_samples = len(samples) - len(retained_samples)
+fps = [sample["fps"] for sample in retained_samples]
+frametime = [sample["frametime"] for sample in retained_samples]
 if not fps:
-    raise SystemExit("MangoHud CSV contains no FPS samples")
+    raise SystemExit(f"MangoHud CSV contains no FPS samples at or below {FPS_UPPER_BOUND:g}")
 
 mango_rows = list(csv.reader(mango_summary_path.open(newline="")))
 mango_summary = {}
@@ -45,7 +50,10 @@ data = {
     "collector": "MangoHud",
     "raw_csv": raw_path.name,
     "mangohud_summary_csv": mango_summary_path.name,
-    "samples": len(samples),
+    "samples": len(retained_samples),
+    "raw_samples": len(samples),
+    "ignored_high_fps_samples": ignored_high_fps_samples,
+    "fps_upper_bound": FPS_UPPER_BOUND,
     "sample_interval_ms": 100,
     "fps": {
         "average": statistics.fmean(fps),
