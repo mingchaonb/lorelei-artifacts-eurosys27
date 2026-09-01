@@ -53,7 +53,8 @@ generate_thunks() {
             cat "$audit_dir/used-functions.txt"
         } >"$audit_dir/Symbols.conf"
         [[ -s $audit_dir/used-functions.txt ]] || { echo "No OpenSSL client imports found in lib$library" >&2; exit 2; }
-        "$devkit/bin/LoreMakeThunk.py" --name "$name" --out "$thunk_root/$name" \
+        "$repo_root/evaluations/1-libs/_common/lore-make-thunk.py" \
+            "$devkit/bin/LoreMakeThunk.py" --name "$name" --out "$thunk_root/$name" \
             --lib "$host_library" --symbols "$audit_dir/Symbols.conf" \
             --desc "$port/lorelei/Desc.h" \
             --manifest-host "$manifest_dir/Manifest_host.cpp" \
@@ -68,9 +69,11 @@ if [[ ! -x $native_cli || ! -x $guest_cli ]]; then
     prepare_packages
 fi
 [[ -n $nm_tool ]] || { echo "llvm-nm is required to generate the OpenSSL thunk" >&2; exit 2; }
-if [[ ! -f $crypto_thunk/libcrypto_HTL.so || ! -f $crypto_thunk/x86_64/libcrypto.so.3 ]]; then
-    generate_thunks
-fi
+# Recompute the focused import set on every invocation. LoreMakeThunk hashes the
+# resulting Symbols.conf, host DSO, manifests, devkit, and compiler arguments,
+# so unchanged inputs reuse the cache while a rebuilt client cannot retain a
+# stale, broader thunk from an earlier recipe.
+generate_thunks
 if $install_only; then
     echo "Installed OpenSSL benchmark prerequisites: $state"
     exit 0
