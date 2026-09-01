@@ -29,14 +29,14 @@ def main() -> None:
     hecate_cov = np.array([float(row["hecate_coverage"]) for row in rows])
 
     plt.rcParams.update({"font.family": "serif", "font.size": 10})
-    fig, ax = plt.subplots(figsize=(10.2, 4.5))
+    fig, ax = plt.subplots(figsize=(13.8, 5.2))
     coverage = ax.twinx()
     ax.bar(x - width / 2, box_loc, width, label="Box64 LOC", color="#FF6347", edgecolor="black", alpha=0.8)
     ax.bar(x + width / 2, hecate_loc, width, label="Hecate LOC", color="#2E8B57", edgecolor="black", alpha=0.8)
     coverage.plot(x - width / 2, box_cov, "o", label="Box64 coverage", color="#8B0000")
     coverage.plot(x + width / 2, hecate_cov, "^", label="Hecate coverage", color="#006400")
     ax.set_xticks(x)
-    ax.set_xticklabels(names)
+    ax.set_xticklabels(names, rotation=38, ha="right", rotation_mode="anchor")
     ax.set_ylabel("Manual code lines")
     coverage.set_ylabel("Exported-function coverage")
     coverage.set_ylim(0, 1.05)
@@ -48,7 +48,7 @@ def main() -> None:
     if missing:
         fig.text(0.5, 0.01, "Missing prerequisites: " + ", ".join(missing), ha="center", color="firebrick")
     ax.grid(axis="y", alpha=0.25)
-    fig.tight_layout(rect=(0, 0.04, 1, 1))
+    fig.tight_layout(rect=(0, 0.02, 1, 1))
     args.output.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(args.output, bbox_inches="tight")
     if args.show:

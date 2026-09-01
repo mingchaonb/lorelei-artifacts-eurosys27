@@ -117,7 +117,18 @@ def copy_installed_stat(
     data = json.loads(stat.read_text())
     supported = {entry["name"] for entry in data["functions"]["GuestToHost"]}
     missing = set(data["missingFunctions"]["GuestToHost"])
+    write_symbols(library_dir / "Symbols.conf", sorted(functions))
     shutil.copy2(stat, library_dir / "ThunkStat.json")
+    (library_dir / "source.json").write_text(
+        json.dumps(
+            {
+                "dso": str(dso.resolve()),
+                "installed_thunk_stat": str(stat.resolve()),
+            },
+            indent=2,
+        )
+        + "\n"
+    )
     return {
         "library": name,
         "dso": str(dso.resolve()),
@@ -148,6 +159,8 @@ def main() -> None:
     sdl_prefix = ROOT / ".work/evaluations/sdl2/installed/hecate/arm64-linux-ae"
     vulkan_prefix = ROOT / ".work/evaluations/vulkan-loader/installed/arm64-linux-ae"
     gl_prefix = ROOT / ".work/evaluations/glvnd/installed/arm64-linux-ae"
+    x11_prefix = ROOT / ".work/evaluations/libx11/installed/hecate/arm64-linux-ae"
+    xcb_prefix = ROOT / ".work/evaluations/libxcb/installed/hecate/arm64-linux-ae"
 
     rows = []
     rows.append(
@@ -215,6 +228,49 @@ def main() -> None:
             run_dir,
         )
     )
+    rows.append(
+        copy_installed_stat(
+            "X11",
+            first_file(x11_prefix / "lib", "libX11.so.*"),
+            x11_prefix / "share/libx11/hlr-audit/TLC-ThunkStat.json",
+            run_dir,
+        )
+    )
+    rows.append(
+        copy_installed_stat(
+            "XCB",
+            first_file(xcb_prefix / "lib", "libxcb.so.*"),
+            xcb_prefix / "share/libxcb/hlr-audit/TLC-ThunkStat.json",
+            run_dir,
+        )
+    )
+
+    generated_audits = [
+        ("bzip2", "bzip2", "libbz2.so.*", ["bzlib.h"], "hecate"),
+        ("Brotli", "brotli", "libbrotlidec.so.*", ["brotli/decode.h"], "hecate"),
+        ("Expat", "expat", "libexpat.so.*", ["expat.h", "expat_external.h"], "hecate"),
+        ("curl", "libcurl", "libcurl.so.*", ["curl/*.h"], "hecate"),
+        ("libevent", "libevent", "libevent_core-2.1.so.*", ["event2/*.h"], "hecate"),
+        ("IDN2", "libidn2", "libidn2.so.*", ["idn2.h"], "hecate"),
+        ("LZMA", "liblzma", "liblzma.so.*", ["lzma.h"], "hecate"),
+        ("Ogg", "libogg", "libogg.so.*", ["ogg/*.h"], "host"),
+        ("Opus", "opus", "libopus.so.*", ["opus/*.h"], "host"),
+        ("sndfile", "libsndfile", "libsndfile.so.*", ["sndfile.h"], "host"),
+    ]
+    for name, state, dso_glob, header_globs, lane in generated_audits:
+        prefix = ROOT / f".work/evaluations/{state}/installed/{lane}/arm64-linux-ae"
+        headers = []
+        for header_glob in header_globs:
+            headers.extend(sorted((prefix / "include").glob(header_glob)))
+        rows.append(
+            run_tlc(
+                name,
+                first_file(prefix / "lib", dso_glob),
+                headers,
+                [prefix / "include"],
+                run_dir,
+            )
+        )
     gl_dso = first_file(pathlib.Path("/usr/lib"), "*-linux-gnu/libGL.so.1")
     rows.append(
         copy_installed_stat(

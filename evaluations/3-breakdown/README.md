@@ -12,6 +12,7 @@ This group provides directed microbenchmarks for the paper's mechanism-breakdown
 | Box64 callback address-origin breakdown | Measures each stage used by Box64 to recover a native callback from a guest bridge | 5 processes pinned to CPU 0 with 1,000,000 checks each | `box64-callback-track/run.sh` |
 | Hecate callback boundary comparison | Measures HLR's fast address-boundary decision for a host callback | 5 rounds pinned to CPU 0 with 100,000,000 comparisons each | `hecate-callback-track/run.sh` |
 | Hecate emulator smoke test | Validates direct calls, host callback round trips, and guest callback reentry with Blink, Box64, and FEX | 1,000 guest callback invocations per emulator | `hecate-emulators/run.sh` |
+| Function coverage and manual effort | Compares exported function coverage and manual configuration LOC for Hecate and Box64 across 20 DSOs | One complete export audit per DSO | `coverage-effort/run.py` |
 
 ## 2. Prepare prerequisites
 
@@ -20,6 +21,12 @@ Install the synthetic test library and shared tools first:
 ```bash
 ./evaluations/1-libs/breakdown-test/run.sh --install-only
 ./evaluations/install-tools.sh
+```
+
+The function coverage audit also uses the target libraries installed by `install-libs.sh`:
+
+```bash
+./evaluations/install-libs.sh
 ```
 
 This provides:
@@ -126,7 +133,17 @@ ITERATIONS=5000 ./evaluations/3-breakdown/hecate-emulators/run.sh
 
 `BLINK`, `BOX64`, and `FEX` override the ordinary emulator paths. This smoke test does not use the instrumented Box64.
 
-## 7. Results and evidence
+## 7. Function coverage and manual effort
+
+Run:
+
+```bash
+python3 evaluations/3-breakdown/coverage-effort/run.py
+```
+
+The audit covers 20 DSOs from compression, multimedia, graphics and window system, and general system libraries. See [`coverage-effort/README.md`](coverage-effort/README.md) for the library set, complete export definition, and manual LOC definition.
+
+## 8. Results and evidence
 
 Each run writes:
 

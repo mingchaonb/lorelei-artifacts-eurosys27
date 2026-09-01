@@ -559,17 +559,29 @@ def export_coverage(repo: pathlib.Path, output: pathlib.Path, inputs: Inputs) ->
     box64_roots = sorted((repo / "vcpkg/buildtrees/box64-ae/src").glob("*.clean/src/wrapped"))
     box64_root = box64_roots[-1] if box64_roots else None
     specs = [
-        ("zstd", "zstd", "libzstd.so.*", "wrappedzstd", "zstd", ["vcpkg-overlay/ports/zstd/lorelei"]),
-        ("avformat", "ffmpeg", "libavformat.so.*", "wrappedlibavformat58", "avformat", ["vcpkg-overlay/ports/ffmpeg/lorelei/avformat"]),
-        ("avcodec", "ffmpeg", "libavcodec.so.*", "wrappedlibavcodec58", "avcodec", ["vcpkg-overlay/ports/ffmpeg/lorelei/avcodec"]),
-        ("avutil", "ffmpeg", "libavutil.so.*", "wrappedlibavutil56", "avutil", ["vcpkg-overlay/ports/ffmpeg/lorelei/avutil"]),
-        ("SDL2", "sdl2", "libSDL2-2.0.so.*", "wrappedsdl2", "sdl2", ["vcpkg-overlay/ports/sdl2/lorelei"]),
-        ("Vulkan", "vulkan-loader", "libvulkan.so.*", "wrappedvulkan", "vulkan", ["vcpkg-overlay/ports/vulkan-loader/lorelei"]),
-        ("OpenGL", "glvnd", "libGL.so.*", "wrappedlibgl", "GL", ["vcpkg-overlay/ports/glvnd/lorelei"]),
-        ("zlib", "zlib", "libz.so.*", "wrappedlibz", "z", ["vcpkg-overlay/ports/zlib/lorelei"]),
+        ("zstd", "zstd", "hecate", "libzstd.so.*", "wrappedzstd", ["vcpkg-overlay/ports/zstd/lorelei"]),
+        ("avformat", "ffmpeg", "hecate", "libavformat.so.*", "wrappedlibavformat58", ["vcpkg-overlay/ports/ffmpeg/lorelei/avformat"]),
+        ("avcodec", "ffmpeg", "hecate", "libavcodec.so.*", "wrappedlibavcodec58", ["vcpkg-overlay/ports/ffmpeg/lorelei/avcodec"]),
+        ("avutil", "ffmpeg", "hecate", "libavutil.so.*", "wrappedlibavutil56", ["vcpkg-overlay/ports/ffmpeg/lorelei/avutil"]),
+        ("SDL2", "sdl2", "hecate", "libSDL2-2.0.so.*", "wrappedsdl2", ["vcpkg-overlay/ports/sdl2/lorelei"]),
+        ("Vulkan", "vulkan-loader", "direct", "libvulkan.so.*", "wrappedvulkan", ["vcpkg-overlay/ports/vulkan-loader/lorelei"]),
+        ("OpenGL", "glvnd", "direct", "libGL.so.*", "wrappedlibgl", ["vcpkg-overlay/ports/glvnd/lorelei"]),
+        ("zlib", "zlib", "hecate", "libz.so.*", "wrappedlibz", ["vcpkg-overlay/ports/zlib/lorelei"]),
+        ("X11", "libx11", "hecate", "libX11.so.*", "wrappedlibx11", ["vcpkg-overlay/ports/libx11/lorelei"]),
+        ("XCB", "libxcb", "hecate", "libxcb.so.*", "wrappedlibxcb", ["vcpkg-overlay/ports/libxcb/lorelei"]),
+        ("bzip2", "bzip2", "hecate", "libbz2.so.*", "wrappedbz2", ["vcpkg-overlay/ports/bzip2/lorelei"]),
+        ("Brotli", "brotli", "hecate", "libbrotlidec.so.*", "wrappedbrotlidec", ["vcpkg-overlay/ports/brotli/lorelei"]),
+        ("Expat", "expat", "hecate", "libexpat.so.*", "wrappedexpat", ["vcpkg-overlay/ports/expat/lorelei"]),
+        ("curl", "libcurl", "hecate", "libcurl.so.*", "wrappedcurl", ["vcpkg-overlay/ports/libcurl/lorelei"]),
+        ("libevent", "libevent", "hecate", "libevent_core-2.1.so.*", "wrappedevent21", ["vcpkg-overlay/ports/libevent/lorelei"]),
+        ("IDN2", "libidn2", "hecate", "libidn2.so.*", "wrappedidn2", ["vcpkg-overlay/ports/libidn2/lorelei"]),
+        ("LZMA", "liblzma", "hecate", "liblzma.so.*", "wrappedlzma", ["vcpkg-overlay/ports/liblzma/lorelei"]),
+        ("Ogg", "libogg", "host", "libogg.so.*", "wrappedlibogg", ["vcpkg-overlay/ports/libogg/lorelei"]),
+        ("Opus", "opus", "host", "libopus.so.*", "wrappedlibopus", ["vcpkg-overlay/ports/opus/lorelei"]),
+        ("sndfile", "libsndfile", "host", "libsndfile.so.*", "wrappedlibsndfile", ["vcpkg-overlay/ports/libsndfile/lorelei"]),
     ]
     rows = []
-    for library, state, dso_glob, stem, thunk_name, config_roots in specs:
+    for library, state, lane, dso_glob, stem, config_roots in specs:
         row = {
             "library": library,
             "box64_supported_functions": "",
@@ -581,10 +593,10 @@ def export_coverage(repo: pathlib.Path, output: pathlib.Path, inputs: Inputs) ->
             "hecate_manual_loc": "",
             "status": "missing",
         }
-        if state in {"vulkan-loader", "glvnd"}:
+        if lane == "direct":
             install = repo / f".work/evaluations/{state}/installed/arm64-linux-ae"
         else:
-            install = repo / f".work/evaluations/{state}/installed/hecate/arm64-linux-ae"
+            install = repo / f".work/evaluations/{state}/installed/{lane}/arm64-linux-ae"
         dsos = sorted((install / "lib").glob(dso_glob))
         # The graphics ports intentionally wrap the distribution's system
         # loader libraries instead of copying them into the vcpkg prefix.
@@ -592,14 +604,6 @@ def export_coverage(repo: pathlib.Path, output: pathlib.Path, inputs: Inputs) ->
             dsos = sorted(pathlib.Path("/usr/lib").glob("*-linux-gnu/libvulkan.so.1"))
         elif state == "glvnd":
             dsos = sorted(pathlib.Path("/usr/lib").glob("*-linux-gnu/libGL.so.1"))
-        if state == "sdl2":
-            symbols = repo / ".work/evaluations/sdl2/thunks/hecate/.gen/SDL2/Symbols.conf"
-        elif state in {"vulkan-loader", "glvnd"}:
-            symbols = install / f"share/{state}/thunk/.gen/{thunk_name}/Symbols.conf"
-        elif state == "ffmpeg":
-            symbols = repo / f".work/evaluations/ffmpeg/thunks/pack/.gen/{thunk_name}/Symbols.conf"
-        else:
-            symbols = repo / f".work/evaluations/{state}/run/thunks/{thunk_name}/.gen/{thunk_name}/Symbols.conf"
         private = box64_root / f"{stem}_private.h" if box64_root else None
         box64_files = []
         if box64_root:

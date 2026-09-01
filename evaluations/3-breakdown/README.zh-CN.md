@@ -12,6 +12,7 @@
 | Box64 callback 地址来源拆分 | 测量 Box64 识别 guest bridge 对应 native callback 时的各阶段开销 | CPU 0 上 5 个进程，每个进程 1,000,000 次检查 | `box64-callback-track/run.sh` |
 | Hecate callback 边界比较 | 测量 HLR 对 host callback 执行的地址边界快速判断 | CPU 0 上 5 轮，每轮 100,000,000 次比较 | `hecate-callback-track/run.sh` |
 | Hecate 模拟器烟测 | 验证 Blink、Box64 和 FEX 的直接调用、host callback round trip 与 guest callback 重入 | 每个模拟器调用 guest callback 1,000 次 | `hecate-emulators/run.sh` |
+| 函数覆盖率与人工配置量 | 比较 20 个 DSO 的 Hecate 与 Box64 导出函数覆盖率和人工配置行数 | 每个 DSO 执行一次完整导出审计 | `coverage-effort/run.py` |
 
 ## 2. 准备依赖
 
@@ -20,6 +21,12 @@
 ```bash
 ./evaluations/1-libs/breakdown-test/run.sh --install-only
 ./evaluations/install-tools.sh
+```
+
+函数覆盖率审计还需要 `install-libs.sh` 安装的目标库：
+
+```bash
+./evaluations/install-libs.sh
 ```
 
 安装结果包括：
@@ -126,7 +133,17 @@ ITERATIONS=5000 ./evaluations/3-breakdown/hecate-emulators/run.sh
 
 可使用 `BLINK`、`BOX64` 和 `FEX` 覆盖普通模拟器路径。该烟测不使用插桩 Box64。
 
-## 7. 结果与证据
+## 7. 函数覆盖率与人工配置量
+
+运行：
+
+```bash
+python3 evaluations/3-breakdown/coverage-effort/run.py
+```
+
+该审计覆盖压缩、多媒体、图形与窗口系统和通用系统四类共 20 个 DSO。库清单、完整导出函数口径和人工配置行数口径见 [`coverage-effort/README.zh-CN.md`](coverage-effort/README.zh-CN.md)。
+
+## 8. 结果与证据
 
 每次运行写入：
 
