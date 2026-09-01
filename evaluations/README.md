@@ -151,6 +151,8 @@ The exporter writes `overall.csv`, `game-fps.csv`, `function-breakdown.csv`, `ca
 
 The manually triggered [`.github/workflows/evaluation.yml`](../.github/workflows/evaluation.yml) runs the following complete sequence on an Ubuntu 24.04 ARM64 self-hosted runner labeled `spark-gpu`:
 
+The CI build sets `USE_USTC_MIRROR=1` for the AE Docker image, so Ubuntu packages inside the container are downloaded from the USTC mirror. vcpkg sources continue to use the pinned URLs and checksums in each port.
+
 1. Install all evaluation content inside the AE container.
 2. Run evaluation groups 1, 2, and 3.
 3. Run group 4 on the physical GPU of the SPARK host. Each of the five redistributable games measures the initial scene reached after startup.

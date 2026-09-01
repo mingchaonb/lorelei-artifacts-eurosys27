@@ -27,7 +27,10 @@ done
 
 mkdir -p "$archive_root/paper-data"
 shopt -s nullglob
-paper_outputs=("$evaluations_dir"/paper-data/*.csv "$evaluations_dir"/paper-data/manifest.json)
+paper_outputs=("$evaluations_dir"/paper-data/*.csv)
+if [[ -f $evaluations_dir/paper-data/manifest.json ]]; then
+    paper_outputs+=("$evaluations_dir/paper-data/manifest.json")
+fi
 for source in "${paper_outputs[@]}"; do
     mv "$source" "$archive_root/paper-data/"
 done

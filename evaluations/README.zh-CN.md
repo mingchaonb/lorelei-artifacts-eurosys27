@@ -155,6 +155,8 @@ python3 evaluations/export-paper-data.py
 
 手动触发的 [`.github/workflows/evaluation.yml`](../.github/workflows/evaluation.yml) 在带 `spark-gpu` 标签的 Ubuntu 24.04 ARM64 self-hosted runner 上执行以下完整流程：
 
+CI 构建 AE Docker 镜像时固定设置 `USE_USTC_MIRROR=1`，因此容器内的 Ubuntu package 使用中科大镜像下载。vcpkg 上游源码仍使用各 port 固定的 URL 和校验和。
+
 1. 在 AE 容器内安装全部评测内容。
 2. 运行评测组 1、2 和 3。
 3. 在 SPARK 宿主的物理 GPU 上运行评测组 4。五个可再分发游戏均测量启动后的初始场景。

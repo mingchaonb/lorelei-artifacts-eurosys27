@@ -104,6 +104,7 @@ jobs:
           done
           docker rm --force "$container" >/dev/null 2>&1 || true
           docker build \
+              --build-arg USE_USTC_MIRROR=1 \
               --build-arg "USER_UID=$(id -u)" \
               --build-arg "USER_GID=$(id -g)" \
               "${proxy_build_args[@]}" \
