@@ -1,5 +1,7 @@
 # EuroSys 2027 Lorelei Artifact
 
+[![EuroSys AE evaluations](https://github.com/mingchaonb/lorelei-artifacts-eurosys27/actions/workflows/evaluations.yml/badge.svg?branch=main)](https://github.com/mingchaonb/lorelei-artifacts-eurosys27/actions/workflows/evaluations.yml)
+
 [中文版](README.zh-CN.md)
 
 This repository is the evaluator-facing build, test, and evidence workspace for the EuroSys 2027 Lorelei submission. Lorelei is the public project name. Hecate is the anonymized name used during paper submission. They refer to the same system.

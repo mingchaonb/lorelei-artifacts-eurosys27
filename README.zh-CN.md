@@ -1,5 +1,7 @@
 # EuroSys 2027 Lorelei Artifact
 
+[![EuroSys AE evaluations](https://github.com/mingchaonb/lorelei-artifacts-eurosys27/actions/workflows/evaluations.yml/badge.svg?branch=main)](https://github.com/mingchaonb/lorelei-artifacts-eurosys27/actions/workflows/evaluations.yml)
+
 [English](README.md)
 
 本仓库是 EuroSys 2027 Lorelei 投稿面向 Artifact Evaluation 评审者的构建、测试与证据工作区。Lorelei 是公开项目名。Hecate 是论文投稿期间使用的匿名名称，两者指同一个系统。
