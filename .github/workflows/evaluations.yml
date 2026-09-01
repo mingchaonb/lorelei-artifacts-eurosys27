@@ -45,6 +45,19 @@ jobs:
         with:
           clean: false
 
+      - name: Stop stale AE CI containers
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t stale_containers < <(
+              docker ps --all --format '{{.Names}}' |
+                  grep -E '^lorelei-ae-[0-9]+-[0-9]+$' || true
+          )
+          for container in "${stale_containers[@]}"; do
+              echo "Removing stale CI container: $container"
+              docker rm --force "$container"
+          done
+
       - name: Start an evidence-isolated CI batch
         shell: bash
         run: ./evaluations/archive-ci-results.sh
