@@ -204,6 +204,7 @@ Preview and remove evaluator results with:
 
 Cleanup never deletes game packages, shared vcpkg caches, or an evaluator-supplied `GAME_DIR`.
 
+<!--
 ## 9. SPARK self-hosted GitHub Actions
 
 The repository provides [`.github/workflows/evaluation.yml`](../../.github/workflows/evaluation.yml). This workflow is manually triggered and requires an Ubuntu 24.04 ARM64 self-hosted runner carrying the `spark-gpu` label. It executes evaluation groups 1 through 5:
@@ -251,3 +252,4 @@ sudo ./svc.sh start
 ```
 
 Rewrite `.env` and restart the runner service after the graphical session changes. Proxy variables can be placed in the same runner `.env` file. The workflow forwards lower-case and upper-case proxy variables to the Docker build and container.
+-->

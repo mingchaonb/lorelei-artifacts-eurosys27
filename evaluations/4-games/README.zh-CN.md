@@ -204,6 +204,7 @@ evaluations/4-games/<game>/results/<UTC timestamp>-<lane>/
 
 清理脚本不会删除游戏 package、共享 vcpkg cache 或用户提供的 `GAME_DIR`。
 
+<!--
 ## 9. SPARK self-hosted GitHub Actions
 
 仓库提供 [`.github/workflows/evaluation.yml`](../../.github/workflows/evaluation.yml)。该 workflow 只接受手动触发，并要求带有 `spark-gpu` 标签的 Ubuntu 24.04 ARM64 self-hosted runner。它完整执行评测组 1 到 5：
@@ -251,3 +252,4 @@ sudo ./svc.sh start
 ```
 
 桌面会话改变后，重新写入 `.env` 并重启 runner 服务。代理同样使用 runner 目录的 `.env` 配置，workflow 会把大小写代理变量传给 Docker build 和容器。
+-->
