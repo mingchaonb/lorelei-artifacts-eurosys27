@@ -405,6 +405,15 @@ jobs:
                   >>"$GITHUB_STEP_SUMMARY"
           done
 
+      - name: Write library correctness details to the workflow summary
+        if: always() && env.RUN_LIBRARIES == 'true'
+        shell: bash
+        run: |
+          python3 evaluations/1-libs/_common/library-summary-markdown.py \
+              --repo-root "$GITHUB_WORKSPACE" \
+              --batch-summary .work/evaluations/1-libs-batch/verified/summary.tsv \
+              >>"$GITHUB_STEP_SUMMARY"
+
       - name: Upload all exported paper data
         if: always()
         uses: actions/upload-artifact@v4
