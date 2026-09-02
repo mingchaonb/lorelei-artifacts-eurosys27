@@ -390,29 +390,52 @@ jobs:
         shell: bash
         run: docker rm --force "$AE_CONTAINER" || true
 
-      - name: Write generated CSV tables to the workflow summary
+      - name: Write evaluation results to the workflow summary
         if: always()
         shell: bash
         run: |
+          set -euo pipefail
+
+          report_group() {
+              local number=$1 name=$2 enabled=$3 outcome=$4
+              local status=skipped
+              if [[ $enabled == true ]]; then
+                  status=$outcome
+                  [[ $outcome != skipped ]] || status=blocked
+              fi
+              printf '| %s | %s | %s |\n' "$number" "$name" "$status" \
+                  >>"$GITHUB_STEP_SUMMARY"
+          }
+
+          {
+              echo '## Evaluation group status'
+              echo
+              echo '| Group | Evaluation | Status |'
+              echo '| --- | --- | --- |'
+          } >>"$GITHUB_STEP_SUMMARY"
+          report_group 1 libraries "$RUN_LIBRARIES" "${{ steps.libraries.outcome }}"
+          report_group 2 cli "$RUN_CLI" "${{ steps.cli.outcome }}"
+          report_group 3 breakdown "$RUN_BREAKDOWN" "${{ steps.breakdown.outcome }}"
+          report_group 4 games "$RUN_GAMES" "${{ steps.games.outcome }}"
+          report_group 5 modifications "$RUN_MODIFICATIONS" "${{ steps.modifications.outcome }}"
+
+          if [[ $RUN_LIBRARIES == true ]]; then
+              python3 evaluations/1-libs/_common/library-summary-markdown.py \
+                  --repo-root "$GITHUB_WORKSPACE" \
+                  --batch-summary .work/evaluations/1-libs-batch/verified/summary.tsv \
+                  >>"$GITHUB_STEP_SUMMARY"
+          fi
+
           shopt -s nullglob
           files=(evaluations/paper-data/*.csv)
           if ((${#files[@]} == 0)); then
               echo "No paper CSV data was produced." >>"$GITHUB_STEP_SUMMARY"
-              exit 0
+          else
+              for csv in "${files[@]}"; do
+                  python3 evaluations/4-games/_common/csv-to-markdown.py "$csv" \
+                      >>"$GITHUB_STEP_SUMMARY"
+              done
           fi
-          for csv in "${files[@]}"; do
-              python3 evaluations/4-games/_common/csv-to-markdown.py "$csv" \
-                  >>"$GITHUB_STEP_SUMMARY"
-          done
-
-      - name: Write library correctness details to the workflow summary
-        if: always() && env.RUN_LIBRARIES == 'true'
-        shell: bash
-        run: |
-          python3 evaluations/1-libs/_common/library-summary-markdown.py \
-              --repo-root "$GITHUB_WORKSPACE" \
-              --batch-summary .work/evaluations/1-libs-batch/verified/summary.tsv \
-              >>"$GITHUB_STEP_SUMMARY"
 
       - name: Upload all exported paper data
         if: always()
@@ -453,8 +476,8 @@ jobs:
               [[ $outcome == success ]] || failed=1
           }
 
-          report_group() {
-              local number=$1 name=$2 enabled=$3 outcome=$4
+          check_group() {
+              local name=$1 enabled=$2 outcome=$3
               local status=skipped
               if [[ $enabled == true ]]; then
                   status=$outcome
@@ -462,7 +485,6 @@ jobs:
                   [[ $outcome == success ]] || failed=1
               fi
               printf '%s=%s\n' "$name" "$status"
-              printf '| %s | %s | %s |\n' "$number" "$name" "$status" >>"$GITHUB_STEP_SUMMARY"
           }
 
           check_required host "${{ steps.host.outcome }}"
@@ -478,15 +500,9 @@ jobs:
           fi
           check_required export "${{ steps.export.outcome }}"
 
-          {
-              echo '## Evaluation group status'
-              echo
-              echo '| Group | Evaluation | Status |'
-              echo '| --- | --- | --- |'
-          } >>"$GITHUB_STEP_SUMMARY"
-          report_group 1 libraries "$RUN_LIBRARIES" "${{ steps.libraries.outcome }}"
-          report_group 2 cli "$RUN_CLI" "${{ steps.cli.outcome }}"
-          report_group 3 breakdown "$RUN_BREAKDOWN" "${{ steps.breakdown.outcome }}"
-          report_group 4 games "$RUN_GAMES" "${{ steps.games.outcome }}"
-          report_group 5 modifications "$RUN_MODIFICATIONS" "${{ steps.modifications.outcome }}"
+          check_group libraries "$RUN_LIBRARIES" "${{ steps.libraries.outcome }}"
+          check_group cli "$RUN_CLI" "${{ steps.cli.outcome }}"
+          check_group breakdown "$RUN_BREAKDOWN" "${{ steps.breakdown.outcome }}"
+          check_group games "$RUN_GAMES" "${{ steps.games.outcome }}"
+          check_group modifications "$RUN_MODIFICATIONS" "${{ steps.modifications.outcome }}"
           exit "$failed"
