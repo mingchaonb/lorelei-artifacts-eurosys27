@@ -72,6 +72,15 @@ vcpkg_make_configure(SOURCE_PATH "${SOURCE_PATH}" OPTIONS ${XCB_OPTIONS})
 if(RUN_HLR)
     set(XCB_BUILD "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel")
     find_program(BEAR bear REQUIRED)
+    set(XCB_BEAR_JOBS "${VCPKG_CONCURRENCY}")
+    set(XCB_BEAR_OPTIONS)
+    set(XCB_BEAR_MAKE_OPTIONS)
+    if(VCPKG_TARGET_ARCHITECTURE STREQUAL "riscv64")
+        # Avoid the broken RV64 preload interceptor and use wrappers instead.
+        set(XCB_BEAR_JOBS 1)
+        list(APPEND XCB_BEAR_OPTIONS --force-wrapper)
+        list(APPEND XCB_BEAR_MAKE_OPTIONS CC=cc)
+    endif()
     vcpkg_execute_required_process(
         # Bear uses gRPC between its controller and compiler wrappers. Proxy
         # variables must not redirect this process-local connection through an
@@ -80,7 +89,7 @@ if(RUN_HLR)
             --unset=ALL_PROXY --unset=HTTPS_PROXY --unset=HTTP_PROXY --unset=NO_PROXY
             --unset=all_proxy --unset=https_proxy --unset=http_proxy --unset=no_proxy
             "PATH=$ENV{PATH}"
-            "${BEAR}" --output "${XCB_BUILD}/compile_commands.json" -- "${Z_VCPKG_MAKE}" -j "${VCPKG_CONCURRENCY}" V=1
+            "${BEAR}" ${XCB_BEAR_OPTIONS} --output "${XCB_BUILD}/compile_commands.json" -- "${Z_VCPKG_MAKE}" -j "${XCB_BEAR_JOBS}" V=1 ${XCB_BEAR_MAKE_OPTIONS}
         WORKING_DIRECTORY "${XCB_BUILD}"
         LOGNAME bear-${TARGET_TRIPLET}
     )

@@ -27,7 +27,7 @@ file(CHMOD
     PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
 )
 
-if(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64")
+if(NOT VCPKG_TARGET_ARCHITECTURE STREQUAL "x64")
     ae_game_download(source_archive
         "redeclipse-base-v2.0.0.tar.gz"
         "https://github.com/redeclipse/base/archive/refs/tags/v2.0.0.tar.gz"

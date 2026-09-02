@@ -1,6 +1,7 @@
 {
   "name": "sdl1",
   "version": "1.2.68",
+  "port-version": 3,
   "description": "SDL 1.2 compatibility ABI used by OpenArena through Lorelei HLR",
   "homepage": "https://github.com/libsdl-org/sdl12-compat",
   "license": "Zlib",

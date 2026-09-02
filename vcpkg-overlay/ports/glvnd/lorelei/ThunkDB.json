@@ -4,13 +4,13 @@
             "name": "libGL",
             "guestThunk": "${GLVND_PREFIX}/share/glvnd/thunk/x86_64/libGL.so",
             "hostThunk": "${GLVND_PREFIX}/share/glvnd/thunk/libGL_HTL.so",
-            "hostLibrary": "/usr/lib/aarch64-linux-gnu/libGL.so.1"
+            "hostLibrary": "libGL.so.1"
         },
         {
             "name": "libGLX",
             "guestThunk": "${GLVND_PREFIX}/share/glvnd/glx-thunk/x86_64/libGLX.so",
             "hostThunk": "${GLVND_PREFIX}/share/glvnd/glx-thunk/libGLX_HTL.so",
-            "hostLibrary": "/usr/lib/aarch64-linux-gnu/libGLX.so.0"
+            "hostLibrary": "libGLX.so.0"
         }
     ],
     "reversedThunks": [

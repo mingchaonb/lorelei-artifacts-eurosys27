@@ -5,5 +5,5 @@
   "description": "Pinned SuperTuxKart game package for native and guest game evaluation",
   "homepage": "https://supertuxkart.net/",
   "license": "GPL-3.0-or-later",
-  "supports": "linux & (x64 | arm64)"
+  "supports": "linux & !x86"
 }

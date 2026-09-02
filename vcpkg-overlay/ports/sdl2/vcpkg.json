@@ -1,6 +1,7 @@
 {
   "name": "sdl2",
   "version": "2.28.5",
+  "port-version": 2,
   "description": "SDL2 build used by the Lorelei AE library-validation recipe",
   "homepage": "https://github.com/libsdl-org/SDL",
   "license": "Zlib",

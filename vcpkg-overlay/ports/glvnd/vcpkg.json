@@ -1,11 +1,11 @@
 {
   "name": "glvnd",
   "version": "1.7.0-system",
-  "port-version": 3,
+  "port-version": 6,
   "description": "Lorelei thunk and validation binaries for the Ubuntu system libglvnd DSO",
   "homepage": "https://gitlab.freedesktop.org/glvnd/libglvnd",
   "license": "MIT",
-  "supports": "linux & arm64",
+  "supports": "linux & !x64 & !x86",
   "dependencies": [
     {
       "name": "libx11",
@@ -13,6 +13,7 @@
         "hlr"
       ]
     },
+    "opengl-registry",
     {
       "name": "vcpkg-cmake",
       "host": true

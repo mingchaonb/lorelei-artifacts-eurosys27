@@ -2,7 +2,40 @@ diff --git a/src/SDL12_compat.c b/src/SDL12_compat.c
 index 4e5df71..55c064c 100644
 --- a/src/SDL12_compat.c
 +++ b/src/SDL12_compat.c
-@@ -9442,7 +9442,7 @@ SDL_OpenAudio(SDL_AudioSpec *appwant, SDL_AudioSpec *obtained)
+@@ -54,4 +54,5 @@
+ #include <stdio.h> /* fprintf(), etc. */
+ #include <stdlib.h>    /* for abort() */
+ #include <string.h>
++#include <time.h>
+ #endif
+@@ -7997,5 +7998,26 @@ SDL_GL_SwapBuffers(void)
+         } else {
+             SDL20_GL_SwapWindow(VideoWindow20);
+         }
+     }
++
++    /* Record the actual presentation boundary only when an evaluation runner
++       requests it. This remains dormant during normal SDL use and tests. */
++    {
++        static FILE *fps_output;
++        static SDL_bool fps_output_initialized;
++        if (!fps_output_initialized) {
++            const char *path = getenv("LORELEI_FPS_LOG");
++            fps_output = (path && *path) ? fopen(path, "a") : NULL;
++            fps_output_initialized = SDL_TRUE;
++        }
++        if (fps_output) {
++            struct timespec now;
++            double timestamp;
++            clock_gettime(CLOCK_MONOTONIC, &now);
++            timestamp = (double) now.tv_sec +
++                        ((double) now.tv_nsec / 1000000000.0);
++            fprintf(fps_output, "%.9f\n", timestamp);
++            fflush(fps_output);
++        }
++    }
+ }
+@@ -9442,7 +9464,7 @@ SDL_OpenAudio(SDL_AudioSpec *appwant, SDL_AudioSpec *obtained)
         still be good enough. */
  
      SDL20_memcpy(&devwant, appwant, sizeof (SDL_AudioSpec));

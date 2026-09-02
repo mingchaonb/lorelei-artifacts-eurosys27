@@ -3,6 +3,7 @@ set -euo pipefail
 
 games_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 repo_root=$(cd "$games_dir/../.." && pwd)
+source "$repo_root/evaluations/common/host-architecture.sh"
 run_seconds=${1:-30}
 
 if [[ ! $run_seconds =~ ^[0-9]+$ ]] || ((run_seconds < 25)); then
@@ -40,9 +41,17 @@ done
 failed=0
 for game in "${games[@]}"; do
     for lane in "${lanes[@]}"; do
+        lane_seconds=$run_seconds
+        # RV64 QEMU needs a longer startup window to finish loading game
+        # assets before the final ten-second FPS sample. The measured window
+        # remains identical across lanes.
+        if [[ $AE_HOST_ARCH == riscv64 && $lane == qemu-hecate &&
+              $lane_seconds -lt 120 ]]; then
+            lane_seconds=120
+        fi
         echo
-        echo "[$game] initial scene, lane $lane"
-        if ! "$games_dir/$game/run.sh" --lane "$lane" "$run_seconds"; then
+        echo "[$game] initial scene, lane $lane, watchdog ${lane_seconds}s"
+        if ! "$games_dir/$game/run.sh" --lane "$lane" "$lane_seconds"; then
             echo "Game runner failed: $game, $lane" >&2
             failed=1
         fi

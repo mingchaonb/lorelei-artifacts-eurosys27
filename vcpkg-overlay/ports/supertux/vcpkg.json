@@ -1,9 +1,31 @@
 {
   "name": "supertux",
   "version": "0.6.3",
-  "port-version": 3,
+  "port-version": 14,
   "description": "Pinned SuperTux game package for native and guest game evaluation",
   "homepage": "https://www.supertux.org/",
   "license": "GPL-3.0-or-later",
-  "supports": "linux & (x64 | arm64)"
+  "dependencies": [
+    {
+      "name": "freetype",
+      "platform": "x64"
+    },
+    {
+      "name": "harfbuzz",
+      "platform": "x64"
+    },
+    {
+      "name": "fribidi",
+      "platform": "x64"
+    },
+    {
+      "name": "alsa",
+      "platform": "x64"
+    },
+    {
+      "name": "gmp",
+      "platform": "x64"
+    }
+  ],
+  "supports": "linux & !x86"
 }

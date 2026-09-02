@@ -115,10 +115,38 @@ for entry in database:
         continue
     if any(path.is_relative_to(root) for root in source_roots) or path in extra_sources:
         production_entries.append(entry)
+
+
+def entry_source(entry: dict) -> pathlib.Path:
+    path = pathlib.Path(entry["file"])
+    if not path.is_absolute():
+        path = pathlib.Path(entry["directory"]) / path
+    return path.resolve()
+
+
+def prefer_entry(entry: dict) -> tuple[int, int]:
+    """Prefer the shared-library compile when libtool records two objects."""
+    arguments = entry.get("arguments", [])
+    command = entry.get("command", "")
+    output_name = entry.get("output", "")
+    is_pic = "-fPIC" in arguments or "-fPIC" in command
+    is_libtool_pic = "/.libs/" in output_name or "/.libs/" in command
+    return int(is_pic), int(is_libtool_pic)
+
+
+# A libtool build may record both PIC and non-PIC compilations for one source.
+# LoreHLR rewrites source files in place, so presenting both entries would
+# transform the same file twice.  Keep one command and prefer the PIC form.
+unique_entries = {}
+for entry in production_entries:
+    path = entry_source(entry)
+    previous = unique_entries.get(path)
+    if previous is None or prefer_entry(entry) > prefer_entry(previous):
+        unique_entries[path] = entry
+production_entries = list(unique_entries.values())
+
 sources = sorted({
-    str((pathlib.Path(entry["directory"]) / entry["file"]).resolve())
-    if not pathlib.Path(entry["file"]).is_absolute()
-    else str(pathlib.Path(entry["file"]).resolve())
+    str(entry_source(entry))
     for entry in production_entries
 })
 if not sources:

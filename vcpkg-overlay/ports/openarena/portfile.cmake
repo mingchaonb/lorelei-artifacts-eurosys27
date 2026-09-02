@@ -18,22 +18,32 @@ file(GLOB foreign_files "${game_dir}/*.dll" "${game_dir}/*.exe" "${game_dir}/*.i
 file(REMOVE ${foreign_files})
 
 if(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64")
+    set(native_deb_arch arm64)
+    set(engine_sha512 42984a530038f3cd3363715d9e6a7ad8b11d8c1f3cfc00313b1b69d082f0e03cacdeddd32548be9328010cd5b735db361b385869b04946cbeb5f1b7663109e37)
+    set(openarena_sha512 a5072ed24694b74b6bd140ffa882b213a93be8b7d284f670821b024d0c732aa59f1f0a539ba8cae386558033c1fb5c31149653c71cd0ee8f3bff8a8a268b405c)
+elseif(VCPKG_TARGET_ARCHITECTURE STREQUAL "riscv64")
+    set(native_deb_arch riscv64)
+    set(engine_sha512 2e0d4f1817da28118d7886ec88eb219a32288f1d7f3e0879bfc883eab3277c4506a4b89f98e1ce1e9d74c8a6653cbc65cc752b92ae690fd66ebda072108eaefd)
+    set(openarena_sha512 7f204ffc3bcfcca31100a5ddda9debc67a693611b88367fb281c739a962e161d2c75f274c1efea988276c9818cce98a7a665c2e989e09be01676a44ea6c4e242)
+endif()
+
+if(DEFINED native_deb_arch)
     ae_game_download(engine_archive
-        "ioquake3_1.36+u20240217.7d711f8+dfsg-1build2_arm64.deb"
-        "https://ports.ubuntu.com/ubuntu-ports/pool/universe/i/ioquake3/ioquake3_1.36%2bu20240217.7d711f8%2bdfsg-1build2_arm64.deb"
-        "42984a530038f3cd3363715d9e6a7ad8b11d8c1f3cfc00313b1b69d082f0e03cacdeddd32548be9328010cd5b735db361b385869b04946cbeb5f1b7663109e37"
+        "ioquake3_1.36+u20240217.7d711f8+dfsg-1build2_${native_deb_arch}.deb"
+        "https://ports.ubuntu.com/ubuntu-ports/pool/universe/i/ioquake3/ioquake3_1.36%2bu20240217.7d711f8%2bdfsg-1build2_${native_deb_arch}.deb"
+        "${engine_sha512}"
     )
     ae_game_download(native_archive
-        "openarena_0.8.8+dfsg-7_arm64.deb"
-        "https://ports.ubuntu.com/ubuntu-ports/pool/universe/o/openarena/openarena_0.8.8%2bdfsg-7_arm64.deb"
-        "a5072ed24694b74b6bd140ffa882b213a93be8b7d284f670821b024d0c732aa59f1f0a539ba8cae386558033c1fb5c31149653c71cd0ee8f3bff8a8a268b405c"
+        "openarena_0.8.8+dfsg-7_${native_deb_arch}.deb"
+        "https://ports.ubuntu.com/ubuntu-ports/pool/universe/o/openarena/openarena_0.8.8%2bdfsg-7_${native_deb_arch}.deb"
+        "${openarena_sha512}"
     )
     set(engine_root "${CURRENT_BUILDTREES_DIR}/src/engine-native")
     set(native_root "${CURRENT_BUILDTREES_DIR}/src/native")
     ae_game_extract_deb("${engine_archive}" "${engine_root}")
     ae_game_extract_deb("${native_archive}" "${native_root}")
     file(COPY_FILE "${engine_root}/usr/lib/ioquake3/ioquake3" "${game_dir}/openarena.x86_64")
-    file(GLOB renderer_modules "${engine_root}/usr/lib/ioquake3/renderer_*_aarch64.so")
+    file(GLOB renderer_modules "${engine_root}/usr/lib/ioquake3/renderer_*_${native_deb_arch}.so")
     file(COPY ${renderer_modules} DESTINATION "${game_dir}")
     # The Ubuntu package places assets in /usr/share and represents them with
     # relative symlinks below /usr/lib. Those links are invalid in this

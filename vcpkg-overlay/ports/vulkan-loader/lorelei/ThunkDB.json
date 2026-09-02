@@ -4,7 +4,7 @@
             "name": "libvulkan",
             "guestThunk": "${VULKAN_PREFIX}/share/vulkan-loader/thunk/x86_64/libvulkan.so",
             "hostThunk": "${VULKAN_PREFIX}/share/vulkan-loader/thunk/libvulkan_HTL.so",
-            "hostLibrary": "/usr/lib/aarch64-linux-gnu/libvulkan.so.1"
+            "hostLibrary": "libvulkan.so.1"
         }
     ],
     "reversedThunks": [

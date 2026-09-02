@@ -1,5 +1,5 @@
 # Reproducible build and evaluation environment for the EuroSys 2027 artifact.
-# The image must be built and run on a physical ARM64 Ubuntu 24.04 host.
+# Build on the physical Linux host used for the evaluation.
 FROM ubuntu:24.04
 
 ARG USE_USTC_MIRROR=0
@@ -29,13 +29,16 @@ RUN case "${USE_USTC_MIRROR}" in \
         meson ninja-build nasm yasm pkg-config \
         xz-utils zip unzip tar squashfs-tools time xxd \
         python3 python3-pip python3-venv python3-numpy python3-matplotlib python3-tomli \
-        gcc-x86-64-linux-gnu g++-x86-64-linux-gnu \
         clang-20 llvm-20-dev libclang-20-dev \
         libglib2.0-dev libdw-dev libelf-dev libcapstone-dev libfdt-dev \
         libpixman-1-dev libslirp-dev libffi-dev libffcall-dev libssl-dev \
         libvulkan1 libvulkan-dev mesa-vulkan-drivers \
         libgl1 libglx0 libgl-dev libglx-dev libx11-dev \
         mangohud xauth xvfb x11-xserver-utils x11-utils xdotool \
+    && if [[ "$(dpkg --print-architecture)" == arm64 ]]; then \
+        apt-get install -y --no-install-recommends \
+            gcc-x86-64-linux-gnu g++-x86-64-linux-gnu; \
+    fi \
     && rm -rf /var/lib/apt/lists/*
 
 # Ubuntu 24.04 carries an older yt-dlp that no longer handles the pinned media

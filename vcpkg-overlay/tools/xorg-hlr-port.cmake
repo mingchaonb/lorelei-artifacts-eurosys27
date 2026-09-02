@@ -23,6 +23,14 @@ vcpkg_make_configure(
 if(RUN_HLR)
     set(XORG_BUILD "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel")
     find_program(BEAR bear REQUIRED)
+    set(XORG_BEAR_OPTIONS)
+    set(XORG_BEAR_MAKE_OPTIONS)
+    if(VCPKG_TARGET_ARCHITECTURE STREQUAL "riscv64")
+        # Bear's preload interceptor is broken on Ubuntu RV64.  The wrapper
+        # backend also needs a PATH-resolved compiler rather than /usr/bin/cc.
+        list(APPEND XORG_BEAR_OPTIONS --force-wrapper)
+        list(APPEND XORG_BEAR_MAKE_OPTIONS CC=cc)
+    endif()
     vcpkg_execute_required_process(
         # Bear uses gRPC between its controller and compiler wrappers. Proxy
         # variables must not redirect this process-local connection through an
@@ -30,9 +38,9 @@ if(RUN_HLR)
         COMMAND "${CMAKE_COMMAND}" -E env
             --unset=ALL_PROXY --unset=HTTPS_PROXY --unset=HTTP_PROXY --unset=NO_PROXY
             --unset=all_proxy --unset=https_proxy --unset=http_proxy --unset=no_proxy
-            "PATH=$ENV{PATH}" "${BEAR}"
+            "PATH=$ENV{PATH}" "${BEAR}" ${XORG_BEAR_OPTIONS}
             --output "${XORG_BUILD}/compile_commands.json" --
-            "${Z_VCPKG_MAKE}" -j "${VCPKG_CONCURRENCY}" V=1
+            "${Z_VCPKG_MAKE}" -j "${VCPKG_CONCURRENCY}" V=1 ${XORG_BEAR_MAKE_OPTIONS}
         WORKING_DIRECTORY "${XORG_BUILD}"
         LOGNAME bear-${TARGET_TRIPLET}
     )

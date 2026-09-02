@@ -5,36 +5,36 @@
   "description": "Pinned Red Eclipse game package for native and guest game evaluation",
   "homepage": "https://www.redeclipse.net/",
   "license": "Zlib",
-  "supports": "linux & (x64 | arm64)",
+  "supports": "linux & !x86",
   "dependencies": [
     {
       "name": "libx11",
-      "platform": "arm64"
+      "platform": "!x64"
     },
     {
       "name": "sdl2",
       "default-features": false,
       "features": ["x11"],
-      "platform": "arm64"
+      "platform": "!x64"
     },
     {
       "name": "sdl2-image",
       "default-features": false,
-      "platform": "arm64"
+      "platform": "!x64"
     },
     {
       "name": "sdl2-mixer",
       "default-features": false,
-      "platform": "arm64"
+      "platform": "!x64"
     },
     {
       "name": "zlib",
-      "platform": "arm64"
+      "platform": "!x64"
     },
     {
       "name": "pkgconf",
       "host": true,
-      "platform": "arm64"
+      "platform": "!x64"
     }
   ]
 }

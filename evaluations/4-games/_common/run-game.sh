@@ -64,16 +64,17 @@ fi
 recipe_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 repo_root=$(cd "$recipe_dir/../../.." && pwd)
 rover_root=$(cd "$repo_root/.." && pwd)
+source "$repo_root/evaluations/common/host-architecture.sh"
 devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/.work/devkit}")
 export LORELEI_DEVKIT=$devkit
-qemu=$(realpath -m "${QEMU:-$repo_root/vcpkg/installed/arm64-linux/tools/qemu-ae/qemu-x86_64}")
-box64=$(realpath -m "${BOX64:-$repo_root/vcpkg/installed/arm64-linux/tools/box64-ae/box64}")
+qemu=$(realpath -m "${QEMU:-$repo_root/vcpkg/installed/$AE_TOOL_TRIPLET/tools/qemu-ae/qemu-x86_64}")
+box64=$(realpath -m "${BOX64:-$repo_root/vcpkg/installed/$AE_TOOL_TRIPLET/tools/box64-ae/box64}")
 games_root=${GAMES_ROOT:-$rover_root/ae-games}
 runtime_home_root=${RUNTIME_HOME_ROOT:-$repo_root/.work/evaluations/games/runtime-home}
 mangohud_enabled=${MANGOHUD_ENABLED:-1}
 mangohud=
 if [[ $mangohud_enabled == 1 ]]; then
-    if [[ $lane != box64 && $lane != box64-hecate ]]; then
+    if [[ $AE_HOST_ARCH != riscv64 && $lane != box64 && $lane != box64-hecate ]]; then
         mangohud=$(command -v mangohud || true)
         [[ -x $mangohud ]] || { echo "MangoHud is enabled but mangohud was not found" >&2; exit 2; }
         mangohud_library=$(find /usr/lib -type f -path '*/mangohud/libMangoHud.so' 2>/dev/null | head -1)
@@ -98,16 +99,16 @@ fi
     exit 2
 }
 
-sdl_prefix=$repo_root/.work/evaluations/sdl2/installed/hecate/arm64-linux-ae
+sdl_prefix=$repo_root/.work/evaluations/sdl2/installed/hecate/$AE_HOST_TRIPLET
 sdl_thunk=$repo_root/.work/evaluations/sdl2/thunks/hecate
-sdl_image_prefix=$repo_root/.work/evaluations/sdl2-image/installed/hecate/arm64-linux-ae
+sdl_image_prefix=$repo_root/.work/evaluations/sdl2-image/installed/hecate/$AE_HOST_TRIPLET
 sdl_image_thunk=$repo_root/.work/evaluations/sdl2-image/thunks/SDL2_image
-sdl_mixer_prefix=$repo_root/.work/evaluations/sdl2-mixer/installed/hecate/arm64-linux-ae
+sdl_mixer_prefix=$repo_root/.work/evaluations/sdl2-mixer/installed/hecate/$AE_HOST_TRIPLET
 sdl_mixer_thunk=$repo_root/.work/evaluations/sdl2-mixer/thunks/SDL2_mixer
-sdl1_prefix=$repo_root/.work/evaluations/sdl1/installed/hecate/arm64-linux-ae
+sdl1_prefix=$repo_root/.work/evaluations/sdl1/installed/hecate/$AE_HOST_TRIPLET
 sdl1_thunk=$repo_root/.work/evaluations/sdl1/thunks/hecate
-gl_prefix=$repo_root/.work/evaluations/glvnd/installed/arm64-linux-ae
-vk_prefix=$repo_root/.work/evaluations/vulkan-loader/installed/arm64-linux-ae
+gl_prefix=$repo_root/.work/evaluations/glvnd/installed/$AE_HOST_TRIPLET
+vk_prefix=$repo_root/.work/evaluations/vulkan-loader/installed/$AE_HOST_TRIPLET
 xcb_thunk=$repo_root/.work/evaluations/libxcb/thunks/hecate
 x11_thunk=$repo_root/.work/evaluations/libx11/thunk
 
@@ -116,13 +117,13 @@ guest_game_prefix=
 selected_game_prefix=
 game_environment=()
 if [[ $game == hollow-knight && $lane == native ]]; then
-    echo "The native lane is unavailable for Hollow Knight because the artifact cannot distribute an ARM64 game package." >&2
+    echo "The native lane is unavailable for Hollow Knight because the artifact cannot distribute a native game package." >&2
     exit 2
 fi
 if [[ $game != hollow-knight && -z ${GAMES_ROOT:-} && -z ${GAME_DIR:-} ]]; then
     game_work_dir=$repo_root/.work/evaluations/games/$game
     game_installed=$game_work_dir/installed
-    native_game_prefix=$game_installed/arm64-linux-ae
+    native_game_prefix=$game_installed/$AE_HOST_TRIPLET
     guest_game_prefix=$game_installed/x64-linux-ae
     if [[ $lane == native ]]; then
         selected_game_prefix=$native_game_prefix
@@ -249,6 +250,9 @@ case "$game" in
             if [[ $lane == native && -n $selected_game_prefix ]]; then
                 game_library_path=$selected_game_prefix/tools/supertux/game/lib
                 game_args=(--datadir "$game_dir/share/games/supertux2")
+            elif [[ -n $selected_game_prefix ]]; then
+                game_library_path=$selected_game_prefix/lib:$game_dir/lib/x86_64-linux-gnu
+                game_args=(--datadir "$game_dir/share/supertux2")
             else
                 game_library_path=$game_dir/lib/x86_64-linux-gnu
                 game_args=(--datadir "$game_dir/share/supertux2")
@@ -309,7 +313,26 @@ join_colon() {
 
 host_xorg_path=$(join_colon "${host_xorg[@]}")
 guest_xorg_path=$(join_colon "${guest_xorg[@]}")
-host_library_path="$devkit/lib:$host_xorg_path:$sdl1_thunk:$sdl1_prefix/lib:$sdl_prefix/lib:$sdl_thunk:$sdl_image_prefix/lib:$sdl_image_thunk:$sdl_mixer_prefix/lib:$sdl_mixer_thunk:$gl_prefix/share/glvnd/glx-thunk:$gl_prefix/share/glvnd/thunk:$gl_prefix/share/glvnd/x11-thunk:$gl_prefix/lib:$vk_prefix/share/vulkan-loader/thunk:$vk_prefix/lib"
+host_runtime_dir=$repo_root/.work/evaluations/games/host-runtime/$AE_HOST_TRIPLET
+mkdir -p "$host_runtime_dir"
+# Keep the selected SDL implementations ahead of the operating-system copies
+# without also preferring the isolated vcpkg copies of X11 and GLX. Mixing the
+# latter with the host Mesa stack can make SDL fail to select a GLX visual.
+for library in \
+    "$sdl_prefix"/lib/libSDL2.so* \
+    "$sdl_prefix"/lib/libSDL2-2.0.so* \
+    "$sdl_image_prefix"/lib/libSDL2_image.so* \
+    "$sdl_image_prefix"/lib/libSDL2_image-2.0.so* \
+    "$sdl_mixer_prefix"/lib/libSDL2_mixer.so* \
+    "$sdl_mixer_prefix"/lib/libSDL2_mixer-2.0.so* \
+    "$sdl1_prefix"/lib/libSDL.so* \
+    "$sdl1_prefix"/lib/libSDL-1.2.so*; do
+    if [[ -e $library ]]; then
+        ln -sfn "$library" "$host_runtime_dir/$(basename "$library")"
+    fi
+done
+host_system_library_path="/lib/$AE_HOST_MULTIARCH:/usr/lib/$AE_HOST_MULTIARCH"
+host_library_path="$host_runtime_dir:$host_system_library_path:$devkit/lib:$host_xorg_path:$sdl_thunk:$sdl_image_thunk:$sdl_mixer_thunk:$sdl1_thunk:$gl_prefix/share/glvnd/glx-thunk:$gl_prefix/share/glvnd/thunk:$gl_prefix/share/glvnd/x11-thunk:$gl_prefix/lib:$vk_prefix/share/vulkan-loader/thunk:$vk_prefix/lib"
 guest_library_path="$guest_xorg_path:$gl_prefix/share/glvnd/x11-thunk/x86_64:$sdl1_thunk/x86_64:$sdl_thunk/x86_64:$sdl_image_thunk/x86_64:$sdl_mixer_thunk/x86_64:$gl_prefix/share/glvnd/glx-thunk/x86_64:$gl_prefix/share/glvnd/thunk/x86_64:$vk_prefix/share/vulkan-loader/thunk/x86_64"
 if [[ -n $game_library_path ]]; then
     guest_library_path="$guest_library_path:$game_library_path"
@@ -371,6 +394,7 @@ thunk_variables="SDL1_PREFIX=$sdl1_prefix;SDL1_THUNK=$sdl1_thunk;GLVND_PREFIX=$g
 mangohud_env=()
 box64_fps_log=
 presentation_fps_log=
+presentation_hook_mode=
 if [[ $mangohud_enabled == 1 ]]; then
     mangohud_dir=$run_dir/mangohud
     mkdir -p "$mangohud_dir"
@@ -381,7 +405,30 @@ if [[ $mangohud_enabled == 1 ]]; then
     if [[ -n ${MANGOHUD_CONFIG_EXTRA:-} ]]; then
         mangohud_config="$mangohud_config,$MANGOHUD_CONFIG_EXTRA"
     fi
-    if [[ $lane == box64 || $lane == box64-hecate ]]; then
+    if [[ $AE_HOST_ARCH == riscv64 ]]; then
+        # Measure the SDL presentation boundary directly. Gallium HUD reports
+        # renderer update periods on this host, which are not game frame times.
+        if [[ $lane == native ]]; then
+            presentation_hook_mode=host
+        elif [[ $lane == qemu-hecate && $game == openarena ]]; then
+            presentation_hook_mode=hlr-sdl1
+        elif [[ $lane == qemu-hecate && $game == supertux ]]; then
+            presentation_hook_mode=guest-qemu
+        elif [[ $lane == qemu-hecate ]]; then
+            presentation_hook_mode=hlr-sdl2
+        fi
+    elif [[ $game == supertux ]]; then
+        if [[ $lane == box64 || $lane == box64-hecate ]]; then
+            presentation_hook_mode=guest-box64
+        else
+            presentation_hook_mode=host
+        fi
+    fi
+    if [[ -n $presentation_hook_mode ]]; then
+        presentation_fps_log=$mangohud_dir/presentation-times.txt
+        cmake -E remove "$presentation_fps_log"
+        mangohud_env=(LORELEI_FPS_LOG="$presentation_fps_log")
+    elif [[ $lane == box64 || $lane == box64-hecate ]]; then
         box64_fps_log=$mangohud_dir/box64-presentation-times.txt
     else
         mangohud_env=(MANGOHUD=1 MANGOHUD_CONFIG="$mangohud_config")
@@ -418,23 +465,34 @@ trap restore_display_mode EXIT
 # Compile the small guest probes from source for this devkit. The binaries are
 # disposable work products; only their logs and exit statuses become evidence.
 preflight_build=$repo_root/.work/evaluations/games/preflight-build
-if [[ $mangohud_enabled == 1 && $game == supertux &&
-      ( $lane == native || $lane == qemu-hecate ) ]]; then
+if [[ $presentation_hook_mode == host ]]; then
     # SuperTux owns two OpenGL contexts. MangoHud combines their independent
     # swap intervals into one stream, so collect the actual SDL presentation
     # boundary instead. This is the same boundary used by the Box64 hook.
     presentation_hook_dir=$repo_root/.work/evaluations/games/presentation-hook
     presentation_hook=$presentation_hook_dir/libae-presentation-hook.so
-    presentation_fps_log=$mangohud_dir/presentation-times.txt
     mkdir -p "$presentation_hook_dir"
     if [[ ! -f $presentation_hook ||
           $recipe_dir/presentation-hook.c -nt $presentation_hook ]]; then
         cc -shared -fPIC "$recipe_dir/presentation-hook.c" \
             -o "$presentation_hook" -ldl
     fi
-    cmake -E remove "$presentation_fps_log"
-    mangohud_env+=(LORELEI_FPS_LOG="$presentation_fps_log")
     host_preload="$presentation_hook${host_preload:+:$host_preload}"
+elif [[ $presentation_hook_mode == guest-box64 ||
+        $presentation_hook_mode == guest-qemu ]]; then
+    presentation_hook_dir=$repo_root/.work/evaluations/games/presentation-hook
+    presentation_hook=$presentation_hook_dir/libae-presentation-hook-x86_64.so
+    mkdir -p "$presentation_hook_dir"
+    if [[ ! -f $presentation_hook ||
+          $recipe_dir/presentation-hook.c -nt $presentation_hook ]]; then
+        "$devkit/bin/x86_64-linux-gnu-clang" -shared -fPIC \
+            "$recipe_dir/presentation-hook.c" -o "$presentation_hook" -ldl
+    fi
+    if [[ $presentation_hook_mode == guest-box64 ]]; then
+        box64_guest_preload="$presentation_hook${box64_guest_preload:+:$box64_guest_preload}"
+    else
+        guest_preload_args=(-E "LD_PRELOAD=$presentation_hook${GUEST_PRELOAD:+:$GUEST_PRELOAD}")
+    fi
 fi
 game_sdl_abi=2
 preflight_sdl_cmake=(-DSDL2_PREFIX="$sdl_prefix" -DSDL2_THUNK="$sdl_thunk")
@@ -544,6 +602,7 @@ if [[ $lane == qemu-hecate || $lane == box64-hecate ]]; then
         run_preflight sdl1-video "$preflight_build/test-sdl1-video"
     else
         run_preflight sdl2-displays "$preflight_build/test-sdl2-displays"
+        run_preflight sdl2-gl "$preflight_build/test-sdl2-gl"
     fi
 fi
 
@@ -583,7 +642,7 @@ set -m
             env "${mangohud_env[@]}" "${game_environment[@]}" \
                 DISPLAY="$display" XAUTHORITY="$xauthority" \
                 SDL_VIDEODRIVER=x11 SDL_AUDIODRIVER=dummy HOME="$game_home" \
-                LD_PRELOAD="$host_preload" LD_LIBRARY_PATH="$devkit/lib" \
+                LD_PRELOAD="$host_preload" LD_LIBRARY_PATH="$host_system_library_path:$devkit/lib" \
                 BOX64_LD_LIBRARY_PATH="$plain_guest_library_path" \
                 BOX64_LD_PRELOAD="$box64_guest_preload" \
                 BOX64_EMULATED_LIBS="$box64_emulated_libraries" \
@@ -601,7 +660,7 @@ set -m
                 LORELEI_THUNKS_CONFIG_VARIABLES="$thunk_variables" \
                 LORELEI_HOST_EXTENSIONS="$devkit/lib/libLoreHostHLRExtension.so" \
                 LORELEI_GUEST_EXTENSIONS="$devkit/x86_64/lib/libLoreGuestHLRExtension.so" \
-                LD_PRELOAD="$host_preload" LD_LIBRARY_PATH="$devkit/lib" \
+                LD_PRELOAD="$host_preload" LD_LIBRARY_PATH="$host_system_library_path:$devkit/lib" \
                 BOX64_LD_LIBRARY_PATH="$plain_guest_library_path" \
                 BOX64_LD_PRELOAD="$box64_guest_preload" \
                 BOX64_EMULATED_LIBS="$box64_emulated_libraries" \
@@ -644,7 +703,8 @@ if (( window_probe_seconds > 0 )); then
             if ! grep -qw "$window_id" <<< "$preexisting_windows"; then
                 echo "ACTIVATED_WINDOW=$window_id"
                 env DISPLAY="$display" XAUTHORITY="$xauthority" \
-                    xdotool windowactivate --sync "$window_id" 2>/dev/null || true
+                    xdotool windowactivate --sync "$window_id" \
+                    windowfocus --sync "$window_id" 2>/dev/null || true
                 break
             fi
         done
@@ -686,6 +746,15 @@ if [[ -n $window_probe_pid ]]; then
     wait "$window_probe_pid" 2>/dev/null
 fi
 set -e
+
+# Some upstream games open a graphical fatal-error dialog and wait in that
+# helper until the watchdog fires. Preserve the actual game outcome instead
+# of misclassifying the surviving dialog as a successful watchdog run.
+if grep -Eq 'GLimp_Init\(\) - could not load OpenGL subsystem|Fatal error: Failed to create OpenGL window' \
+        "$run_dir/game.log"; then
+    status=1
+    touch "$run_dir/runtime-failure-detected"
+fi
 
 restore_display_mode
 trap - EXIT

@@ -2,7 +2,12 @@
 
 #include "Desc.h"
 #include <dlfcn.h>
+#include <fcntl.h>
 #include <lorelei/ThunkInterface/ManifestHost.cpp.inc>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <unistd.h>
 
 extern "C" {
 
@@ -83,6 +88,33 @@ void glTexturePageCommitmentMemNV(GLuint texture, GLint layer, GLint level, GLin
 
 namespace lore::thunk {
 
+static void logPresentationTimestamp() {
+    static int fd = -2;
+    struct timespec now;
+    char line[64];
+    const char *path;
+    int length;
+
+    if (fd == -2) {
+        path = getenv("LORELEI_FPS_LOG");
+        fd = path && path[0] ? open(path, O_WRONLY | O_CREAT | O_APPEND | O_CLOEXEC, 0644) : -1;
+    }
+    if (fd < 0 || clock_gettime(CLOCK_MONOTONIC, &now) != 0)
+        return;
+    length = snprintf(line, sizeof(line), "%lld.%09ld\n",
+                      (long long) now.tv_sec, now.tv_nsec);
+    if (length > 0)
+        (void) write(fd, line, (size_t) length);
+}
+
+template <>
+struct ProcFn<::glXSwapBuffers, GuestToHost, Adapt> {
+    static void invoke(Display *display, GLXDrawable drawable) {
+        ProcFn<::glXSwapBuffers, GuestToHost, Caller>::invoke(display, drawable);
+        logPresentationTimestamp();
+    }
+};
+
 template <>
 struct ProcFn<::glXCreateContextAttribsARB, GuestToHost, Adapt> {
     static GLXContext invoke(Display *display, GLXFBConfig config, GLXContext share_context,
@@ -93,7 +125,7 @@ struct ProcFn<::glXCreateContextAttribsARB, GuestToHost, Adapt> {
         // libGL entry directly while keeping the pointer arguments on the
         // normal Hecate shared-address path.
         static void *library =
-            dlopen("/usr/lib/aarch64-linux-gnu/libGL.so.1", RTLD_NOW | RTLD_LOCAL);
+            dlopen("libGL.so.1", RTLD_NOW | RTLD_LOCAL);
         static auto function = library ? reinterpret_cast<decltype(&glXCreateContextAttribsARB)>(
                                              dlsym(library, "glXCreateContextAttribsARB"))
                                        : nullptr;

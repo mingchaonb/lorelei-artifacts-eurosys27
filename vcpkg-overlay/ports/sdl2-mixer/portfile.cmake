@@ -73,6 +73,24 @@ if(RUN_HLR)
         LOGNAME hlr
     )
 
+    # HLR cannot emit a runtime FDG call in a static-storage initializer.
+    # Keep the upstream host function address there.  The generated CCG at
+    # the call site handles it directly, while runtime callback assignments
+    # still use the FDG transformations produced by HLR.
+    find_program(PATCH_EXECUTABLE patch REQUIRED)
+    vcpkg_execute_required_process(
+        COMMAND "${PATCH_EXECUTABLE}" --dry-run --forward -p1
+            --input "${CMAKE_CURRENT_LIST_DIR}/patches/post-hlr.patch"
+        WORKING_DIRECTORY "${SOURCE_PATH}"
+        LOGNAME post-hlr-check
+    )
+    vcpkg_execute_required_process(
+        COMMAND "${PATCH_EXECUTABLE}" --forward -p1
+            --input "${CMAKE_CURRENT_LIST_DIR}/patches/post-hlr.patch"
+        WORKING_DIRECTORY "${SOURCE_PATH}"
+        LOGNAME post-hlr-apply
+    )
+
     # Rebuild the shared mixer library from the HLR-rewritten sources.
     vcpkg_cmake_build()
 endif()

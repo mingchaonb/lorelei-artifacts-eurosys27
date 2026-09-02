@@ -3,9 +3,10 @@ set -euo pipefail
 
 recipe_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 repo_root=$(cd "$recipe_dir/../../.." && pwd)
+source "$repo_root/evaluations/common/host-architecture.sh"
 overlay_dir=$repo_root/vcpkg-overlay
 port_dir=$overlay_dir/ports/libxcb
-triplet_native=arm64-linux-ae
+triplet_native=$AE_HOST_TRIPLET
 
 reference=false
 install_only=false
@@ -29,7 +30,7 @@ while (($#)); do
 done
 
 devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/.work/devkit}")
-qemu=$(realpath -m "${QEMU:-$repo_root/vcpkg/installed/arm64-linux/tools/qemu-ae/qemu-x86_64}")
+qemu=$(realpath -m "${QEMU:-$repo_root/vcpkg/installed/$AE_TOOL_TRIPLET/tools/qemu-ae/qemu-x86_64}")
 vcpkg=$repo_root/vcpkg/vcpkg
 work_dir=$repo_root/.work/evaluations/libxcb
 results_root=$recipe_dir/results

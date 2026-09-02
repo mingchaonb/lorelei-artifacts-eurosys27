@@ -3,6 +3,7 @@ set -euo pipefail
 
 recipe_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 repo_root=$(cd "$recipe_dir/../../.." && pwd)
+source "$repo_root/evaluations/common/host-architecture.sh"
 reference=false
 install_only=false
 verbose=false
@@ -19,7 +20,7 @@ while (($#)); do
     shift
 done
 devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/.work/devkit}")
-qemu=$(realpath "${QEMU:-$repo_root/vcpkg/installed/arm64-linux/tools/qemu-ae/qemu-x86_64}")
+qemu=$(realpath -m "${QEMU:-$repo_root/vcpkg/installed/$AE_TOOL_TRIPLET/tools/qemu-ae/qemu-x86_64}")
 run_id=$(date -u +%Y%m%dT%H%M%SZ)
 results_root=$recipe_dir/results
 result_kind=evaluator
@@ -80,12 +81,12 @@ install_lane() {
         --x-packages-root="$work_dir/vcpkg/$lane/packages"
 }
 
-install_lane native libx11 arm64-linux-ae
+install_lane native libx11 "$AE_HOST_TRIPLET"
 install_lane guest libx11 x64-linux-ae
-install_lane hecate 'libx11[hlr]' arm64-linux-ae
-native=$work_dir/installed/native/arm64-linux-ae
+install_lane hecate 'libx11[hlr]' "$AE_HOST_TRIPLET"
+native=$work_dir/installed/native/$AE_HOST_TRIPLET
 guest=$work_dir/installed/guest/x64-linux-ae
-hecate=$work_dir/installed/hecate/arm64-linux-ae
+hecate=$work_dir/installed/hecate/$AE_HOST_TRIPLET
 host_library=$(find "$hecate/lib" -maxdepth 1 -type f -name 'libX11.so.*' | head -1)
 thunk=$work_dir/thunk
 run_logged "$run_dir/logs/preparation/thunk.log" "$repo_root/evaluations/1-libs/_common/lore-make-thunk.py" "$devkit/bin/LoreMakeThunk.py" --name X11 --out "$thunk" --lib "$host_library" \

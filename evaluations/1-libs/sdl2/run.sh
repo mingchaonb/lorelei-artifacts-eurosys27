@@ -6,9 +6,10 @@ set -euo pipefail
 recipe_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 repo_root=$(cd "$recipe_dir/../../.." && pwd)
 common_dir=$repo_root/evaluations/common
+source "$common_dir/host-architecture.sh"
 overlay_dir=$repo_root/vcpkg-overlay
 sdl_port=$overlay_dir/ports/sdl2
-triplet_native=arm64-linux-ae
+triplet_native=$AE_HOST_TRIPLET
 triplet_guest=x64-linux-ae
 
 # Keep the public interface deliberately small. --reference changes only the
@@ -38,7 +39,7 @@ while (($#)); do
     shift
 done
 devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/.work/devkit}")
-qemu=$(realpath -m "${QEMU:-$repo_root/vcpkg/installed/arm64-linux/tools/qemu-ae/qemu-x86_64}")
+qemu=$(realpath -m "${QEMU:-$repo_root/vcpkg/installed/$AE_TOOL_TRIPLET/tools/qemu-ae/qemu-x86_64}")
 # Keep the documented default stable. Developers may select another disposable
 # marked workspace to avoid colliding with a concurrent graphics evaluation.
 work_dir=${LORELEI_EVALUATION_WORK_DIR:-$repo_root/.work/evaluations/sdl2}

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 project(lorelei_system_glvnd C)
 
-if(NOT LORELEI_DEVKIT OR NOT SYSTEM_LIBRARY OR NOT SYSTEM_GLX_LIBRARY OR NOT AE_TEST_SOURCE OR NOT X11_PREFIX OR NOT X11_PORT)
+if(NOT LORELEI_DEVKIT OR NOT SYSTEM_LIBRARY OR NOT SYSTEM_GLX_LIBRARY OR NOT AE_TEST_SOURCE OR NOT X11_PREFIX OR NOT X11_PORT OR NOT OPENGL_REGISTRY_INCLUDE)
     message(FATAL_ERROR "Lorelei, system GL, system GLX, test and X11 paths are required")
 endif()
 
@@ -57,7 +57,7 @@ add_custom_command(
         --no-callback-replace
         --devkit "${LORELEI_DEVKIT}"
         --keep-intermediates
-        -- -I/usr/include
+        -- -I/usr/include "-I${OPENGL_REGISTRY_INCLUDE}"
     DEPENDS
         "${CMAKE_CURRENT_SOURCE_DIR}/lorelei/Desc.h"
         "${CMAKE_CURRENT_SOURCE_DIR}/lorelei/Manifest_host.cpp"
@@ -90,12 +90,14 @@ add_custom_command(
         --lib "${SYSTEM_GLX_LIBRARY}"
         --symbols "${GLX_SYMBOLS}"
         --desc "${CMAKE_CURRENT_SOURCE_DIR}/lorelei/Desc.h"
+        --manifest-host "${CMAKE_CURRENT_SOURCE_DIR}/lorelei/Manifest_glx_host.cpp"
         --no-callback-replace
         --devkit "${LORELEI_DEVKIT}"
         --keep-intermediates
-        -- -I/usr/include
+        -- -I/usr/include "-I${OPENGL_REGISTRY_INCLUDE}"
     DEPENDS
         "${CMAKE_CURRENT_SOURCE_DIR}/lorelei/Desc.h"
+        "${CMAKE_CURRENT_SOURCE_DIR}/lorelei/Manifest_glx_host.cpp"
         "${GLX_SYMBOLS}"
     VERBATIM
 )
@@ -110,6 +112,7 @@ add_custom_command(
     COMMAND "${LORELEI_DEVKIT}/bin/x86_64-linux-gnu-clang"
         "--sysroot=${LORELEI_DEVKIT}/x86_64/sysroot"
         -I/usr/include
+        "-I${OPENGL_REGISTRY_INCLUDE}"
         "-I${X11_PREFIX}/include"
         "${AE_TEST_SOURCE}"
         "-L${THUNK_DIR}/x86_64"
@@ -131,6 +134,7 @@ add_custom_command(
     COMMAND "${LORELEI_DEVKIT}/bin/x86_64-linux-gnu-clang"
         "--sysroot=${LORELEI_DEVKIT}/x86_64/sysroot"
         -I/usr/include
+        "-I${OPENGL_REGISTRY_INCLUDE}"
         "-I${X11_PREFIX}/include"
         "${AE_TEST_SOURCE}"
         "-L${GLX_THUNK_DIR}/x86_64"

@@ -14,10 +14,22 @@ file(REMOVE
     "${game_dir}/bin_unix/linux_32_server"
 )
 
-if(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64")
+if(NOT VCPKG_TARGET_ARCHITECTURE STREQUAL "x64")
     find_program(MAKE make REQUIRED)
     find_program(CXX c++ REQUIRED)
     set(source_dir "${release_root}/source/src")
+    if(VCPKG_TARGET_ARCHITECTURE STREQUAL "riscv64")
+        # AssaultCube bundles 2012 GNU config scripts, which predate RV64.
+        # Ubuntu's autotools-dev package supplies current architecture tables.
+        find_file(SYSTEM_CONFIG_GUESS config.guess
+            PATHS /usr/share/misc NO_DEFAULT_PATH REQUIRED)
+        find_file(SYSTEM_CONFIG_SUB config.sub
+            PATHS /usr/share/misc NO_DEFAULT_PATH REQUIRED)
+        file(COPY_FILE "${SYSTEM_CONFIG_GUESS}"
+            "${release_root}/source/enet/config.guess")
+        file(COPY_FILE "${SYSTEM_CONFIG_SUB}"
+            "${release_root}/source/enet/config.sub")
+    endif()
     set(client_includes
         "-I${CURRENT_INSTALLED_DIR}/include/SDL2 -I${CURRENT_INSTALLED_DIR}/include -I. -Ibot -I../enet/include")
     set(client_libraries

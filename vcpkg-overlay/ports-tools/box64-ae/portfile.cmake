@@ -11,14 +11,21 @@ vcpkg_from_github(
     HEAD_REF ae
 )
 
-# Build the generic AArch64 dynarec configuration used by the AE. NOGIT avoids
+# Select the dynarec backend that matches the physical AE host. NOGIT avoids
 # consulting an unavailable .git directory after vcpkg extracts its source
 # archive. System-wide binfmt and compatibility-library installation are not
 # part of this tool package.
+if(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64")
+    set(BOX64_ARCH_OPTIONS -DARM_DYNAREC=ON)
+elseif(VCPKG_TARGET_ARCHITECTURE STREQUAL "riscv64")
+    set(BOX64_ARCH_OPTIONS -DRV64=ON -DRV64_DYNAREC=ON)
+else()
+    message(FATAL_ERROR "box64-ae supports only arm64 and riscv64 hosts")
+endif()
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
     OPTIONS
-        -DARM_DYNAREC=ON
+        ${BOX64_ARCH_OPTIONS}
         -DNOGIT=ON
         -DNO_CONF_INSTALL=ON
         -DNO_LIB_INSTALL=ON

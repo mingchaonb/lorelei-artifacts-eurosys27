@@ -5,26 +5,26 @@
   "description": "Pinned AssaultCube game package for native and guest game evaluation",
   "homepage": "https://assault.cubers.net/",
   "license": "Zlib",
-  "supports": "linux & (x64 | arm64)",
+  "supports": "linux & !x86",
   "dependencies": [
     {
       "name": "sdl2",
       "default-features": false,
       "features": ["x11"],
-      "platform": "arm64"
+      "platform": "!x64"
     },
     {
       "name": "sdl2-image",
       "default-features": false,
-      "platform": "arm64"
+      "platform": "!x64"
     },
     {
       "name": "libx11",
-      "platform": "arm64"
+      "platform": "!x64"
     },
     {
       "name": "zlib",
-      "platform": "arm64"
+      "platform": "!x64"
     },
     "libvorbisfile",
     "openal-soft"

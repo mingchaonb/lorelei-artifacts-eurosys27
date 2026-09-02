@@ -5,15 +5,15 @@ index 6ef249032..a4ce0d9a0 100644
 @@ -77,7 +77,7 @@ static SDL_assert_data *triggered_assertions = NULL;
  static SDL_mutex *assertion_mutex = NULL;
  #endif
- 
+
 -static SDL_AssertionHandler assertion_handler = LORE_FDG_1_2(SDL_PromptAssertion);
 +static SDL_AssertionHandler assertion_handler = SDL_PromptAssertion;
  static void *assertion_userdata = NULL;
- 
+
  #ifdef __GNUC__
 @@ -123,7 +123,7 @@ static void SDL_GenerateAssertionReport(void)
      const SDL_assert_data *item = triggered_assertions;
- 
+
      /* only do this if the app hasn't assigned an assertion handler. */
 -    if ((item != NULL) && (assertion_handler != LORE_FDG_1_2(SDL_PromptAssertion))) {
 +    if ((item != NULL) && (assertion_handler != SDL_PromptAssertion)) {
@@ -221,3 +221,53 @@ index f9488bac1..4a209b64c 100644
  #define LORE_CCG_16(X) LORE_CCG_GET(16, (X))
  #define LORE_CCG_17(X) LORE_CCG_GET(17, (X))
  #define LORE_CCG_18(X) LORE_CCG_GET(18, (X))
+diff --git a/src/video/x11/SDL_x11opengl.c b/src/video/x11/SDL_x11opengl.c
+--- a/src/video/x11/SDL_x11opengl.c
++++ b/src/video/x11/SDL_x11opengl.c
+@@ -7,6 +7,10 @@
+ *****************************************************************************/
+ 
+ #include "../../../LoreFileContext.h"
++#include <stdio.h>
++#include <stdlib.h>
++#include <time.h>
++
+ /*
+   Simple DirectMedia Layer
+   Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+@@ -953,11 +957,35 @@ int X11_GL_GetSwapInterval(_THIS)
+     }
+ }
+ 
++static void X11_GL_LogLoreleiPresentationTimestamp(void)
++{
++    static int initialized = 0;
++    static FILE *stream = NULL;
++    struct timespec now;
++    const char *path;
++
++    if (!initialized) {
++        initialized = 1;
++        path = getenv("LORELEI_FPS_LOG");
++        if (path != NULL && *path != '\0') {
++            stream = fopen(path, "a");
++        }
++    }
++    if (stream == NULL) {
++        return;
++    }
++    if (clock_gettime(CLOCK_MONOTONIC, &now) == 0) {
++        fprintf(stream, "%lld.%09ld\n", (long long)now.tv_sec, now.tv_nsec);
++        fflush(stream);
++    }
++}
++
+ int X11_GL_SwapWindow(_THIS, SDL_Window *window)
+ {
+     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+     Display *display = data->videodata->display;
+ 
+     _this->gl_data->glXSwapBuffers(display, data->xwindow);
++    X11_GL_LogLoreleiPresentationTimestamp();
+     return 0;
+ }

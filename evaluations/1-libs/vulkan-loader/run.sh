@@ -3,6 +3,7 @@ set -euo pipefail
 
 recipe_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 repo_root=$(cd "$recipe_dir/../../.." && pwd)
+source "$repo_root/evaluations/common/host-architecture.sh"
 install_only=false
 while (($#)); do
     case $1 in
@@ -15,11 +16,11 @@ while (($#)); do
     shift
 done
 devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/.work/devkit}")
-qemu=$(realpath -m "${QEMU:-$repo_root/vcpkg/installed/arm64-linux/tools/qemu-ae/qemu-x86_64}")
+qemu=$(realpath -m "${QEMU:-$repo_root/vcpkg/installed/$AE_TOOL_TRIPLET/tools/qemu-ae/qemu-x86_64}")
 run_id=$(date -u +%Y%m%dT%H%M%SZ)
 run_dir=$recipe_dir/results/$run_id
 work_dir=$repo_root/.work/evaluations/vulkan-loader
-installed=$work_dir/installed/arm64-linux-ae
+installed=$work_dir/installed/$AE_HOST_TRIPLET
 vcpkg=$repo_root/vcpkg/vcpkg
 overlay=$repo_root/vcpkg-overlay
 
@@ -35,7 +36,7 @@ touch "$work_dir/.lorelei-evaluations-workspace"
 exec > >(tee "$run_dir/commands.log") 2>&1
 
 export LORELEI_DEVKIT=$devkit
-"$vcpkg" install vulkan-loader:arm64-linux-ae \
+"$vcpkg" install "vulkan-loader:$AE_HOST_TRIPLET" \
     --editable \
     --overlay-ports="$overlay/ports" --overlay-triplets="$overlay/triplets" \
     --downloads-root="$repo_root/vcpkg/downloads" \

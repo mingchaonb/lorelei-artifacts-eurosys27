@@ -8,6 +8,20 @@ set(VCPKG_LIBRARY_LINKAGE dynamic)
 set(VCPKG_CMAKE_SYSTEM_NAME Linux)
 set(VCPKG_BUILD_TYPE release)
 
+# Keep autotools ports in the regular vcpkg layout even when vcpkg uses the
+# container's recent system CMake.  An invariant prefix also lets the binary
+# cache serve independent evaluation work directories.
+set(VCPKG_MAKE_CONFIGURE_OPTIONS
+    "--disable-static"
+    "--enable-shared"
+    "--prefix=/"
+    "--bindir=\\\${prefix}/tools/${PORT}/bin"
+    "--sbindir=\\\${prefix}/tools/${PORT}/sbin"
+    "--libdir=\\\${prefix}/lib"
+    "--includedir=\\\${prefix}/include"
+    "--datarootdir=\\\${prefix}/share/${PORT}"
+)
+
 # The released cross devkit does not ship clang-scan-deps.  Disable C++ module
 # dependency scanning for ordinary library builds that do not use modules.
 list(APPEND VCPKG_CMAKE_CONFIGURE_OPTIONS

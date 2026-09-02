@@ -72,7 +72,19 @@ elseif(GAME_SDL_ABI STREQUAL "2")
         DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/TestSDLDisplays.c"
         VERBATIM
     )
-    list(APPEND PREFLIGHT_OUTPUTS "${CMAKE_CURRENT_BINARY_DIR}/test-sdl2-displays")
+    add_custom_command(
+        OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/test-sdl2-gl"
+        COMMAND "${GUEST_CC}" "--sysroot=${GUEST_SYSROOT}"
+            "-I${SDL2_PREFIX}/include/SDL2"
+            "${CMAKE_CURRENT_SOURCE_DIR}/TestSDLGL.c"
+            "${SDL2_THUNK}/x86_64/libSDL2.so"
+            -o "${CMAKE_CURRENT_BINARY_DIR}/test-sdl2-gl"
+        DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/TestSDLGL.c"
+        VERBATIM
+    )
+    list(APPEND PREFLIGHT_OUTPUTS
+        "${CMAKE_CURRENT_BINARY_DIR}/test-sdl2-displays"
+        "${CMAKE_CURRENT_BINARY_DIR}/test-sdl2-gl")
 else()
     message(FATAL_ERROR "GAME_SDL_ABI must be 1 or 2")
 endif()

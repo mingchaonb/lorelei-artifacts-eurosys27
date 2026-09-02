@@ -5,13 +5,19 @@ evaluations_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 repo_root=$(cd "$evaluations_dir/.." && pwd)
 source "$evaluations_dir/common/install-progress.sh"
 source "$evaluations_dir/common/proxy-environment.sh"
+source "$evaluations_dir/common/host-architecture.sh"
 normalize_proxy_environment
+
+# The detached metrics uploader can inherit an install-root lock after one
+# vcpkg invocation and race the immediately following invocation. AE recipes
+# do not need telemetry, so keep every package operation synchronous.
+export VCPKG_DISABLE_METRICS=1
 
 usage() {
     cat <<'EOF'
 Usage: ./evaluations/install-games.sh [--plain]
 
-Install the native AArch64 and guest x86-64 packages for every redistributable
+Install the native host and guest x86-64 packages for every redistributable
 game. Existing packages, downloads, and build state are reused. Failures do not
 prevent later games from being attempted.
 
@@ -64,7 +70,7 @@ install_game_packages() {
         --x-packages-root="$work_dir/packages"
     )
     "$vcpkg" upgrade --no-dry-run "${common_args[@]}"
-    "$vcpkg" install "$game:arm64-linux-ae" "$game:x64-linux-ae" "${common_args[@]}"
+    "$vcpkg" install "$game:$AE_HOST_TRIPLET" "$game:x64-linux-ae" "${common_args[@]}"
 }
 
 install_progress_init Games "${#games[@]}" "$plain"

@@ -5,7 +5,7 @@
   "description": "Lorelei thunk and validation binaries for the Ubuntu system Vulkan loader",
   "homepage": "https://github.com/KhronosGroup/Vulkan-Loader",
   "license": "Apache-2.0",
-  "supports": "linux & arm64",
+  "supports": "linux & !x64 & !x86",
   "dependencies": [
     "libx11",
     {

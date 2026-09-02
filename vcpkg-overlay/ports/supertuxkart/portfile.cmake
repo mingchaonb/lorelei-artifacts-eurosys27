@@ -12,10 +12,25 @@ if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x64")
     file(INSTALL "${release_root}/SuperTuxKart-1.4-linux-x86_64/" DESTINATION "${game_dir}")
     set(copyright_file "${release_root}/SuperTuxKart-1.4-linux-x86_64/data/licenses.txt")
 else()
+    if(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64")
+        set(native_deb_arch arm64)
+        set(stk_sha512 a39ceb687cf92193243d1a41acb936f8e3040465380e507d12c6a3f111e36467822c442d90be3da6a14f938af97b1992d858e5c1f7e4318c707ca6009979c067)
+        set(mcpp_sha512 ce243c9f8086770e0b828816cf5a16625c1ef3317c58cb0cdebdcd4e21e85872f62e81a439238005482f7e6a64cd826dc1a24ee08eddeb267427dafb4724412c)
+        set(squish_sha512 98f460ae97cb21cde14d5012d971eb0a7593bb78e2bb4a83c69d70e2ce25a4ef1de20d812cb2a2261c1356045751aa126db1943a504c18d31bd72519049e27d3)
+        set(shaderc_sha512 03352fadb95ec4dd18acf75b37226c67723e858d003f36658bd0d3402f8a82df9b703081a86cdeb14a32c6213b0bec92e5f091b42dd331989cdd7fe7ca1683ac)
+    elseif(VCPKG_TARGET_ARCHITECTURE STREQUAL "riscv64")
+        set(native_deb_arch riscv64)
+        set(stk_sha512 a5183b7314546132d1a600a5cc31be379990a7c87b526d18cf8f35bc358db5d060b876eecec9946d054e33cf384339b9c7721735ffdd5d35c63a028b3cf6e6fc)
+        set(mcpp_sha512 15b82ab19d629c1c1686c0ca2723833fad04a7cb2c6f35af34dbb35d1f94054be6d96d2eb792d8bd999d84af764135bd8bda230b825f51f111bb9732ecdd8ec3)
+        set(squish_sha512 5a91a3af6d7aab0f8b5b287432029062405ac7b61b1e79e1883977d8f27440fcb848fced5fc619af492089e692664ad6be1038a8ffe3f4ebf9405bf08a87978d)
+        set(shaderc_sha512 f9d9abb383673fed4c3fc88fef44155c1c85a15a65eb8d4efbae83f067d861306dc84d45b4a5b67a5ab47b86fdefaf074c1c6bf47e8aea0fe62d9844395cb456)
+    else()
+        message(FATAL_ERROR "Unsupported native SuperTuxKart architecture")
+    endif()
     ae_game_download(native_archive
-        "supertuxkart_1.4+dfsg-3ubuntu1_arm64.deb"
-        "https://ports.ubuntu.com/ubuntu-ports/pool/universe/s/supertuxkart/supertuxkart_1.4%2bdfsg-3ubuntu1_arm64.deb"
-        "a39ceb687cf92193243d1a41acb936f8e3040465380e507d12c6a3f111e36467822c442d90be3da6a14f938af97b1992d858e5c1f7e4318c707ca6009979c067"
+        "supertuxkart_1.4+dfsg-3ubuntu1_${native_deb_arch}.deb"
+        "https://ports.ubuntu.com/ubuntu-ports/pool/universe/s/supertuxkart/supertuxkart_1.4%2bdfsg-3ubuntu1_${native_deb_arch}.deb"
+        "${stk_sha512}"
     )
     ae_game_download(data_archive
         "supertuxkart-data_1.4+dfsg-3ubuntu1_all.deb"
@@ -23,19 +38,19 @@ else()
         "5d45e3572386c3a4b55c0d50ff3380c05d3a0f230aae637738b84d0d861c2c02c3f924536c189c0910c23feb3f5dccb30d2a4c394b5d4b36bb7ddb1d2d9b25fe"
     )
     ae_game_download(mcpp_archive
-        "libmcpp0_2.7.2-5.1_arm64.deb"
-        "https://ports.ubuntu.com/ubuntu-ports/pool/universe/m/mcpp/libmcpp0_2.7.2-5.1_arm64.deb"
-        "ce243c9f8086770e0b828816cf5a16625c1ef3317c58cb0cdebdcd4e21e85872f62e81a439238005482f7e6a64cd826dc1a24ee08eddeb267427dafb4724412c"
+        "libmcpp0_2.7.2-5.1_${native_deb_arch}.deb"
+        "https://ports.ubuntu.com/ubuntu-ports/pool/universe/m/mcpp/libmcpp0_2.7.2-5.1_${native_deb_arch}.deb"
+        "${mcpp_sha512}"
     )
     ae_game_download(squish_archive
-        "libsquish0_1.15-3_arm64.deb"
-        "https://ports.ubuntu.com/ubuntu-ports/pool/universe/libs/libsquish/libsquish0_1.15-3_arm64.deb"
-        "98f460ae97cb21cde14d5012d971eb0a7593bb78e2bb4a83c69d70e2ce25a4ef1de20d812cb2a2261c1356045751aa126db1943a504c18d31bd72519049e27d3"
+        "libsquish0_1.15-3_${native_deb_arch}.deb"
+        "https://ports.ubuntu.com/ubuntu-ports/pool/universe/libs/libsquish/libsquish0_1.15-3_${native_deb_arch}.deb"
+        "${squish_sha512}"
     )
     ae_game_download(shaderc_archive
-        "libshaderc1_2023.8-1build1_arm64.deb"
-        "https://ports.ubuntu.com/ubuntu-ports/pool/universe/s/shaderc/libshaderc1_2023.8-1build1_arm64.deb"
-        "03352fadb95ec4dd18acf75b37226c67723e858d003f36658bd0d3402f8a82df9b703081a86cdeb14a32c6213b0bec92e5f091b42dd331989cdd7fe7ca1683ac"
+        "libshaderc1_2023.8-1build1_${native_deb_arch}.deb"
+        "https://ports.ubuntu.com/ubuntu-ports/pool/universe/s/shaderc/libshaderc1_2023.8-1build1_${native_deb_arch}.deb"
+        "${shaderc_sha512}"
     )
     ae_game_download(cantarell_archive
         "fonts-cantarell_0.303.1-1_all.deb"

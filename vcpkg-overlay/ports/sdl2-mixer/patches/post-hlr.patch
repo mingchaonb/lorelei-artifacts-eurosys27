@@ -1,0 +1,6 @@
+diff --git a/src/mixer.c b/src/mixer.c
+--- a/src/mixer.c
++++ b/src/mixer.c
+@@ -115 +115 @@
+-static Mix_MixCallback mix_music = LORE_FDG_3_2(music_mixer);
++static Mix_MixCallback mix_music = music_mixer;

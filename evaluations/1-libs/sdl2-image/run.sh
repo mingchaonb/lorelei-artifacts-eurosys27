@@ -4,10 +4,11 @@ set -euo pipefail
 recipe_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 repo_root=$(cd "$recipe_dir/../../.." && pwd)
 common_dir=$repo_root/evaluations/common
+source "$common_dir/host-architecture.sh"
 overlay_dir=$repo_root/vcpkg-overlay
 image_port=$overlay_dir/ports/sdl2-image
 sdl_port=$overlay_dir/ports/sdl2
-triplet_native=arm64-linux-ae
+triplet_native=$AE_HOST_TRIPLET
 triplet_guest=x64-linux-ae
 
 reference=false
@@ -31,7 +32,7 @@ while (($#)); do
 done
 
 devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/.work/devkit}")
-qemu=$(realpath -m "${QEMU:-$repo_root/vcpkg/installed/arm64-linux/tools/qemu-ae/qemu-x86_64}")
+qemu=$(realpath -m "${QEMU:-$repo_root/vcpkg/installed/$AE_TOOL_TRIPLET/tools/qemu-ae/qemu-x86_64}")
 vcpkg=$repo_root/vcpkg/vcpkg
 work_dir=$repo_root/.work/evaluations/sdl2-image
 results_root=$recipe_dir/results

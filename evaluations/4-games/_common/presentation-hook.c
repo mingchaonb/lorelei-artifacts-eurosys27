@@ -8,10 +8,12 @@
 #include <unistd.h>
 
 typedef void (*sdl_gl_swap_window_fn)(void *window);
+typedef void (*sdl_gl_swap_buffers_fn)(void);
 typedef void (*sdl_render_present_fn)(void *renderer);
 typedef void (*glx_swap_buffers_fn)(void *display, unsigned long drawable);
 
 static sdl_gl_swap_window_fn real_sdl_gl_swap_window;
+static sdl_gl_swap_buffers_fn real_sdl_gl_swap_buffers;
 static sdl_render_present_fn real_sdl_render_present;
 static glx_swap_buffers_fn real_glx_swap_buffers;
 static int fps_log_fd = -1;
@@ -58,6 +60,20 @@ void SDL_GL_SwapWindow(void *window)
 
     ++presentation_depth;
     real_sdl_gl_swap_window(window);
+    if (--presentation_depth == 0)
+        lorelei_log_frame_presented();
+}
+
+void SDL_GL_SwapBuffers(void)
+{
+    if (!real_sdl_gl_swap_buffers)
+        real_sdl_gl_swap_buffers =
+            (sdl_gl_swap_buffers_fn)dlsym(RTLD_NEXT, "SDL_GL_SwapBuffers");
+    if (!real_sdl_gl_swap_buffers)
+        return;
+
+    ++presentation_depth;
+    real_sdl_gl_swap_buffers();
     if (--presentation_depth == 0)
         lorelei_log_frame_presented();
 }
