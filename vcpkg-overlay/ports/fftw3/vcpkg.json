@@ -1,7 +1,7 @@
 {
   "name": "fftw3",
   "version": "3.3.10",
-  "port-version": 1,
+  "port-version": 2,
   "description": "FFTW shared library for the Lorelei AE",
   "homepage": "https://www.fftw.org/",
   "license": "GPL-2.0-or-later",
