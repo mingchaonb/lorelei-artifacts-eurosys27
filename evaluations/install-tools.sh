@@ -43,6 +43,17 @@ done
 }
 [[ -d $tool_ports ]] || { echo "Missing tool overlay: $tool_ports" >&2; exit 2; }
 
+# The FEX port configures with TUNE_CPU=native, and that CMake branch runs
+# Scripts/aarch64_fit_native.py through whichever python3 comes first on PATH.
+# The script needs the packaging module, and without it CMake fails on an empty
+# CPU name instead of on the missing import. Report the real cause up front.
+python3 -c 'import packaging' 2>/dev/null || {
+    echo "The python3 on PATH lacks the packaging module: $(command -v python3)" >&2
+    echo "The FEX port needs it while configuring. Install python3-packaging," >&2
+    echo "or drop the virtual environment that shadows the system python3." >&2
+    exit 2
+}
+
 # This feature set provides the native FFmpeg executable used to prepare and
 # validate every codec workload. It intentionally comes from vcpkg's built-in
 # port because the library-test overlay contains a different Hecate recipe.

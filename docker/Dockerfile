@@ -29,6 +29,7 @@ RUN case "${USE_USTC_MIRROR}" in \
         meson ninja-build nasm yasm pkg-config \
         xz-utils zip unzip tar squashfs-tools time xxd \
         python3 python3-pip python3-venv python3-numpy python3-matplotlib python3-tomli \
+        python3-packaging \
         clang-20 llvm-20-dev libclang-20-dev \
         libglib2.0-dev libdw-dev libelf-dev libcapstone-dev libfdt-dev \
         libpixman-1-dev libslirp-dev libffi-dev libffcall-dev libssl-dev \
@@ -44,6 +45,11 @@ RUN case "${USE_USTC_MIRROR}" in \
 # Ubuntu 24.04 carries an older yt-dlp that no longer handles the pinned media
 # source reliably. Install a fixed current release in an isolated environment.
 # The USTC build mode also applies to this Python package download.
+# Expose only the launcher through /usr/local/bin. Its shebang already points at
+# the virtual environment, so yt-dlp keeps its pinned dependencies. The virtual
+# environment must stay off PATH: it would shadow /usr/bin/python3 for every
+# other consumer, and the packages installed above (numpy, matplotlib,
+# packaging) live in the system interpreter, not in this environment.
 RUN python3 -m venv /opt/yt-dlp \
     && if [[ "${USE_USTC_MIRROR}" == 1 ]]; then \
         /opt/yt-dlp/bin/pip install --no-cache-dir \
@@ -51,8 +57,8 @@ RUN python3 -m venv /opt/yt-dlp \
             yt-dlp==2026.8.19; \
     else \
         /opt/yt-dlp/bin/pip install --no-cache-dir yt-dlp==2026.8.19; \
-    fi
-ENV PATH=/opt/yt-dlp/bin:${PATH}
+    fi \
+    && ln -s /opt/yt-dlp/bin/yt-dlp /usr/local/bin/yt-dlp
 
 # Match the host account so bind-mounted sources and generated evidence keep
 # their normal ownership. The Ubuntu base image may reserve UID/GID 1000 for an
