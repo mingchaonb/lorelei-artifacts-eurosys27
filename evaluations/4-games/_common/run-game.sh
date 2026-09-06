@@ -420,6 +420,14 @@ if [[ $mangohud_enabled == 1 ]]; then
     elif [[ $game == supertux ]]; then
         if [[ $lane == box64 || $lane == box64-hecate ]]; then
             presentation_hook_mode=guest-box64
+        elif [[ $lane == qemu-hecate ]]; then
+            # QEMU reaches the host SDL2 through libSDL2_HTL.so, which
+            # loads it at run time. A host hook preloaded into QEMU therefore
+            # finds nothing behind itself: dlsym(RTLD_NEXT) fails, every swap
+            # is dropped, and the window stays blank while the dropped calls
+            # are still counted as frames. Hook the guest side instead,
+            # exactly as the Box64 lanes already do.
+            presentation_hook_mode=guest-qemu
         else
             presentation_hook_mode=host
         fi
