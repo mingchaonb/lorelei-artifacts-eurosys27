@@ -4,6 +4,7 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -63,6 +64,43 @@ static void report_resolution(const char *name, void *resolved)
                 name);
 }
 
+/* Resolve one presentation entry point.
+ *
+ * RTLD_NEXT is enough whenever the real implementation is already in the link
+ * map behind this hook. It is not enough under QEMU: Hecate's host transfer
+ * libraries load the host SDL at run time, so nothing sits behind the hook and
+ * RTLD_NEXT returns NULL. Every swap is then dropped, which both stops the
+ * window presenting and makes the frame log empty.
+ *
+ * LORELEI_PRESENTATION_LIBS names the host libraries to fall back on, as a
+ * colon-separated list. Each is opened with RTLD_NOLOAD first so that a copy
+ * already mapped into the process is reused rather than a second one loaded. */
+static void *resolve_presentation_symbol(const char *name)
+{
+    const char *libraries = getenv("LORELEI_PRESENTATION_LIBS");
+    char *list, *saveptr = NULL, *entry;
+    void *resolved = dlsym(RTLD_NEXT, name);
+
+    if (resolved || !libraries || !libraries[0])
+        return resolved;
+
+    list = strdup(libraries);
+    if (!list)
+        return NULL;
+    for (entry = strtok_r(list, ":", &saveptr); entry && !resolved;
+         entry = strtok_r(NULL, ":", &saveptr)) {
+        void *handle = dlopen(entry, RTLD_LAZY | RTLD_NOLOAD);
+
+        if (!handle)
+            handle = dlopen(entry, RTLD_LAZY);
+        if (!handle)
+            continue;
+        resolved = dlsym(handle, name);
+    }
+    free(list);
+    return resolved;
+}
+
 void lorelei_log_frame_presented(void)
 {
     struct timespec now;
@@ -84,7 +122,7 @@ void SDL_GL_SwapWindow(void *window)
 {
     if (!real_sdl_gl_swap_window) {
         real_sdl_gl_swap_window =
-            (sdl_gl_swap_window_fn)dlsym(RTLD_NEXT, "SDL_GL_SwapWindow");
+            (sdl_gl_swap_window_fn)resolve_presentation_symbol("SDL_GL_SwapWindow");
         report_resolution("SDL_GL_SwapWindow", (void *)real_sdl_gl_swap_window);
     }
     if (!real_sdl_gl_swap_window)
@@ -100,7 +138,7 @@ void SDL_GL_SwapBuffers(void)
 {
     if (!real_sdl_gl_swap_buffers) {
         real_sdl_gl_swap_buffers =
-            (sdl_gl_swap_buffers_fn)dlsym(RTLD_NEXT, "SDL_GL_SwapBuffers");
+            (sdl_gl_swap_buffers_fn)resolve_presentation_symbol("SDL_GL_SwapBuffers");
         report_resolution("SDL_GL_SwapBuffers",
                           (void *)real_sdl_gl_swap_buffers);
     }
@@ -117,7 +155,7 @@ void SDL_RenderPresent(void *renderer)
 {
     if (!real_sdl_render_present) {
         real_sdl_render_present =
-            (sdl_render_present_fn)dlsym(RTLD_NEXT, "SDL_RenderPresent");
+            (sdl_render_present_fn)resolve_presentation_symbol("SDL_RenderPresent");
         report_resolution("SDL_RenderPresent", (void *)real_sdl_render_present);
     }
     if (!real_sdl_render_present)
@@ -133,7 +171,7 @@ void glXSwapBuffers(void *display, unsigned long drawable)
 {
     if (!real_glx_swap_buffers) {
         real_glx_swap_buffers =
-            (glx_swap_buffers_fn)dlsym(RTLD_NEXT, "glXSwapBuffers");
+            (glx_swap_buffers_fn)resolve_presentation_symbol("glXSwapBuffers");
         report_resolution("glXSwapBuffers", (void *)real_glx_swap_buffers);
     }
     if (!real_glx_swap_buffers)

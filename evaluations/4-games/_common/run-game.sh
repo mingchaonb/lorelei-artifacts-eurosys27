@@ -125,6 +125,7 @@ game_environment=(vblank_mode=0 __GL_SYNC_TO_VBLANK=0)
 # One resolution for every game, lane, and repetition, as the paper states.
 game_width=${GAME_WIDTH:-1920}
 game_height=${GAME_HEIGHT:-1080}
+game_fullscreen=${GAME_FULLSCREEN:-1}
 if [[ $game == hollow-knight && $lane == native ]]; then
     echo "The native lane is unavailable for Hollow Knight because the artifact cannot distribute a native game package." >&2
     exit 2
@@ -185,6 +186,21 @@ set_cube_init_var() {
         sed -i -E "s|^[[:space:]]*$name[[:space:]].*|$name $value|" "$config"
     else
         printf '%s %s\n' "$name" "$value" >>"$config"
+    fi
+}
+
+# ioquake3 restarts its renderer when a video cvar changes after startup, and
+# MangoHud only ever hooks the context that existed when the process began.
+# Setting these on the command line therefore costs the FPS log: loading a map
+# restarts the renderer and every later frame goes uncounted. Write the values
+# into the saved configuration instead, so startup already uses them.
+set_quake_cvar() {
+    local config=$1 name=$2 value=$3
+    [[ -f $config ]] || return 0
+    if grep -Eq "^seta $name " "$config"; then
+        sed -i -E "s|^seta $name .*|seta $name \"$value\"|" "$config"
+    else
+        printf 'seta %s "%s"\n' "$name" "$value" >>"$config"
     fi
 }
 
@@ -302,9 +318,24 @@ case "$game" in
         game_library_path=${selected_game_prefix:+$selected_game_prefix/lib}
         # r_swapInterval 0 disables VSync and com_maxfps 0 removes ioquake3's
         # own frame cap, which the shipped configuration sets to 85.
-        game_args=(+set r_fullscreen 1 +set r_mode -1 +set r_customwidth "$game_width"
-            +set r_customheight "$game_height" +set r_swapInterval 0 +set com_maxfps 0
-            +set com_introplayed 1 +map "${GAME_SCENE_MAP:-dm4ish}")
+        for openarena_config in "$runtime_home_root/openarena/.q3a/baseoa/q3config.cfg" \
+            "$runtime_home_root/openarena/.openarena/baseoa/q3config.cfg"; do
+            set_quake_cvar "$openarena_config" r_fullscreen "$game_fullscreen"
+            set_quake_cvar "$openarena_config" r_mode -1
+            set_quake_cvar "$openarena_config" r_customwidth "$game_width"
+            set_quake_cvar "$openarena_config" r_customheight "$game_height"
+            # r_swapInterval 0 disables VSync and com_maxfps 0 removes
+            # ioquake3's own frame cap, which the shipped configuration sets
+            # to 85.
+            set_quake_cvar "$openarena_config" r_swapInterval 0
+            set_quake_cvar "$openarena_config" com_maxfps 0
+            set_quake_cvar "$openarena_config" com_introplayed 1
+        done
+        game_args=()
+        openarena_map=${GAME_SCENE_MAP-dm4ish}
+        if [[ -n $openarena_map ]]; then
+            game_args+=(+map "$openarena_map")
+        fi
         if [[ $lane == native ]]; then
             game_args=(+set com_basegame baseoa +set fs_basepath "$game_dir" "${game_args[@]}")
         fi
@@ -548,10 +579,25 @@ if [[ $mangohud_enabled == 1 ]]; then
             presentation_hook_mode=host
         fi
     fi
+    # Diagnostic override: force one collector while investigating a lane whose
+    # frame counts look wrong.
+    # An empty value is honoured, which forces MangoHud for a game that would
+    # otherwise select a hook.
+    presentation_hook_mode=${PRESENTATION_HOOK_MODE-$presentation_hook_mode}
     if [[ -n $presentation_hook_mode ]]; then
         presentation_fps_log=$mangohud_dir/presentation-times.txt
         cmake -E remove "$presentation_fps_log"
         mangohud_env=(LORELEI_FPS_LOG="$presentation_fps_log")
+        # Where a host hook should look for the real entry point when nothing
+        # sits behind it in the link map, which is the case whenever Hecate's
+        # host transfer libraries load the host SDL at run time.
+        if [[ $presentation_hook_mode == host ]]; then
+            if [[ $game == openarena ]]; then
+                mangohud_env+=(LORELEI_PRESENTATION_LIBS="$sdl1_prefix/lib/libSDL-1.2.so.0")
+            else
+                mangohud_env+=(LORELEI_PRESENTATION_LIBS="$sdl_prefix/lib/libSDL2-2.0.so.0")
+            fi
+        fi
     elif [[ $lane == box64 || $lane == box64-hecate ]]; then
         box64_fps_log=$mangohud_dir/box64-presentation-times.txt
     else
