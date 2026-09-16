@@ -6,7 +6,13 @@ import statistics
 import sys
 
 
-FPS_UPPER_BOUND = 300.0
+# Discards samples no renderer produced, such as a window whose reported frame
+# interval is zero. The bound sat at 300 while every lane ran with VSync
+# enabled. With VSync disabled the lighter games legitimately exceed both that
+# and 1000: SuperTuxKart alone reaches four figures on this host, and its own
+# max_fps ceiling is 1000. Keep the bound clear of every rate a game can
+# actually reach, so it rejects only impossible values.
+FPS_UPPER_BOUND = 10000.0
 
 
 def percentile(values, fraction):

@@ -29,7 +29,10 @@ LANES = [
 ]
 
 GAME_LANES = ["qemu-hecate", "native", "box64", "box64-hecate"]
-GAME_FPS_UPPER_BOUND = 300.0
+# Kept in step with FPS_UPPER_BOUND in 4-games/_common/summarize-mangohud.py.
+# Raised from 300 once VSync was disabled, because several lanes then exceed
+# both 300 and 1000 FPS legitimately.
+GAME_FPS_UPPER_BOUND = 10000.0
 GAME_ORDER = [
     "supertux",
     "supertuxkart",

@@ -115,7 +115,16 @@ x11_thunk=$repo_root/.work/evaluations/libx11/thunk
 native_game_prefix=
 guest_game_prefix=
 selected_game_prefix=
-game_environment=()
+# Paper section 6.8 reports FPS with VSync disabled. Turn it off at the driver
+# for every game and lane: Mesa reads vblank_mode, the NVIDIA driver reads
+# __GL_SYNC_TO_VBLANK. Games that additionally carry their own VSync or
+# frame-cap setting have it cleared in the per-game block below, and every game
+# runs fullscreen so its window is unredirected and the desktop compositor
+# cannot reimpose the display refresh rate.
+game_environment=(vblank_mode=0 __GL_SYNC_TO_VBLANK=0)
+# One resolution for every game, lane, and repetition, as the paper states.
+game_width=${GAME_WIDTH:-1920}
+game_height=${GAME_HEIGHT:-1080}
 if [[ $game == hollow-knight && $lane == native ]]; then
     echo "The native lane is unavailable for Hollow Knight because the artifact cannot distribute a native game package." >&2
     exit 2
@@ -166,6 +175,19 @@ resolve_game_dir() {
     realpath -m "${GAME_DIR:-$1}"
 }
 
+# Cube-engine games read display and VSync variables from init.cfg at startup
+# and rewrite that file on exit. Force the paper's values before every launch so
+# a previous run cannot reintroduce a frame cap or a different resolution.
+set_cube_init_var() {
+    local config=$1 name=$2 value=$3
+    [[ -f $config ]] || return 0
+    if grep -Eq "^[[:space:]]*$name[[:space:]]" "$config"; then
+        sed -i -E "s|^[[:space:]]*$name[[:space:]].*|$name $value|" "$config"
+    else
+        printf '%s %s\n' "$name" "$value" >>"$config"
+    fi
+}
+
 case "$game" in
     assaultcube)
         if [[ -n $selected_game_prefix ]]; then
@@ -179,18 +201,50 @@ case "$game" in
         if [[ -n $selected_game_prefix ]]; then
             game_library_path="$game_library_path:$selected_game_prefix/lib"
         fi
-        game_args=("--home=$runtime_home_root/assaultcube")
+        # AssaultCube documents these switches in docs/commandline.html. They
+        # override the saved configuration, so the run does not depend on what
+        # a previous one wrote back. -v0 disables VSync, -t1 forces fullscreen,
+        # and --loadmap replaces the map AssaultCube otherwise picks behind the
+        # main menu, which differs from launch to launch.
+        # maxfps defaults to 200 and 0 disables it, so without -e both the menu
+        # and a loaded map report about 205 FPS regardless of scene complexity.
+        game_args=("--home=$runtime_home_root/assaultcube"
+            "-w$game_width" "-h$game_height" -t1 -v0 "-emaxfps 0"
+            "--loadmap=${GAME_SCENE_MAP:-ac_desert}")
+        assaultcube_init=$runtime_home_root/assaultcube/config/init.cfg
+        set_cube_init_var "$assaultcube_init" vsync 0
+        set_cube_init_var "$assaultcube_init" fullscreen 1
+        set_cube_init_var "$assaultcube_init" fullscreendesktop 1
+        set_cube_init_var "$assaultcube_init" scr_w "$game_width"
+        set_cube_init_var "$assaultcube_init" scr_h "$game_height"
+        : >"$runtime_home_root/assaultcube/config/autoexec.cfg"
         ;;
     hollow-knight)
         game_dir=$(resolve_game_dir "$games_root/hollow-knight/game")
         executable=$game_dir/Hollow\ Knight
         game_library_path="$game_dir:$game_dir/Hollow Knight_Data/MonoBleedingEdge/x86_64"
         if [[ ${HOLLOW_USE_VULKAN:-0} == 1 ]]; then
-            game_args=(-force-vulkan -force-gfx-direct -screen-width 1280 -screen-height 720
-                -screen-fullscreen 0)
+            game_args=(-force-vulkan -force-gfx-direct)
         else
-            game_args=(-force-glcore -screen-width 1280 -screen-height 720 -screen-fullscreen 0)
+            game_args=(-force-glcore)
         fi
+        game_args+=(-screen-width "$game_width" -screen-height "$game_height"
+            -screen-fullscreen 1)
+        # Unity persists the resolution and window mode it last used. The
+        # -screen-* arguments above already override them, but align the stored
+        # values too so a run that ignores the command line still matches the
+        # paper. Hollow Knight caps itself through VidTFR; 400 is far above any
+        # rate these lanes reach, and the player preferences carry no VSync
+        # entry, so VSync is left to the driver variables set for every game.
+        while IFS= read -r hollow_prefs; do
+            sed -i -E \
+                -e "s|(<pref name=\"Screenmanager Resolution Width\"[^>]*>)[0-9]+|\\1$game_width|" \
+                -e "s|(<pref name=\"Screenmanager Resolution Height\"[^>]*>)[0-9]+|\\1$game_height|" \
+                -e 's|(<pref name="Screenmanager Fullscreen mode"[^>]*>)[0-9]+|\11|' \
+                -e 's|(<pref name="Screenmanager Resolution Use Native"[^>]*>)[0-9]+|\10|' \
+                "$hollow_prefs"
+        done < <(find "$runtime_home_root/hollow-knight/.config/unity3d" \
+            -name prefs -type f 2>/dev/null)
         ;;
     redeclipse)
         if [[ -n $selected_game_prefix ]]; then
@@ -204,7 +258,38 @@ case "$game" in
         if [[ -n $selected_game_prefix ]]; then
             game_library_path="$game_library_path:$selected_game_prefix/lib"
         fi
-        game_args=()
+        # doc/man/redeclipse.6.am documents -d* for video and -x for commands
+        # run after startup, which is how the map is selected: Red Eclipse
+        # otherwise sits in its main menu.
+        # doc/man/redeclipse.6.am documents -d* for video and -x for commands
+        # run after startup, which is how the map is selected: Red Eclipse
+        # otherwise sits in its main menu. timelimit 0 stops the local server
+        # from ending the round and rotating away from the chosen map.
+        game_args=(-df1 "-dw$game_width" "-dh$game_height"
+            "-xtimelimit 0; maxfps 0; menufps 0; map ${GAME_SCENE_MAP:-auster}")
+        redeclipse_home=$runtime_home_root/redeclipse/.redeclipse
+        mkdir -p "$redeclipse_home"
+        # The manual page states that video options are saved in init.cfg, and
+        # Red Eclipse reads that file before it creates the GL context. vsync
+        # set from config.cfg only queues a graphics reset, so the game stays
+        # paced to the 60 Hz display; in init.cfg it takes effect at startup.
+        redeclipse_init=$redeclipse_home/init.cfg
+        touch "$redeclipse_init"
+        set_cube_init_var "$redeclipse_init" vsync 0
+        set_cube_init_var "$redeclipse_init" vsynctear 0
+        set_cube_init_var "$redeclipse_init" fullscreen 1
+        set_cube_init_var "$redeclipse_init" fullscreendesktop 1
+        set_cube_init_var "$redeclipse_init" screenw "$game_width"
+        set_cube_init_var "$redeclipse_init" screenh "$game_height"
+        # maxfps and menufps are separate limiters, and the *refresh variables
+        # tie each one to the display refresh rate.
+        redeclipse_config=$redeclipse_home/config.cfg
+        touch "$redeclipse_config"
+        set_cube_init_var "$redeclipse_config" maxfps 0
+        set_cube_init_var "$redeclipse_config" menufps 0
+        set_cube_init_var "$redeclipse_config" maxfpsrefresh 0
+        set_cube_init_var "$redeclipse_config" menufpsrefresh 0
+        cmake -E remove "$redeclipse_home/autoexec.cfg"
         ;;
     openarena)
         if [[ -n $selected_game_prefix ]]; then
@@ -215,8 +300,11 @@ case "$game" in
         game_dir=$(resolve_game_dir "$default_game_dir")
         executable=$game_dir/openarena.x86_64
         game_library_path=${selected_game_prefix:+$selected_game_prefix/lib}
-        game_args=(+set r_fullscreen 0 +set r_mode -1 +set r_customwidth 1280
-            +set r_customheight 720 +set com_introplayed 1)
+        # r_swapInterval 0 disables VSync and com_maxfps 0 removes ioquake3's
+        # own frame cap, which the shipped configuration sets to 85.
+        game_args=(+set r_fullscreen 1 +set r_mode -1 +set r_customwidth "$game_width"
+            +set r_customheight "$game_height" +set r_swapInterval 0 +set com_maxfps 0
+            +set com_introplayed 1 +map "${GAME_SCENE_MAP:-dm4ish}")
         if [[ $lane == native ]]; then
             game_args=(+set com_basegame baseoa +set fs_basepath "$game_dir" "${game_args[@]}")
         fi
@@ -249,20 +337,32 @@ case "$game" in
             executable=$game_dir/bin/supertux2
             if [[ $lane == native && -n $selected_game_prefix ]]; then
                 game_library_path=$selected_game_prefix/tools/supertux/game/lib
-                game_args=(--datadir "$game_dir/share/games/supertux2")
+                supertux_datadir=$game_dir/share/games/supertux2
             elif [[ -n $selected_game_prefix ]]; then
                 game_library_path=$selected_game_prefix/lib:$game_dir/lib/x86_64-linux-gnu
-                game_args=(--datadir "$game_dir/share/supertux2")
+                supertux_datadir=$game_dir/share/supertux2
             else
                 game_library_path=$game_dir/lib/x86_64-linux-gnu
-                game_args=(--datadir "$game_dir/share/supertux2")
+                supertux_datadir=$game_dir/share/supertux2
             fi
         else
             executable=$game_dir/build/RelWithDebInfo/supertux2
             game_library_path=$game_dir/runtime-libs
-            game_args=(--datadir "$game_dir/build/install/share/games/supertux2")
+            supertux_datadir=$game_dir/build/install/share/games/supertux2
         fi
-        game_environment+=(__GL_SYNC_TO_VBLANK=1)
+        # SuperTux treats a level argument as a real filesystem path: it mounts
+        # the dirname into PhysFS and opens the basename. A path relative to the
+        # data directory therefore does not resolve, so pass an absolute one.
+        game_args=(--datadir "$supertux_datadir" --fullscreen
+            --geometry "${game_width}x${game_height}"
+            "$supertux_datadir/levels/world1/${GAME_SCENE_MAP:-welcome_antarctica}.stl")
+        # SuperTux 0.6.3 exposes no command-line VSync switch, and it rewrites
+        # its configuration file on exit. Clear the setting before every launch
+        # so a previous run cannot reintroduce the frame cap.
+        supertux_config=$runtime_home_root/supertux/.local/share/supertux2/config
+        if [[ -f $supertux_config ]]; then
+            sed -i 's/(vsync #t)/(vsync #f)/' "$supertux_config"
+        fi
         ;;
     supertuxkart)
         if [[ -n $selected_game_prefix ]]; then
@@ -273,7 +373,15 @@ case "$game" in
         game_dir=$(resolve_game_dir "$default_game_dir")
         executable=$game_dir/bin/supertuxkart
         game_library_path=$game_dir/lib
-        game_args=()
+        game_args=(--fullscreen "--screensize=${game_width}x${game_height}"
+            --race-now "--track=${GAME_SCENE_MAP:-hacienda}" --numkarts=4 --laps=3)
+        # SuperTuxKart exposes no frame-cap switch on the command line. Its
+        # configuration ships max_fps="120", which would cap three of the four
+        # lanes, and the file is rewritten on exit.
+        supertuxkart_config=$runtime_home_root/supertuxkart/.config/supertuxkart/config-0.10/config.xml
+        if [[ -f $supertuxkart_config ]]; then
+            sed -i -E 's|max_fps="[0-9]+"|max_fps="1000"|' "$supertuxkart_config"
+        fi
         if [[ $lane == native && -d $game_dir/data/data ]]; then
             game_environment+=("SUPERTUXKART_DATADIR=$game_dir/data")
         fi
@@ -401,7 +509,15 @@ if [[ $mangohud_enabled == 1 ]]; then
     # Leave enough time for MangoHud to flush both raw and summary CSV files
     # before the watchdog terminates games that do not expose a scripted quit.
     mangohud_duration=$((run_seconds > 10 ? run_seconds - 10 : 1))
-    mangohud_config="no_display,autostart_log=1,log_duration=$mangohud_duration,log_interval=100,output_folder=$mangohud_dir"
+    # The overlay stays hidden for measurement runs because drawing it costs
+    # frames. MANGOHUD_OVERLAY=1 shows it so an operator can read the frame
+    # rate on screen while validating a scene.
+    mangohud_config="autostart_log=1,log_duration=$mangohud_duration,log_interval=100,output_folder=$mangohud_dir"
+    if [[ ${MANGOHUD_OVERLAY:-0} == 1 ]]; then
+        mangohud_config="fps,frametime,gpu_stats,cpu_stats,$mangohud_config"
+    else
+        mangohud_config="no_display,$mangohud_config"
+    fi
     if [[ -n ${MANGOHUD_CONFIG_EXTRA:-} ]]; then
         mangohud_config="$mangohud_config,$MANGOHUD_CONFIG_EXTRA"
     fi
