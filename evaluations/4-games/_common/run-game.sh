@@ -332,7 +332,13 @@ case "$game" in
             set_quake_cvar "$openarena_config" com_introplayed 1
         done
         game_args=()
-        openarena_map=${GAME_SCENE_MAP-dm4ish}
+        # No map is loaded. Starting a map spawns the local server, which calls
+        # RE_Shutdown and restarts the renderer three times; MangoHud only ever
+        # hooks the context that existed when the process began, so on the QEMU
+        # lane it stops counting and reports a flat 0.1 FPS for a game that is
+        # visibly smooth. All four lanes therefore measure the scene OpenArena
+        # reaches at startup, which is also what the CI workflow records.
+        openarena_map=${GAME_SCENE_MAP-}
         if [[ -n $openarena_map ]]; then
             game_args+=(+map "$openarena_map")
         fi
