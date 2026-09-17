@@ -37,9 +37,19 @@ add_custom_command(
     VERBATIM
 )
 
+add_custom_command(
+    OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/test-signal-frame"
+    COMMAND "${GUEST_CC}" "--sysroot=${GUEST_SYSROOT}"
+        "${CMAKE_CURRENT_SOURCE_DIR}/TestSignalFrame.c"
+        -o "${CMAKE_CURRENT_BINARY_DIR}/test-signal-frame"
+    DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/TestSignalFrame.c"
+    VERBATIM
+)
+
 set(PREFLIGHT_OUTPUTS
     "${CMAKE_CURRENT_BINARY_DIR}/test-xrandr"
     "${CMAKE_CURRENT_BINARY_DIR}/test-multi-thunk-db"
+    "${CMAKE_CURRENT_BINARY_DIR}/test-signal-frame"
 )
 if(GAME_SDL_ABI STREQUAL "1")
     foreach(required IN ITEMS SDL1_PREFIX SDL1_THUNK)

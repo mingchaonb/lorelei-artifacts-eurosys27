@@ -1,0 +1,29 @@
+diff --git a/linux-user/i386/signal.c b/linux-user/i386/signal.c
+index bc5d453..ac4cb1f 100644
+--- a/linux-user/i386/signal.c
++++ b/linux-user/i386/signal.c
+@@ -231,10 +231,23 @@ struct rt_sigframe {
+     abi_ulong pretcode;
+     struct target_ucontext uc;
+     struct target_siginfo info;
+-    struct target_fpstate fpstate QEMU_ALIGNED(16);
++    /*
++     * The guest reaches this through the uc_mcontext.fpstate pointer, so its
++     * offset is not part of the ABI.  Its alignment is, though, indirectly:
++     * get_sigframe() aligns this member's address for FXSAVE/XSAVE and then
++     * subtracts the offset to get the frame base, so the offset alone decides
++     * the base's alignment mod 16.  The psABI enters a signal handler with the
++     * stack shape of a call -- RSP points at a return address -- hence the base
++     * must satisfy RSP % 16 == 8, and this offset must be 8 mod 16.  (Linux
++     * arrives at the same base from align_sigframe().)  Aligning the member to
++     * 16 would put the base at 0 mod 16 and misalign every MOVAPS the handler
++     * uses to spill an xmm register.
++     */
++    struct target_fpstate fpstate QEMU_ALIGNED(8);
+ };
+ #define TARGET_RT_SIGFRAME_FXSAVE_OFFSET (                                 \
+     offsetof(struct rt_sigframe, fpstate) + TARGET_FPSTATE_FXSAVE_OFFSET)
++QEMU_BUILD_BUG_ON((TARGET_RT_SIGFRAME_FXSAVE_OFFSET & 15) != 8);
+ #endif
+ 
+ /*

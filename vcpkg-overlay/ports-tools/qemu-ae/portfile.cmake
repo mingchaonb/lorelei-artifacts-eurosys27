@@ -10,6 +10,8 @@ vcpkg_from_github(
     REF 712379f27e692fd912b6773e32a996091b4dc413
     SHA512 3719a8e897d80519df4f81463bdc5e113a429d197a96f1d3bbd1738efbe09fb5e503145b6b5bb729aa533a22e7b39920f1c0804bcee0ca85f8ae361ad93419d5
     HEAD_REF ae
+    PATCHES
+        align-x86-64-signal-frame.patch
 )
 
 # QEMU uses its configure wrapper around Meson. Only x86-64 linux-user is

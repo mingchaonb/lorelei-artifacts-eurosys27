@@ -782,6 +782,12 @@ else
     printf 'physical-gpu-renderer\t0\n' >>"$run_dir/preflight-status.tsv"
 fi
 if [[ $lane == qemu-hecate || $lane == box64-hecate ]]; then
+    # Signal frames are the emulator's own work, and a frame at the wrong
+    # stack alignment only shows up once a handler spills an xmm register.
+    # That surfaced as Hollow Knight crashing when a save was loaded, an hour
+    # of debugging away from the cause. A wrong answer here invalidates the
+    # run, so ask the question directly before spending one.
+    run_preflight signal-frame "$preflight_build/test-signal-frame"
     run_preflight xrandr "$preflight_build/test-xrandr"
     run_preflight multi-thunk-db "$preflight_build/test-multi-thunk-db"
     if [[ $game == openarena ]]; then
