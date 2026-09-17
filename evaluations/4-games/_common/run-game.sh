@@ -245,7 +245,7 @@ case "$game" in
             game_args=(-force-glcore)
         fi
         game_args+=(-screen-width "$game_width" -screen-height "$game_height"
-            -screen-fullscreen 1)
+            -screen-fullscreen "$game_fullscreen")
         # Unity persists the resolution and window mode it last used. The
         # -screen-* arguments above already override them, but align the stored
         # values too so a run that ignores the command line still matches the
@@ -461,9 +461,19 @@ guest_xorg_path=$(join_colon "${guest_xorg[@]}")
 host_runtime_dir=$repo_root/.work/evaluations/games/host-runtime/$AE_HOST_TRIPLET
 mkdir -p "$host_runtime_dir"
 # Keep the selected SDL implementations ahead of the operating-system copies
-# without also preferring the isolated vcpkg copies of X11 and GLX. Mixing the
-# latter with the host Mesa stack can make SDL fail to select a GLX visual.
+# without also preferring the isolated vcpkg copies of GLX. Mixing the latter
+# with the host Mesa stack can make SDL fail to select a GLX visual.
+#
+# libX11 is an exception and must come from this artifact. Its copy carries the
+# Lorelei HLR rewrite, which is what lets a guest callback reach the emulator
+# when the host Xlib invokes it. The operating-system copy has no such support:
+# it calls the guest predicate of XIfEvent directly, so on AArch64 the host
+# fetches x86-64 bytes as instructions and dies with SIGBUS. Hollow Knight hits
+# this as soon as Unity waits for its window to map. Only libX11 is taken from
+# the artifact here; GLX and Mesa are left to the operating system.
 for library in \
+    "$gl_prefix"/lib/libX11.so* \
+    "$gl_prefix"/lib/libX11-xcb.so* \
     "$sdl_prefix"/lib/libSDL2.so* \
     "$sdl_prefix"/lib/libSDL2-2.0.so* \
     "$sdl_image_prefix"/lib/libSDL2_image.so* \
