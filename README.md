@@ -40,6 +40,38 @@ eurosys-lorelei-artifacts/
 
 The five numbered directories below `evaluations/` correspond to five groups of paper evidence. Each evaluation keeps its entry point, scope, and results in its own directory. Generated evidence goes to `results/<run-id>/`. `.work/`, vcpkg build trees, and download caches are reusable intermediate state rather than experimental results.
 
+### 1.1 Time and disk budget
+
+The numbers below come from the self-hosted CI runs of this repository on the evaluation host described in Section 2, an ARM64 machine with 20 cores and 119 GiB of memory. A first run builds the image and every dependency. Later runs reuse the vcpkg tree and the installed tools, which is what this repository CI measures.
+
+| Stage | First run | Reusing installed dependencies |
+| --- | --- | --- |
+| Build the Ubuntu 24.04 image | about 5 minutes | none |
+| Build and install the pinned dependencies, seven tools and 80 library packages | about 60 minutes | about 30 seconds |
+| Install the game packages | about 25 minutes | about 5 minutes |
+| Group 1, library correctness over 54 recipes | about 17 minutes | about 17 minutes |
+| Group 2, eight command-line workloads over nine lanes with five repetitions | about 27 minutes | about 27 minutes |
+| Group 3, call and callback breakdowns with the coverage audit | about 1 minute | about 1 minute |
+| Group 4, initial-scene game frame rates | about 11 minutes | about 11 minutes |
+| Group 5, source-modification analysis | a few seconds | a few seconds |
+| End to end | about 2.5 hours | about 1 hour |
+
+Group 4 above is the automated initial-scene measurement that CI can run unattended. The frame rates reported in the paper come from the manual scene navigation described in Section 3.4, which takes longer and needs an operator at the GUI host.
+
+A complete workspace occupies about 34 GB:
+
+| Path | Size | Content |
+| --- | --- | --- |
+| `.work/` | about 16 GB | devkit, per-evaluation build and install state, TLC cache, plotting virtualenv |
+| `evaluations/*/results/` | about 13 GB | generated evidence, of which the command-line group holds about 12 GB of decoded media |
+| `vcpkg/` | about 5 GB | source archive cache and build trees |
+
+All three live under the repository root and are already ignored by git, so they never enter a commit. To reclaim the space after an evaluation, remove them:
+
+```bash
+rm -rf .work .cache vcpkg
+```
+
 ## 2. Prepare the environment
 
 ### 2.1 Build the Ubuntu 24.04 ARM64 image
