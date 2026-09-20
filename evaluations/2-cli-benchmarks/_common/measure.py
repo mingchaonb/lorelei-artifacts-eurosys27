@@ -10,10 +10,45 @@ import os
 import pathlib
 import shutil
 import shlex
+import signal
 import statistics
 import subprocess
 import sys
+import threading
 import time
+
+
+def run_once(command, stdin, stdout, stderr, timeout):
+    """Run one repetition and return (status, timed_out, elapsed_ns, rusage).
+
+    subprocess.run(timeout=...) polls the child with sleeps of up to 50 ms, which
+    quantizes wall-clock samples to that granularity. Block in wait4() instead so
+    the kernel wakes us as soon as the child exits, and enforce the timeout from
+    a timer thread that kills the whole process group.
+    """
+    killed = threading.Event()
+    started = time.monotonic_ns()
+    proc = subprocess.Popen(command, stdin=stdin, stdout=stdout, stderr=stderr, start_new_session=True)
+
+    def kill_on_timeout():
+        try:
+            os.killpg(proc.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            return
+        killed.set()
+
+    timer = threading.Timer(timeout, kill_on_timeout)
+    timer.daemon = True
+    timer.start()
+    try:
+        _, wait_status, rusage = os.wait4(proc.pid, 0)
+        elapsed_ns = time.monotonic_ns() - started
+    finally:
+        timer.cancel()
+    proc.returncode = os.waitstatus_to_exitcode(wait_status)
+    if killed.is_set():
+        return 124, True, elapsed_ns, rusage
+    return proc.returncode, False, elapsed_ns, rusage
 
 
 def main() -> None:
@@ -46,8 +81,6 @@ def main() -> None:
         command = [part.replace("{output}", str(output)) for part in args.command]
         stdout_path = lane_dir / f"run-{repetition}.stdout"
         stderr_path = lane_dir / f"run-{repetition}.stderr"
-        started = time.monotonic_ns()
-        timed_out = False
         with contextlib.ExitStack() as stack:
             if args.stdin_file:
                 stdin = stack.enter_context(args.stdin_file.open("rb"))
@@ -58,23 +91,12 @@ def main() -> None:
             else:
                 stdout = stack.enter_context(stdout_path.open("wb"))
             stderr = stack.enter_context(stderr_path.open("wb"))
-            try:
-                completed = subprocess.run(
-                    command,
-                    stdin=stdin,
-                    stdout=stdout,
-                    stderr=stderr,
-                    timeout=args.timeout,
-                    check=False,
-                )
-                status = completed.returncode
-            except subprocess.TimeoutExpired:
-                timed_out = True
-                status = 124
-        elapsed_ns = time.monotonic_ns() - started
+            status, timed_out, elapsed_ns, rusage = run_once(command, stdin, stdout, stderr, args.timeout)
         record = {
             "repetition": repetition,
             "elapsed_seconds": elapsed_ns / 1_000_000_000,
+            "user_seconds": rusage.ru_utime,
+            "system_seconds": rusage.ru_stime,
             "exit_status": status,
             "timed_out": timed_out,
             "output": str(output),
@@ -94,7 +116,8 @@ def main() -> None:
 
     successful = [record["elapsed_seconds"] for record in records if record["exit_status"] == 0]
     summary = {
-        "schema_version": 1,
+        "schema_version": 2,
+        "timing_method": "wait4_blocking_monotonic_ns",
         "lane": args.lane,
         "command": args.command,
         "command_shell": shlex.join(args.command),
