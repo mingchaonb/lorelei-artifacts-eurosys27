@@ -9,15 +9,30 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
+PAPER_LIBRARIES = ["zstd", "avformat", "avcodec", "avutil", "SDL2", "Vulkan", "OpenGL", "zlib"]
+
+
+def display(text: str) -> str:
+    """Map recorded Hecate-era names to the current system name."""
+    return (text.replace("HecMID", "LoreMID")
+                .replace("Hecate", "Lorelei")
+                .replace("hecate", "lorelei"))
+
+
 def main() -> None:
     repo = pathlib.Path(__file__).resolve().parents[2]
     parser = argparse.ArgumentParser()
     parser.add_argument("--csv", type=pathlib.Path, default=repo / "evaluations/paper-data/coverage-effort.csv")
     parser.add_argument("--output", type=pathlib.Path, default=repo / ".work/paper-figures/6-coverage-effort.pdf")
     parser.add_argument("--show", action="store_true")
+    parser.add_argument("--all-libraries", action="store_true",
+                        help="plot every measured library instead of the set shown in the paper")
     args = parser.parse_args()
     all_rows = list(csv.DictReader(args.csv.open(newline="")))
     rows = [row for row in all_rows if row["status"] == "measured"]
+    if not args.all_libraries:
+        order = {name: index for index, name in enumerate(PAPER_LIBRARIES)}
+        rows = sorted((row for row in rows if row["library"] in order), key=lambda row: order[row["library"]])
     if not rows:
         raise SystemExit(f"No measured rows in {args.csv}")
     names = [row["library"] for row in rows]
@@ -28,13 +43,13 @@ def main() -> None:
     box_cov = np.array([float(row["box64_coverage"]) for row in rows])
     hecate_cov = np.array([float(row["hecate_coverage"]) for row in rows])
 
-    plt.rcParams.update({"font.family": "serif", "font.size": 10})
-    fig, ax = plt.subplots(figsize=(13.8, 5.2))
+    plt.rcParams.update({"pdf.fonttype": 42, "ps.fonttype": 42, "font.family": "serif", "font.size": 10})
+    fig, ax = plt.subplots(figsize=(6.2, 2.6))
     coverage = ax.twinx()
     ax.bar(x - width / 2, box_loc, width, label="Box64 LOC", color="#FF6347", edgecolor="black", alpha=0.8)
-    ax.bar(x + width / 2, hecate_loc, width, label="Hecate LOC", color="#2E8B57", edgecolor="black", alpha=0.8)
+    ax.bar(x + width / 2, hecate_loc, width, label="Lorelei LOC", color="#2E8B57", edgecolor="black", alpha=0.8)
     coverage.plot(x - width / 2, box_cov, "o", label="Box64 coverage", color="#8B0000")
-    coverage.plot(x + width / 2, hecate_cov, "^", label="Hecate coverage", color="#006400")
+    coverage.plot(x + width / 2, hecate_cov, "^", label="Lorelei coverage", color="#006400")
     ax.set_xticks(x)
     ax.set_xticklabels(names, rotation=38, ha="right", rotation_mode="anchor")
     ax.set_ylabel("Manual code lines")

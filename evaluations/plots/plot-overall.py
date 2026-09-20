@@ -10,12 +10,30 @@ import numpy as np
 
 
 LANES = ["qemu-hecate", "blink-hecate", "box64-hecate", "fex-hecate", "box64", "qemu", "blink", "fex"]
+LANE_LABELS = {
+    "qemu-hecate": "QEMU-Lorelei",
+    "blink-hecate": "Blink-Lorelei",
+    "box64-hecate": "Box64-Lorelei",
+    "fex-hecate": "FEX-Lorelei",
+    "qemu": "QEMU",
+    "blink": "Blink",
+    "box64": "Box64",
+    "fex": "FEX",
+    "native": "Native",
+}
 LABELS = {
     "ffmpeg-fdk-aac": "fdk-aac",
     "ffmpeg-mp3lame": "mp3lame",
     "ffmpeg-vorbis": "ogg/vorbis",
     "ffmpeg-x264": "x264",
 }
+
+
+def display(text: str) -> str:
+    """Map recorded Hecate-era names to the current system name."""
+    return (text.replace("HecMID", "LoreMID")
+                .replace("Hecate", "Lorelei")
+                .replace("hecate", "lorelei"))
 
 
 def main() -> None:
@@ -29,7 +47,7 @@ def main() -> None:
     workloads = list(dict.fromkeys(row["workload"] for row in rows))
     values = {(row["workload"], row["lane"]): row for row in rows}
 
-    plt.rcParams.update({"font.family": "serif", "font.size": 10})
+    plt.rcParams.update({"pdf.fonttype": 42, "ps.fonttype": 42, "font.family": "serif", "font.size": 10})
     fig, ax = plt.subplots(figsize=(11.5, 4.6))
     x = np.arange(len(workloads))
     width = 0.105
@@ -52,7 +70,7 @@ def main() -> None:
                 heights.append(np.nan)
                 labels.append("")
         xpos = x + (index - (len(LANES) - 1) / 2) * width
-        bars = ax.bar(xpos, heights, width, label=lane, color=colors[index], edgecolor="black", linewidth=0.6)
+        bars = ax.bar(xpos, heights, width, label=LANE_LABELS.get(lane, display(lane)), color=colors[index], edgecolor="black", linewidth=0.6)
         for bar, label in zip(bars, labels):
             if label:
                 ax.text(bar.get_x() + bar.get_width() / 2, min(bar.get_height() + 0.08, 4.92), label,

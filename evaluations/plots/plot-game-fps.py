@@ -20,10 +20,10 @@ GAMES = [
 GAME_LABELS = {"hollow-knight": "hollowknight"}
 LANES = ["qemu-hecate", "native", "box64", "box64-hecate"]
 LABELS = {
-    "qemu-hecate": "QEMU-Hecate",
+    "qemu-hecate": "QEMU-Lorelei",
     "native": "Native",
     "box64": "Box64",
-    "box64-hecate": "Box64-Hecate",
+    "box64-hecate": "Box64-Lorelei",
 }
 COLORS = {
     "qemu-hecate": "#2E8B57",
@@ -31,6 +31,13 @@ COLORS = {
     "box64": "#FF6347",
     "box64-hecate": "#E7DA66",
 }
+
+
+def display(text: str) -> str:
+    """Map recorded Hecate-era names to the current system name."""
+    return (text.replace("HecMID", "LoreMID")
+                .replace("Hecate", "Lorelei")
+                .replace("hecate", "lorelei"))
 
 
 def main() -> None:
@@ -53,7 +60,7 @@ def main() -> None:
     x = np.arange(len(games))
     width = 0.2
 
-    plt.rcParams.update({"font.family": "serif", "font.size": 12})
+    plt.rcParams.update({"pdf.fonttype": 42, "ps.fonttype": 42, "font.family": "serif", "font.size": 12})
     fig, ax = plt.subplots(figsize=(6, 3))
     for index, lane in enumerate(LANES):
         means = []

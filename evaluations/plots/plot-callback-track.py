@@ -9,6 +9,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
+def display(text: str) -> str:
+    """Map recorded Hecate-era names to the current system name."""
+    return (text.replace("HecMID", "LoreMID")
+                .replace("Hecate", "Lorelei")
+                .replace("hecate", "lorelei"))
+
+
 def main() -> None:
     repo = pathlib.Path(__file__).resolve().parents[2]
     parser = argparse.ArgumentParser()
@@ -23,7 +30,7 @@ def main() -> None:
     colors = dict(zip(components, plt.cm.Set2(np.linspace(0, 1, max(1, len(components))))))
     y = np.arange(len(systems))
 
-    plt.rcParams.update({"font.family": "serif", "font.size": 11})
+    plt.rcParams.update({"pdf.fonttype": 42, "ps.fonttype": 42, "font.family": "serif", "font.size": 11})
     fig, ax = plt.subplots(figsize=(8.2, 2.8))
     for row_index, system in enumerate(systems):
         left = 0.0
@@ -31,7 +38,7 @@ def main() -> None:
         for row in system_rows:
             value = float(row["median_ns"])
             ax.barh(row_index, value, left=left, height=0.5, color=colors[row["component"]],
-                    edgecolor="black", linewidth=0.7, alpha=0.8, label=row["component"])
+                    edgecolor="black", linewidth=0.7, alpha=0.8, label=display(row["component"]))
             left += value
         if not system_rows:
             ax.text(0, row_index, "missing measurement", ha="left", va="center", color="firebrick")
@@ -41,7 +48,7 @@ def main() -> None:
     unique = dict(zip(labels, handles))
     ax.legend(unique.values(), unique.keys(), ncol=3, loc="lower center", bbox_to_anchor=(0.5, 1.01))
     ax.set_yticks(y)
-    ax.set_yticklabels(systems)
+    ax.set_yticklabels([display(name) for name in systems])
     ax.invert_yaxis()
     ax.set_xlabel("Time (ns)")
     ax.grid(axis="x", alpha=0.25)

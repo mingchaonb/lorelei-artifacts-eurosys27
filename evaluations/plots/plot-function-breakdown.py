@@ -9,6 +9,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
+def display(text: str) -> str:
+    """Map recorded Hecate-era names to the current system name."""
+    return (text.replace("HecMID", "LoreMID")
+                .replace("Hecate", "Lorelei")
+                .replace("hecate", "lorelei"))
+
+
 def main() -> None:
     repo = pathlib.Path(__file__).resolve().parents[2]
     parser = argparse.ArgumentParser()
@@ -25,12 +32,12 @@ def main() -> None:
     y = np.arange(len(cases))
     left = np.zeros(len(cases))
 
-    plt.rcParams.update({"font.family": "serif", "font.size": 11})
+    plt.rcParams.update({"pdf.fonttype": 42, "ps.fonttype": 42, "font.family": "serif", "font.size": 11})
     fig, ax = plt.subplots(figsize=(8.2, max(2.4, 1.0 + len(cases))))
     colors = ["#2E8B57", "#FBFF00", "#1E90FF", "#FF6347"]
     for index, component in enumerate(components):
         component_values = np.array([lookup[(case, component)] for case in cases])
-        bars = ax.barh(y, component_values, left=left, height=0.5, label=component,
+        bars = ax.barh(y, component_values, left=left, height=0.5, label=display(component),
                        color=colors[index % len(colors)], edgecolor="black", linewidth=0.7, alpha=0.8)
         for bar, value, start in zip(bars, component_values, left):
             if value >= 1:
