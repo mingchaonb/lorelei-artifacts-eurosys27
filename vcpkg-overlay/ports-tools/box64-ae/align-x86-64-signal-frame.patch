@@ -1,0 +1,19 @@
+diff --git a/src/libtools/signals.c b/src/libtools/signals.c
+index fbfbd199..99b26e71 100644
+--- a/src/libtools/signals.c
++++ b/src/libtools/signals.c
+@@ -416,6 +416,14 @@ int my_sigactionhandler_oldcode_64(x64emu_t* emu, int32_t sig, int simple, sigin
+     memcpy(info2, info, sizeof(siginfo_t));
+     // try to fill some sigcontext....
+     frame -= sizeof(x64_ucontext_t);
++    // The psABI enters a signal handler with the stack shape of a call, so RSP
++    // points at a return address and RSP % 16 == 8. Compilers rely on that when
++    // they spill an xmm register with MOVAPS. This frame base becomes RSP just
++    // before PushExit() pushes the return address, so it has to be 0 mod 16.
++    // sizeof(x64_ucontext_t) is 968, which is 8 mod 16, so without this the
++    // handler ran 8 bytes off and faulted on the first aligned SSE store.
++    // Aligning here also gives the ucontext the alignment its FXSAVE area wants.
++    frame &= ~15ULL;
+     x64_ucontext_t   *sigcontext = (x64_ucontext_t*)frame;
+     // get general register
+     emu2mctx(&sigcontext->uc_mcontext, emu);

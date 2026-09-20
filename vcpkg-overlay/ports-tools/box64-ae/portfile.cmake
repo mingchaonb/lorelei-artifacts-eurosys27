@@ -9,6 +9,8 @@ vcpkg_from_github(
     REF 28ef6be929e42669ac682b31a1dd9dfb31ce2ced
     SHA512 251db348347e30104965239d0696941e01acdb2e6b186440c503d3ba2d211cd1752a9f4b0afc149930164b7f0328592c8392b6f9496b4957e976555ffda5dfa5
     HEAD_REF ae
+    PATCHES
+        align-x86-64-signal-frame.patch
 )
 
 # Select the dynarec backend that matches the physical AE host. NOGIT avoids
