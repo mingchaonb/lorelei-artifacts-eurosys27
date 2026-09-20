@@ -17,6 +17,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[3]
 DEVKIT = pathlib.Path(os.environ.get("LORELEI_DEVKIT", ROOT / ".work/devkit")).resolve()
 WORK = ROOT / ".work/evaluations/coverage-effort"
 RESULTS = pathlib.Path(__file__).resolve().parent / "results"
+DESCRIPTORS = pathlib.Path(__file__).resolve().parent / "descriptors"
 
 
 def first_file(root: pathlib.Path, pattern: str) -> pathlib.Path:
@@ -84,6 +85,8 @@ def run_tlc(
         "--keep-intermediates",
         "--",
         *(f"-I{path}" for path in include_dirs),
+        # FFmpeg internal headers still use the register keyword, which C++17 rejects.
+        "-Wno-register",
     ]
     (library_dir / "command.json").write_text(json.dumps(command, indent=2) + "\n")
     with (library_dir / "tlc.log").open("w") as log:
@@ -172,7 +175,9 @@ def main() -> None:
             run_dir,
         )
     )
-    zstd_headers = sorted(zstd_source.rglob("*.h"))
+    # zstd declares its legacy decoder entry points only inside .c files. The checked-in
+    # descriptor was produced with LoreTLC dump and re-declares them.
+    zstd_headers = sorted(zstd_source.rglob("*.h")) + [DESCRIPTORS / "zstd-legacy.h"]
     rows.append(
         run_tlc(
             "zstd",
@@ -195,6 +200,8 @@ def main() -> None:
                 "videotoolbox.h",
             }
             headers = [header for header in headers if header.name not in unavailable_platform_headers]
+            # FFmpeg declares its avpriv_ symbols in internal headers that are not installed.
+            headers = headers + [DESCRIPTORS / "avcodec-internal.h"]
         elif library == "avutil":
             headers = [
                 header
