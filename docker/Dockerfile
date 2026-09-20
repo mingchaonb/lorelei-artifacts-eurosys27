@@ -34,7 +34,7 @@ RUN case "${USE_USTC_MIRROR}" in \
         libglib2.0-dev libdw-dev libelf-dev libcapstone-dev libfdt-dev \
         libpixman-1-dev libslirp-dev libffi-dev libffcall-dev libssl-dev \
         libvulkan1 libvulkan-dev mesa-vulkan-drivers \
-        libgl1 libglx0 libgl-dev libglx-dev libx11-dev \
+        libgl1 libglx0 libgl-dev libglx-dev libgles-dev libx11-dev \
         mangohud xauth xvfb x11-xserver-utils x11-utils xdotool \
     && if [[ "$(dpkg --print-architecture)" == arm64 ]]; then \
         apt-get install -y --no-install-recommends \

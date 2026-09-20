@@ -7,12 +7,22 @@ Usage: ${GAME_RUNNER_NAME:-run.sh} [--lane LANE] [SECONDS]
 
 Run one packaged game in the selected execution lane. SECONDS is the watchdog
 duration and defaults to 30. LANE defaults to qemu-hecate and may be native,
-qemu-hecate, box64, or box64-hecate.
+qemu-hecate, box64, box64-hecate, fex, or fex-hecate.
+
+The fex lane runs FEX with FEX's own OpenGL thunk, which is the counterpart of
+the box64 lane running Box64's own wrappers; fex-hecate runs the same emulator
+with Hecate's thunks instead. Both need a FEX built with BUILD_THUNKS=ON, which
+the pinned fex-ae port does not produce -- see FEX_THUNK_ROOT below.
 
 Common environment overrides:
   LORELEI_DEVKIT        Lorelei devkit installation
   QEMU                  Patched qemu-x86_64 executable
   BOX64                 Box64 executable
+  FEX_THUNK_ROOT        FEX built with thunks: expects Bin-less FEX, HostLibs_64/,
+                        Guest/ and ThunksDB.json inside
+  FEX                   FEX executable, defaults to FEX_THUNK_ROOT/FEX
+  FEX_GUEST_SYSROOT     x86-64 sysroot for the fex lane, which unlike fex-hecate
+                        needs real x86-64 graphics libraries for the guest
   GAME_LANE             Default lane when --lane is omitted
   GAMES_ROOT            Legacy packaged game directory override
   GAME_DIR              Selected game's installation directory
@@ -54,7 +64,7 @@ while (($#)); do
     shift
 done
 case $lane in
-    native|qemu-hecate|box64|box64-hecate) ;;
+    native|qemu-hecate|box64|box64-hecate|fex|fex-hecate) ;;
     *) echo "Unknown game lane: $lane" >&2; usage >&2; exit 2 ;;
 esac
 if [[ ! $run_seconds =~ ^[1-9][0-9]*$ ]]; then
@@ -69,6 +79,11 @@ devkit=$(realpath -m "${LORELEI_DEVKIT:-$repo_root/.work/devkit}")
 export LORELEI_DEVKIT=$devkit
 qemu=$(realpath -m "${QEMU:-$repo_root/vcpkg/installed/$AE_TOOL_TRIPLET/tools/qemu-ae/qemu-x86_64}")
 box64=$(realpath -m "${BOX64:-$repo_root/vcpkg/installed/$AE_TOOL_TRIPLET/tools/box64-ae/box64}")
+# The pinned fex-ae port sets BUILD_THUNKS=OFF, so the installed FEX carries no
+# thunks and could only ever run a game as pure emulation. Both FEX lanes
+# therefore come from a separately built tree rather than vcpkg/installed.
+fex_thunk_root=$(realpath -m "${FEX_THUNK_ROOT:-$repo_root/.work/evaluations/fex-thunks}")
+fex=$(realpath -m "${FEX:-$fex_thunk_root/FEX}")
 games_root=${GAMES_ROOT:-$rover_root/ae-games}
 runtime_home_root=${RUNTIME_HOME_ROOT:-$repo_root/.work/evaluations/games/runtime-home}
 mangohud_enabled=${MANGOHUD_ENABLED:-1}
@@ -537,7 +552,7 @@ preflight_host_preload=
 if [[ $lane == qemu-hecate ]]; then
     host_preload=${HOST_PRELOAD-$devkit/lib/libLoreHostRT.so:$devkit/lib/libLoreQEMUThreadHook.so}
     preflight_host_preload=$host_preload
-elif [[ $lane == box64-hecate ]]; then
+elif [[ $lane == box64-hecate || $lane == fex-hecate ]]; then
     host_preload=${HOST_PRELOAD-$devkit/lib/libLoreHostRT.so}
     preflight_host_preload=$host_preload
 fi
@@ -591,6 +606,13 @@ if [[ $mangohud_enabled == 1 ]]; then
             # are still counted as frames. Hook the guest side instead,
             # exactly as the Box64 lanes already do.
             presentation_hook_mode=guest-qemu
+        elif [[ $lane == fex || $lane == fex-hecate ]]; then
+            # Both FEX lanes keep MangoHud. The guest presents through an
+            # emulated x86-64 SDL2, so a host hook sees no swap at all and
+            # logs nothing; MangoHud sits on the host GL the thunks drive and
+            # counts each swap once, which SuperTux's own 66.7 FPS ceiling
+            # confirms.
+            :
         else
             presentation_hook_mode=host
         fi
@@ -798,6 +820,85 @@ if [[ $lane == qemu-hecate || $lane == box64-hecate ]]; then
     fi
 fi
 
+# FEX_APP_CONFIG is read only for its ThunksDB section, not as a configuration
+# layer, so the guest environment cannot travel in it. FEX_ENV is the channel,
+# and this artifact's FEX takes a newline-separated list there so that one
+# variable can carry several: see the Source/Common/Config.cpp patch. Clearing
+# LD_PRELOAD matters as much as setting the library path, because the host side
+# preloads AArch64 objects that the guest loader can only reject.
+fex_app_config=$run_dir/fex-app-config.json
+fex_guest_sysroot=
+fex_guest_ld=
+if [[ $lane == fex || $lane == fex-hecate ]]; then
+    if [[ ! -x $fex ]]; then
+        echo "FEX lane needs a thunk-enabled FEX: $fex" >&2
+        echo "Build one with -DBUILD_THUNKS=ON and point FEX_THUNK_ROOT at it." >&2
+        exit 2
+    fi
+    if [[ $lane == fex ]]; then
+        # Plain FEX thunks only OpenGL, so everything else the game links must
+        # exist as a real x86-64 library. The Hecate sysroot has no graphics
+        # stack at all, which is the point of Hecate, so this lane needs its own.
+        fex_guest_sysroot=$(realpath -m "${FEX_GUEST_SYSROOT:-$repo_root/.work/evaluations/fex-guest-sysroot}")
+        if [[ ! -d $fex_guest_sysroot/usr/lib/x86_64-linux-gnu ]]; then
+            echo "fex lane needs an x86-64 sysroot at $fex_guest_sysroot" >&2
+            echo "Set FEX_GUEST_SYSROOT to one containing usr/lib/x86_64-linux-gnu." >&2
+            exit 2
+        fi
+        # Only this sysroot and the game's own bundled libraries. The devkit's
+        # guest sysroot must stay out: its glibc is 2.39 while this one is 2.35,
+        # and mixing the two resolves the game against a libc whose ld.so is not
+        # the one FEX loaded, which fails on GLIBC_PRIVATE symbols.
+        # No guest LD_LIBRARY_PATH here. FEX overlays the thunk onto the
+        # library's path as the guest sees it, inside the rootfs, so naming the
+        # sysroot's host path instead makes the loader find the real Mesa libGL
+        # first and the GL thunk never engages. Let the rootfs resolve.
+        fex_guest_ld=
+        fex_guest_env="LD_PRELOAD="
+        # FEX's drm thunk does not export everything SDL2 resolves against
+        # libdrm, and asound and Vulkan are not on the path being measured.
+        # GL is the one that decides whether this lane reaches the GPU at all.
+        fex_thunks_enabled='"GL": 1, "drm": 0, "asound": 0, "Vulkan": 0'
+    else
+        fex_guest_sysroot=$devkit/x86_64/sysroot
+        fex_guest_ld=$guest_library_path
+        fex_guest_env=$(printf '%s\n' \
+            "LD_LIBRARY_PATH=$fex_guest_ld" \
+            "LD_PRELOAD=" \
+            "SDL_VIDEODRIVER=x11" \
+            "SDL_AUDIODRIVER=dummy" \
+            "DISPLAY=$display" \
+            "XAUTHORITY=$xauthority" \
+            "HOME=$game_home" \
+            "LORELEI_GUEST_LOG_LEVEL=${LORELEI_GUEST_LOG_LEVEL:-1}" \
+            "LORELEI_GUEST_EXTENSIONS=$devkit/x86_64/lib/libLoreGuestHLRExtension.so")
+        # Hecate supplies the graphics path here, so every FEX thunk stays off.
+        fex_thunks_enabled='"GL": 0, "drm": 0, "asound": 0, "Vulkan": 0'
+    fi
+    printf '{\n  "ThunksDB": { %s }\n}\n' "$fex_thunks_enabled" > "$fex_app_config"
+    # FEX reads the overlay database from its config directory, which follows
+    # HOME. Writing it under the run's own home keeps the operator's real
+    # ~/.fex-emu untouched.
+    mkdir -p "$game_home/.fex-emu"
+    cp "$fex_thunk_root/ThunksDB.json" "$game_home/.fex-emu/ThunksDB.json"
+    # FEX talks to a FEXServer helper and starts one on demand, inheriting the
+    # launcher's environment as it does. On the Hecate lane that environment
+    # preloads libLoreHostRT.so, whose constructor has no emulator to attach to
+    # inside FEXServer, so the helper dies and FEX then fails with
+    # "Couldn't connect to FEXServer socket". Start it here with a clean
+    # environment instead, and keep it alive for the length of the run.
+    # A server left over from an earlier run still serves that run's rootfs, so
+    # the next lane would load its guest interpreter from the wrong tree. Retire
+    # it first; the two FEX lanes deliberately use different sysroots.
+    if [[ -x $fex_thunk_root/FEXServer ]]; then
+        env -u LD_PRELOAD HOME="$game_home" "$fex_thunk_root/FEXServer" --kill \
+            >"$run_dir/logs/fexserver.log" 2>&1 || true
+        env -u LD_PRELOAD HOME="$game_home" FEX_ROOTFS="$fex_guest_sysroot" \
+            "$fex_thunk_root/FEXServer" "--persistent=$((run_seconds + 60))" \
+            >>"$run_dir/logs/fexserver.log" 2>&1 || true
+    fi
+fi
+
 {
     echo "game=$game"
     echo "started=$(date -u +%FT%TZ)"
@@ -811,6 +912,11 @@ fi
     echo "guest_game_prefix=$guest_game_prefix"
     echo "qemu=$qemu"
     echo "box64=$box64"
+    if [[ $lane == fex || $lane == fex-hecate ]]; then
+        echo "fex=$fex"
+        echo "fex_thunk_root=$fex_thunk_root"
+        echo "fex_guest_sysroot=$fex_guest_sysroot"
+    fi
 } > "$run_dir/run.env"
 
 set +e
@@ -877,6 +983,38 @@ set -m
                 -E LORELEI_GUEST_EXTENSIONS="$devkit/x86_64/lib/libLoreGuestHLRExtension.so" \
                 -E LD_LIBRARY_PATH="$guest_library_path" \
                 "$executable" "${game_args[@]}"
+            ;;
+        fex)
+            # FEX's own OpenGL thunk: guest GL calls land in FEX's host thunk
+            # library, which drives the host driver directly. Everything else
+            # the game touches stays emulated against real x86-64 libraries.
+            env "${mangohud_env[@]}" "${game_environment[@]}" \
+                DISPLAY="$display" XAUTHORITY="$xauthority" \
+                SDL_VIDEODRIVER=x11 SDL_AUDIODRIVER=dummy HOME="$game_home" \
+                LD_PRELOAD="$host_preload" LD_LIBRARY_PATH="$host_system_library_path" \
+                FEX_ROOTFS="$fex_guest_sysroot" \
+                FEX_THUNKHOSTLIBS="$fex_thunk_root/HostLibs_64" \
+                FEX_THUNKGUESTLIBS="$fex_thunk_root/Guest" \
+                FEX_APP_CONFIG="$fex_app_config" FEX_OUTPUTLOG=stderr \
+                FEX_ENV="$fex_guest_env" \
+                "$fex" "$executable" "${game_args[@]}"
+            ;;
+        fex-hecate)
+            # Same emulator, Hecate's thunks instead of FEX's. FEX's own thunks
+            # are all disabled in the app config so the two cannot overlap.
+            env "${mangohud_env[@]}" "${game_environment[@]}" \
+                DISPLAY="$display" XAUTHORITY="$xauthority" \
+                SDL_VIDEODRIVER=x11 SDL_AUDIODRIVER=dummy HOME="$game_home" \
+                LORELEI_THUNK_DATABASE="$thunk_databases" \
+                LORELEI_THUNKS_CONFIG_VARIABLES="$thunk_variables" \
+                LORELEI_HOST_EXTENSIONS="$devkit/lib/libLoreHostHLRExtension.so" \
+                LD_PRELOAD="$host_preload" LD_LIBRARY_PATH="$host_library_path" \
+                FEX_ROOTFS="$fex_guest_sysroot" \
+                FEX_THUNKHOSTLIBS="$fex_thunk_root/HostLibs_64" \
+                FEX_THUNKGUESTLIBS="$fex_thunk_root/Guest" \
+                FEX_APP_CONFIG="$fex_app_config" FEX_OUTPUTLOG=stderr \
+                FEX_ENV="$fex_guest_env" \
+                "$fex" "$executable" "${game_args[@]}"
             ;;
     esac
 ) > "$run_dir/game.log" 2>&1 &
