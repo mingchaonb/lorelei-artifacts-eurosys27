@@ -48,13 +48,23 @@
 
 四条路径分别使用容器安装的 ARM64 package、x86-64 package、QEMU、Box64 和 Hecate thunk。Box64-Hecate 保留 Box64 已有的 SDL 与 graphics wrapper，不重复装载相同 library 的 Hecate graphics thunk。Hollow Knight 不提供可分发的 ARM64 package，因此没有 native lane。也可用 `GAME_LANE` 设置默认路径。
 
-采集论文 FPS 数据时：
+采集论文 FPS 数据时，每条可用 lane 使用相同的分辨率和相同的场景：
 
-1. 对每条可用 lane 使用相同分辨率和游戏场景。
-2. 根据进入目标游戏场景所需的时间，选择足够长的 watchdog。
-3. 启动 runner，并手动进入目标场景。
-4. 场景就绪后，保持游戏继续运行至少 15 秒。
-5. 正常关闭游戏。论文导出取最后一个 sample 前第 12 秒到第 2 秒之间的 10 秒窗口。最后 2 秒不计入，避免关闭游戏的操作影响结果。
+| 游戏 | 场景 |
+| --- | --- |
+| AssaultCube | 地图 `ac_desert`，经 `--loadmap` 载入，角色静止于出生点 |
+| OpenArena | 启动后到达的场景，不载入地图 |
+| Red Eclipse | 地图 `auster`，经 `-x` 载入，角色静止于出生点 |
+| SuperTux | `levels/world1/welcome_antarctica.stl`，Tux 静止于起点 |
+| SuperTuxKart | 赛道 `hacienda`，`--race-now`，4 辆车、3 圈，玩家车停在起跑线，AI 车正常行驶 |
+| Hollow Knight | 由操作者从同一存档进入，角色原地不动 |
+
+前五个游戏的场景由 runner 通过命令行载入，`GAME_SCENE_MAP` 可以覆盖默认的地图或赛道。OpenArena 默认不载入地图，因为载入地图会重启渲染器，之后 QEMU lane 上的 MangoHud 就收不到帧。因此它的帧率是启动场景的帧率，而不是对局中的帧率。
+
+1. 根据到达场景所需的时间，选择足够长的 watchdog。Hollow Knight 需要手动进入，要预留相应时间。
+2. 启动 runner。Hollow Knight 需要载入存档后停止操作。
+3. 场景就绪后，保持游戏继续运行至少 15 秒。
+4. 正常关闭游戏。论文导出取最后一个 sample 前第 12 秒到第 2 秒之间的 10 秒窗口。最后 2 秒不计入，避免关闭游戏的操作影响结果。
 
 设置 `GAME_DIR` 可让任何 runner 使用用户指定的游戏目录，而不是 `.work/` 中已安装的 guest package：
 
@@ -156,7 +166,7 @@ GUI_ENV=/absolute/path/to/gui-env.txt \
 - 原始采样写入本次结果目录。
 - `fps-summary.json` 汇总稳定 FPS 与 frametime。
 
-论文数据导出脚本直接读取原始 CSV，不会照搬 collector 的全程 summary。脚本优先根据 `elapsed` 时间戳为每个游戏截取 `[最后一个 sample - 12 秒, 最后一个 sample - 2 秒)`。脚本将超过 300 FPS 的 sample 作为测量噪声忽略，再统计保留与忽略的 sample 数量以及 FPS 平均值、最小值、最大值和总体方差。默认每 100 ms 采样一次，因此过滤前的窗口通常包含约 100 个 sample。旧日志没有 `elapsed` 字段时才按固定采样间隔回退。少于 12 秒的记录会明确标记为数据不足，不会擅自缩短窗口。
+论文数据导出脚本直接读取原始 CSV，不会照搬 collector 的全程 summary。脚本优先根据 `elapsed` 时间戳为每个游戏截取 `[最后一个 sample - 12 秒, 最后一个 sample - 2 秒)`。脚本将超过 10000 FPS 的 sample 作为测量噪声忽略，再统计保留与忽略的 sample 数量以及 FPS 平均值、最小值、最大值和总体方差。默认每 100 ms 采样一次，因此过滤前的窗口通常包含约 100 个 sample。旧日志没有 `elapsed` 字段时才按固定采样间隔回退。少于 12 秒的记录会明确标记为数据不足，不会擅自缩短窗口。
 
 导出每个游戏、每条 lane 最新且包含 FPS 记录的运行：
 
@@ -205,53 +215,3 @@ evaluations/4-games/<game>/results/<UTC timestamp>-<lane>/
 ```
 
 清理脚本不会删除游戏 package、共享 vcpkg cache 或用户提供的 `GAME_DIR`。
-
-<!--
-## 9. SPARK self-hosted GitHub Actions
-
-仓库提供 [`.github/workflows/evaluations.yml`](../../.github/workflows/evaluations.yml)。该 workflow 只接受手动触发，并要求带有 `spark-gpu` 标签的 Ubuntu 24.04 ARM64 self-hosted runner。它完整执行评测组 1 到 5：
-
-1. 在 AE Docker 镜像内安装 devkit、全部工具、全部 library package 和五个可再分发游戏。
-2. 在容器内运行 library 正确性、九条 CLI lane、三个 breakdown 和 coverage 审计。
-3. 检查 runner 正在使用物理 OpenGL renderer，然后在 SPARK 宿主的当前 X11 会话运行五个游戏的四条 lane。
-4. 每个游戏启动后停留在默认进入的初始场景，watchdog 缺省为 30 秒。
-5. 回到容器内统计评测系统的修改量，并运行统一论文数据导出器。
-6. 将 `evaluations/paper-data/` 中的全部 CSV 和 manifest 上传为 `paper-data` artifact，同时把五组原始证据上传为单独的 `raw-evidence` artifact。
-
-`game-fps-ci.csv` 明确记录 `scene=initial`，并要求每一行均来自物理 GPU。任一游戏或 lane 缺少有效 FPS 样本时，workflow 在保留并上传已有证据后失败。Hollow Knight 不在 CI 中运行，因为 artifact 不能下载或分发其专有文件。
-
-在 SPARK 上配置 runner：
-
-1. 打开仓库的 **Settings > Actions > Runners > New self-hosted runner**，选择 Linux 和 ARM64。
-2. 使用 GitHub 页面给出的命令下载并解压 runner。注册时添加 `spark-gpu` 标签：
-
-```bash
-./config.sh \
-  --url https://github.com/mingchaonb/lorelei-artifacts-eurosys27 \
-  --token '<GitHub 页面生成的一次性 token>' \
-  --name spark \
-  --labels spark-gpu \
-  --work _work
-```
-
-3. 确认 `functioner` 可以运行 Docker，且宿主已按照第 6 节安装 MangoHud 和图形工具。
-4. 最简单的首次运行方式是在 SPARK 图形桌面的终端中启动 runner。这样它直接继承正确的 `DISPLAY` 和 `XAUTHORITY`：
-
-```bash
-cd /path/to/actions-runner
-./run.sh
-```
-
-5. 在 GitHub 的 **Actions > EuroSys AE 1-5 on SPARK > Run workflow** 中启动任务。可在启动时调整 CLI 重复次数、breakdown 轮数、固定 CPU 和游戏 watchdog。运行游戏评测期间，五个游戏会依次在 SPARK 屏幕上出现，避免同时操作桌面或改变窗口焦点。
-
-需要把 runner 作为 systemd 服务长期运行时，先把图形桌面终端中的实际值写入 runner 目录的 `.env`：
-
-```bash
-cd /path/to/actions-runner
-printf 'DISPLAY=%s\nXAUTHORITY=%s\n' "$DISPLAY" "$XAUTHORITY" >.env
-sudo ./svc.sh install functioner
-sudo ./svc.sh start
-```
-
-桌面会话改变后，重新写入 `.env` 并重启 runner 服务。代理同样使用 runner 目录的 `.env` 配置，workflow 会把大小写代理变量传给 Docker build 和容器。
--->

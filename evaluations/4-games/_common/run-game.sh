@@ -291,9 +291,6 @@ case "$game" in
         fi
         # doc/man/redeclipse.6.am documents -d* for video and -x for commands
         # run after startup, which is how the map is selected: Red Eclipse
-        # otherwise sits in its main menu.
-        # doc/man/redeclipse.6.am documents -d* for video and -x for commands
-        # run after startup, which is how the map is selected: Red Eclipse
         # otherwise sits in its main menu. timelimit 0 stops the local server
         # from ending the round and rotating away from the chosen map.
         game_args=(-df1 "-dw$game_width" "-dh$game_height"

@@ -6,7 +6,7 @@ The selected problem is an out-of-place forward complex two-dimensional transfor
 
 The runner requires the completed client output to report the requested size, repetition count, and checksum of 1. All Blink lanes use the default JIT mode. The runner never selects Blink's interpreter mode.
 
-The installed upstream-test tree still contains the original FFTW `bench`, and QEMU-Hecate can run that original driver. The focused client is used for the symmetric comparison because the original multi-purpose driver is not reliable under the comparator's Blink JIT path. The transform itself succeeds once the unrelated driver behavior is removed. This is a Blink JIT limitation, not a Hecate limitation.
+The installed upstream-test tree still contains the original FFTW `bench`, and QEMU-Hecate can run that original driver. Under Blink's JIT path the original multi-purpose driver does not complete reliably, while the transform itself completes once the driver's other behavior is removed. Every lane therefore times the same focused client, and the original driver stays installed for inspection.
 
 ```bash
 ./evaluations/2-cli-benchmarks/fftw/run.sh

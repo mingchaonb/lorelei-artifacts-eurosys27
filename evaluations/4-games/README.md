@@ -48,13 +48,23 @@ Leave the evaluation container and run games from a desktop terminal on the Ubun
 
 The four lanes use the container-installed ARM64 package, x86-64 package, QEMU, Box64, and Hecate thunks as appropriate. Box64-Hecate retains Box64's existing SDL and graphics wrappers instead of loading duplicate Hecate graphics thunks for the same libraries. Hollow Knight has no redistributable ARM64 package and therefore has no native lane. `GAME_LANE` may set the default lane.
 
-For a paper FPS measurement:
+For a paper FPS measurement, every available lane uses the same resolution and the same scene:
 
-1. Use the same resolution and gameplay scene for every available lane.
-2. Choose a watchdog long enough to enter the intended gameplay scene.
-3. Start the run and navigate to that scene manually.
-4. After the scene is ready, leave the game running there for at least 15 seconds.
-5. Close the game normally. The paper export uses the ten-second window from 12 seconds before the final sample up to 2 seconds before it. The last two seconds are omitted so shutdown interaction does not affect the result.
+| Game | Scene |
+| --- | --- |
+| AssaultCube | map `ac_desert`, loaded with `--loadmap`, player idle at the spawn point |
+| OpenArena | the scene the game reaches at startup, with no map loaded |
+| Red Eclipse | map `auster`, loaded through `-x`, player idle at the spawn point |
+| SuperTux | `levels/world1/welcome_antarctica.stl`, Tux idle at the start |
+| SuperTuxKart | track `hacienda` with `--race-now`, four karts and three laps, the player's kart held at the start line while the AI karts drive |
+| Hollow Knight | entered by hand from the same save, player standing still |
+
+The runners load the first five scenes from the command line, and `GAME_SCENE_MAP` overrides the default map or track. OpenArena loads no map by default because starting a map restarts its renderer, after which MangoHud no longer receives frames on the QEMU lane. Its rate is therefore a startup-scene rate rather than an in-match rate.
+
+1. Choose a watchdog long enough to reach the scene. Hollow Knight needs manual navigation, so allow time for it.
+2. Start the run. For Hollow Knight, load the save and stop moving.
+3. After the scene is ready, leave the game running there for at least 15 seconds.
+4. Close the game normally. The paper export uses the ten-second window from 12 seconds before the final sample up to 2 seconds before it. The last two seconds are omitted so shutdown interaction does not affect the result.
 
 `GAME_DIR` lets any runner use an evaluator-supplied game directory instead of the guest package already installed under `.work/`:
 
@@ -156,7 +166,7 @@ All four lanes collect at the host-side presentation boundary used by the AArch6
 - Raw samples are written into the run directory.
 - Produces `fps-summary.json` with stable FPS and frametime statistics.
 
-The paper-data exporter reads the raw CSV rather than copying the collector's whole-run summary. For each game, it uses the `elapsed` timestamps to select `[last sample - 12 seconds, last sample - 2 seconds)`. It discards samples above 300 FPS as measurement noise, then reports the retained and ignored sample counts and the FPS mean, minimum, maximum, and population variance. The default 100 ms interval normally yields about 100 samples before filtering. Fixed-interval indexing is only a fallback for older logs without `elapsed`. A log shorter than 12 seconds is marked as insufficient instead of silently changing the window.
+The paper-data exporter reads the raw CSV rather than copying the collector's whole-run summary. For each game, it uses the `elapsed` timestamps to select `[last sample - 12 seconds, last sample - 2 seconds)`. It discards samples above 10000 FPS as measurement noise, then reports the retained and ignored sample counts and the FPS mean, minimum, maximum, and population variance. The default 100 ms interval normally yields about 100 samples before filtering. Fixed-interval indexing is only a fallback for older logs without `elapsed`. A log shorter than 12 seconds is marked as insufficient instead of silently changing the window.
 
 Export the latest available FPS run for every game and lane with:
 
@@ -205,53 +215,3 @@ Preview and remove evaluator results with:
 ```
 
 Cleanup never deletes game packages, shared vcpkg caches, or an evaluator-supplied `GAME_DIR`.
-
-<!--
-## 9. SPARK self-hosted GitHub Actions
-
-The repository provides [`.github/workflows/evaluations.yml`](../../.github/workflows/evaluations.yml). This workflow is manually triggered and requires an Ubuntu 24.04 ARM64 self-hosted runner carrying the `spark-gpu` label. It executes evaluation groups 1 through 5:
-
-1. Install the devkit, all tools, all library packages, and five redistributable games inside the AE Docker image.
-2. Run library correctness, all nine CLI lanes, three breakdowns, and the coverage audit inside the container.
-3. Verify that the runner uses a physical OpenGL renderer, then run four lanes for each of the five games in the current X11 session on the SPARK host.
-4. Leave each game in the initial scene reached after startup. The default watchdog is 30 seconds.
-5. Return to the container to analyze modifications and invoke the unified paper-data exporter.
-6. Upload every CSV and the manifest under `evaluations/paper-data/` as a `paper-data` artifact, and upload raw evidence from all five groups as a separate `raw-evidence` artifact.
-
-`game-fps-ci.csv` records `scene=initial` and requires every row to use a physical GPU. If a game or lane lacks valid FPS samples, the workflow fails after preserving and uploading the available evidence. Hollow Knight is omitted because the artifact cannot download or redistribute its proprietary files.
-
-Configure the runner on SPARK as follows:
-
-1. Open **Settings > Actions > Runners > New self-hosted runner** for the repository and select Linux and ARM64.
-2. Use the commands shown by GitHub to download and extract the runner. Add the `spark-gpu` label during registration:
-
-```bash
-./config.sh \
-  --url https://github.com/mingchaonb/lorelei-artifacts-eurosys27 \
-  --token '<one-time token generated by GitHub>' \
-  --name spark \
-  --labels spark-gpu \
-  --work _work
-```
-
-3. Confirm that `functioner` can run Docker and that MangoHud and the graphics tools from Section 6 are installed on the host.
-4. For the first run, start the runner in a terminal within the SPARK graphical desktop. It then inherits the correct `DISPLAY` and `XAUTHORITY` values:
-
-```bash
-cd /path/to/actions-runner
-./run.sh
-```
-
-5. Start the job through **Actions > EuroSys AE 1-5 on SPARK > Run workflow**. The form can adjust CLI repetitions, breakdown rounds, the pinned CPU, and the game watchdog. During the game stage, the five games appear sequentially on the SPARK display. Avoid interacting with the desktop or changing window focus while the measurement is active.
-
-To run the agent as a persistent systemd service, first record the actual values from a graphical desktop terminal in `.env` under the runner directory:
-
-```bash
-cd /path/to/actions-runner
-printf 'DISPLAY=%s\nXAUTHORITY=%s\n' "$DISPLAY" "$XAUTHORITY" >.env
-sudo ./svc.sh install functioner
-sudo ./svc.sh start
-```
-
-Rewrite `.env` and restart the runner service after the graphical session changes. Proxy variables can be placed in the same runner `.env` file. The workflow forwards lower-case and upper-case proxy variables to the Docker build and container.
--->

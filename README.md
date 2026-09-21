@@ -303,8 +303,6 @@ GAME_DIR="/absolute/path/to/Hollow Knight" ./evaluations/4-games/hollow-knight/r
 
 See [`evaluations/4-games/README.md`](evaluations/4-games/README.md) for each game's installation source, runtime prerequisites, FPS sampling window, and result format.
 
-<!-- The author-maintenance SPARK self-hosted workflow is not part of the evaluator reproduction guide. -->
-
 ### 3.5 Export paper data and render plots
 
 Run the coverage and source-change analyses, then export all available evidence to readable, paper-compatible CSV files in one step:

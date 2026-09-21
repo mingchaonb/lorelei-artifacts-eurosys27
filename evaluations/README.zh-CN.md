@@ -150,9 +150,3 @@ python3 evaluations/export-paper-data.py
 ```
 
 导出器在 `evaluations/paper-data/` 中写入 `overall.csv`、`game-fps.csv`、`function-breakdown.csv`、`callback-track.csv`、`coverage-effort.csv`、`modifications.csv` 和输入哈希 manifest。
-
-<!--
-## 7. SPARK GitHub Actions
-
-作者维护用的 self-hosted workflow 不属于 evaluator 复现入口。
--->

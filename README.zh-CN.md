@@ -301,8 +301,6 @@ GAME_DIR="/absolute/path/to/Hollow Knight" ./evaluations/4-games/hollow-knight/r
 
 各游戏的安装来源、运行前提、FPS 采样窗口和结果格式见 [`evaluations/4-games/README.zh-CN.md`](evaluations/4-games/README.zh-CN.md)。
 
-<!-- 作者维护用的 SPARK self-hosted GitHub Actions 入口不属于 evaluator 复现文档。 -->
-
 ### 3.5 导出论文数据与构图
 
 运行 coverage、源码修改量分析，随后一次性把现有实验证据导出为与论文口径对应的可读 CSV：

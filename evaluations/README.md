@@ -146,9 +146,3 @@ python3 evaluations/export-paper-data.py
 ```
 
 The exporter writes `overall.csv`, `game-fps.csv`, `function-breakdown.csv`, `callback-track.csv`, `coverage-effort.csv`, `modifications.csv`, and an input-hash manifest under `evaluations/paper-data/`.
-
-<!--
-## 7. SPARK GitHub Actions
-
-The author-maintenance self-hosted workflow is not an evaluator reproduction entry point.
--->

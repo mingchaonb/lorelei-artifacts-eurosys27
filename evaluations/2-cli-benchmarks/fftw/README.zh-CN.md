@@ -6,7 +6,7 @@
 
 runner 要求已完成的客户端输出报告指定的尺寸、重复次数和数值为 1 的 checksum。所有 Blink lane 都使用默认 JIT 模式。runner 不会选择 Blink 解释器模式。
 
-已安装的 upstream-test tree 仍包含原始 FFTW `bench`，QEMU-Hecate 能够运行该原始 driver。对称对比使用专用客户端，是因为原始多用途 driver 在对比模拟器的 Blink JIT 路径下不稳定。去掉无关 driver 行为后，变换本身可以正确执行。这是 Blink JIT 的限制，不是 Hecate 的限制。
+已安装的 upstream-test tree 仍包含原始 FFTW `bench`，QEMU-Hecate 能够运行该原始 driver。在 Blink 的 JIT 路径下，原始多用途 driver 不能稳定完成，而去掉 driver 的其余行为后，变换本身可以完成。因此所有 lane 统一计时同一个专用客户端，原始 driver 仍保留在安装目录中供检查。
 
 ```bash
 ./evaluations/2-cli-benchmarks/fftw/run.sh

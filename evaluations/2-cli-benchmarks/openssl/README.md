@@ -10,13 +10,13 @@ The port installs a focused client at `tools/openssl/upstream-tests/sha256-ae`. 
 sha256-ae OUTPUT data-256m.bin data-256m.bin data-256m.bin
 ```
 
-The port also installs the original `openssl` command. QEMU-Hecate can execute its original `dgst` path. The focused client is used for the symmetric comparison because plain Box64 does not wrap the many unrelated OpenSSL 3 management interfaces imported by the monolithic command. This is a limitation of the comparator's wrapper coverage, not a Hecate execution failure.
+The port also installs the original `openssl` command. QEMU-Hecate can execute its original `dgst` path. The monolithic command imports many OpenSSL 3 management interfaces that plain Box64 does not wrap. Every lane therefore times the same focused client, which calls only the three SHA-256 interfaces, and the original command stays installed for inspection.
 
 The client calls `SHA256_Init`, `SHA256_Update`, and `SHA256_Final` from `libcrypto.so.3`. Its file input and output remain in guest libc, so no guest `FILE *` crosses the library boundary. The native and x86-64 clients and both `libcrypto.so.3` builds come from the pinned `evaluations/1-libs/openssl` recipe. Hecate uses TLC thunks generated from the same AArch64 installation. `_common/prepare-inputs.sh` deterministically generates the input and records its SHA-256.
 
 Each repetition writes one 32-byte binary digest. The runner independently computes the digest with Python and requires every completed lane output to match exactly. The primary results are the common lane TSV and JSON files in seconds.
 
-The workload runs all nine common lanes, including plain Box64 and Box64 plus Hecate. Plain Box64 uses its built-in OpenSSL wrapper for these three SHA-256 calls. It does not force `libcrypto.so.3` through x86-64 emulation. A non-native lane is excluded from Figure 17 only when it reaches the common cutoff of 20 times the native median, capped at 100 seconds. The result JSON and exported CSV retain that measured timeout rather than substituting a missing or successful value.
+The workload runs all nine common lanes, including plain Box64 and Box64 plus Hecate. Plain Box64 uses its built-in OpenSSL wrapper for these three SHA-256 calls. It does not force `libcrypto.so.3` through x86-64 emulation. A non-native lane is excluded from Figure 17 only when it reaches the common cutoff of 20 times the native median, capped at 100 seconds. The result JSON keeps the measured times of such a lane, including any timeout. The exported CSV marks it `excluded` with the reason and leaves its timing columns empty.
 
 Run this workload:
 
